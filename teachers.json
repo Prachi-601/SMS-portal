@@ -1,0 +1,10 @@
+{
+    "teachers": [
+        {
+            "name": "Prachi Kavitkar",
+            "department": "CS Department",
+            "post": "Assitant Professor",
+            "subject": "INS(Information and Network Secuirty)"
+        }
+    ]
+}

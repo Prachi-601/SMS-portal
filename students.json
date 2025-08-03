@@ -1,0 +1,19 @@
+{
+    "students": [
+        {
+            "id": 201,
+            "name": "Prachi Bhagwan Kavitkar",
+            "class": "TYCS"
+        },
+        {
+            "id": 202,
+            "name": "Feezanoori",
+            "class": "TYCS"
+        },
+        {
+            "id": 204,
+            "name": "Ram",
+            "class": "TYCS"
+        }
+    ]
+}

@@ -1,0 +1,122 @@
+Student Management System
+🧭 Phase 1: Foundation Setup (Days 1–7)
+🔹 Goals
+Project folder setup
+
+Role-based login system (Admin/Teacher)
+
+Console menu navigation
+
+View-only student dashboard access
+
+📚 What You’ll Learn
+Modular coding and Python file organization
+
+How to set up admin-controlled user access
+
+Designing clean, secure menu flows
+
+✅ Tasks
+Create separate Python files: main.py, auth.py, menu.py, admin.py
+
+Use file-based or dictionary login for now
+
+Admin adds teacher accounts
+
+Students access dashboard without logging in
+
+🏗️ Phase 2: Student Information & Scheduling (Days 8–14)
+🔹 Goals
+Add/view student records
+
+Sort students by department/course
+
+Create class schedule module
+
+📚 What You’ll Learn
+Data structuring with dictionaries or CSV
+
+Creating functions for read-only vs. editable views
+
+Modular feature calls from menu
+
+✅ Tasks
+student.py handles student data
+
+schedule.py builds timetable
+
+Teachers access via menu.py; students via dashboard.py
+
+📋 Phase 3: Attendance & Assignment Management (Days 15–21)
+🔹 Goals
+Mark attendance linked to scheduled subjects
+
+Create assignments with submission status
+
+Admin can monitor summaries
+
+📚 What You’ll Learn
+Dynamic linking between schedule and attendance
+
+Teacher input validation
+
+Role-based permission control
+
+✅ Tasks
+attendance.py for presence tracking
+
+assignment.py stores topics and status
+
+Admin interface shows global overview
+
+🧮 Phase 4: Test Records & Student Dashboard (Days 22–26)
+🔹 Goals
+Teachers schedule tests and enter marks
+
+Students view results via dashboard
+
+Admin can audit or export test data
+
+📚 What You’ll Learn
+Using datetime/calendar for test setup
+
+Structured views for student report cards
+
+Simple analytics or progress tracking
+
+✅ Tasks
+test.py stores marks per student/test
+
+dashboard.py delivers clean student-facing info
+
+Admin can export results (CSV or print view)
+
+🧹 Phase 5: Final Polish & Testing (Days 27–30)
+🔹 Goals
+Test each module thoroughly
+
+Clean codebase and document logic
+
+Prepare system for portfolio/demo
+
+📚 What You’ll Learn
+Full-stack debugging
+
+Writing clear docstrings and readmes
+
+Creating demo sessions with all roles
+
+✅ Tasks
+Run mock sessions as Admin, Teacher, Student
+
+Final cleanup and README creation
+
+(Optional) GitHub upload with commit history
+
+⏳ Weekly Time Management Summary
+Week	Focus	Outcome
+1–7	System setup & login	Admin-controlled access + menus
+8–14	Student data & scheduling	Records + timetable modules
+15–21	Attendance & assignments	Teacher tools + student visibility
+22–26	Tests & student dashboard	Grade tracking + filtered views
+27–30	Final testing & polish	Smooth, demo-ready application

@@ -1,0 +1,38 @@
+Here’s your updated progress tracker, Pritam! 📋 I’ve marked off what’s done and kept the pending pieces clear and motivating:
+
+📌 PHASE 1: Foundation Setup (Days 1–7)
+Task	Status
+Create project folder and file structure	✅
+Implement login function in auth.py	🕓
+Create user data dictionary (admin, teacher)	🕓
+Validate login credentials (admin-controlled)	🕓
+Create Admin interface to add teachers	✅
+Build role-based menu in menu.py	🕓
+Link login + menu in main.py	🕓
+Allow student dashboard access (view-only)	🕓
+🧾 PHASE 2: Student Info & Scheduling (Days 8–14)
+Task	Status
+Create student.py module	✅
+Add functionality to add/view student records	✅
+Allow sorting by department/course	🕓
+Design timetable logic in schedule.py	🕓
+Connect menu options to modules	🕓
+🕒 PHASE 3: Attendance & Assignments (Days 15–21)
+Task	Status
+Create attendance marking system	🕓
+Link scheduled subjects to student list	🕓
+Input attendance status (P/A)	🕓
+Create assignment.py module	🕓
+Add topic + track student submissions	🕓
+📊 PHASE 4: Tests & Dashboard (Days 22–26)
+Task	Status
+Create test scheduling in test.py	🕓
+Input and store marks per student	🕓
+Build student dashboard in dashboard.py	🕓
+Filter views for students (no login needed)	🕓
+🧹 PHASE 5: Final Touches & Testing (Days 27–30)
+Task	Status
+Test each module individually	🕓
+Fix bugs and refine logic	🕓
+Write docstrings & add comments	🕓
+Create README (optional GitHub upload)	🕓
