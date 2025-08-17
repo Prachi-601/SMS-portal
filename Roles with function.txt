@@ -1,0 +1,53 @@
+🔐 Role-Based Access Control (Function-Level Breakdown)
+👑 Admin
+Function	Description
+admin_login()	Authenticates admin credentials from admins.json
+admin_menu()	Displays full admin options (student, teacher, schedule, dashboard)
+add_teacher()	Adds new teacher records to teachers.json
+view_teachers()	Views all teacher records
+add_student()	Adds student records to students.json
+view_students()	Views student records
+delete_student()	Deletes student by name or ID
+sort_students_by_course()	Sorts student list by department/course
+create_schedule()	Designs timetable logic in schedule.py
+view_schedule()	Views timetable for all classes
+create_test()	Schedules tests in test.py
+input_marks()	Inputs marks per student
+view_dashboard()	Views full student dashboard (attendance, marks, assignments)
+test_modules()	Runs module-wise tests for debugging
+fix_bugs()	Refines logic and handles exceptions
+write_docstrings()	Adds comments and documentation
+generate_readme()	Creates README for GitHub upload
+👩‍🏫 Teacher
+Function	Description
+teacher_login()	Authenticates teacher credentials from teachers.json
+teacher_menu()	Displays teacher options (student view, attendance, assignments)
+view_students()	Views student records (read-only)
+mark_attendance()	Marks attendance (P/A) for scheduled subjects
+view_schedule()	Views timetable for assigned subjects
+create_assignment()	Adds assignment topic and deadline
+track_submissions()	Tracks student submissions
+view_teachers()	Views teacher list (read-only)
+view_dashboard()	Views student dashboard (limited to assigned subjects)
+📝 Planned Enhancement: If post == "HOD" in teacher record, allow access to add_teacher() and create_schedule().
+
+🧑‍🎓 Student (View-Only Access)
+Function	Description
+view_dashboard()	Views personal dashboard (attendance, marks, assignments)
+view_schedule()	Views timetable (read-only)
+view_assignments()	Views assigned topics and deadlines
+view_marks()	Views test scores and performance summary
+🔓 No login required for students—dashboard access is public or via student ID.
+
+🧩 Integration Map
+File	Role Access
+main.py	Entry point for login and menu routing
+auth.py	Handles login logic for admin and teacher
+admin.py	Admin-only functions
+teacher.py	Teacher-only functions
+student.py	Shared functions (admin + teacher)
+schedule.py	Admin + HOD access
+attendance.py	Teacher access
+assignment.py	Teacher access
+test.py	Admin access
+dashboard.py	All roles (view-only for students)

@@ -1,6 +1,6 @@
 import json
 import os
-from student import add_student, view_students, search_student,search_student_by_name, edit_student, edit_student_by_name
+from student import add_student, view_students, search_student,search_student_by_name, edit_student, edit_student_by_name,delete_specific_student_by_name,sort_students_by_course
 
 
 # 🔧 Create the JSON file if it doesn’t exist or is empty
@@ -75,6 +75,8 @@ def admin_menu():
         print("4. Edit Student Record (by ID or Name)")
         print("5. Delete Student")
         print("6. Logout")
+        print("7. Sort Students by Class")
+
 
         choice = input("Choose an option: ")
 
@@ -107,12 +109,13 @@ def admin_menu():
                 print("❌ Invalid edit option.")
 
         elif choice == "5":
-            delete_student()
+            delete_specific_student_by_name()
         elif choice == "6":
             print("👋 Logging out...")
             break
+        elif choice == "7":
+          sort_students_by_course()
         else:
             print("❌ Invalid choice!")
-
 # ▶️ Start the portal
 main_login()

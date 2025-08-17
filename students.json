@@ -2,18 +2,18 @@
     "students": [
         {
             "id": 201,
-            "name": "Prachi Bhagwan Kavitkar",
+            "name": "Prachi Kavitkar",
             "class": "TYCS"
         },
         {
-            "id": 202,
-            "name": "Feezanoori",
+            "id": 203,
+            "name": "Feezanoori Ansari",
             "class": "TYCS"
         },
         {
-            "id": 204,
-            "name": "Ram",
-            "class": "TYCS"
+            "id": 301,
+            "name": "Payal",
+            "class": "BCom"
         }
     ]
 }

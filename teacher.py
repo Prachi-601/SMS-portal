@@ -1,4 +1,6 @@
 import json
+from student import view_students
+from attendance import mark_attendance
 
 def add_teacher():
     # Load existing data
@@ -60,6 +62,28 @@ def view_teachers():
         print(f"Subject: {teacher['subject']}")
         print("-" * 40)
     print(f"Total teachers: {len(teachers)}\n")
+
+def teacher_menu():
+    while True:
+        print("\n📚 Teacher Menu:")
+        print("1. Mark Attendance")
+        print("2. View Students")
+        print("3. View Teachers")
+        print("4. Logout")
+
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            mark_attendance()
+        elif choice == "2":
+            view_students()
+        elif choice == "3":
+            view_teachers()
+        elif choice == "4":
+            print("👋 Logging out...")
+            break
+        else:
+            print("❌ Invalid choice.")
 
 if __name__ == "__main__":
     # add_teacher()

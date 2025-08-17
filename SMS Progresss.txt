@@ -1,38 +1,46 @@
-Here’s your updated progress tracker, Pritam! 📋 I’ve marked off what’s done and kept the pending pieces clear and motivating:
-
 📌 PHASE 1: Foundation Setup (Days 1–7)
-Task	Status
-Create project folder and file structure	✅
-Implement login function in auth.py	🕓
-Create user data dictionary (admin, teacher)	🕓
-Validate login credentials (admin-controlled)	🕓
-Create Admin interface to add teachers	✅
-Build role-based menu in menu.py	🕓
-Link login + menu in main.py	🕓
-Allow student dashboard access (view-only)	🕓
+Task	Status	Notes
+Create project folder and file structure	✅ Completed	Organized modules: admin.py, teacher.py, student.py, etc.
+Implement login function in auth.py	✅ Completed	Now split into admin_login() in admin.py and teacher_login() in teacher.py
+Create user data dictionary (admin, teacher)	✅ Completed	Stored in admins.json and teachers.json
+Validate login credentials (admin-controlled)	✅ Completed	Admin login checks credentials and triggers admin_menu()
+Create Admin interface to add teachers	✅ Completed	add_teacher() in teacher.py, accessible via admin_menu()
+Build role-based menu in menu.py	✅ Completed	Replaced by admin_menu() and teacher_menu()
+Link login + menu in main.py	✅ Completed	Centralized login flow with role-based menu access
+Allow student dashboard access (view-only)	🕓 In Progress	Planned for Phase 4 via dashboard.py
 🧾 PHASE 2: Student Info & Scheduling (Days 8–14)
-Task	Status
-Create student.py module	✅
-Add functionality to add/view student records	✅
-Allow sorting by department/course	🕓
-Design timetable logic in schedule.py	🕓
-Connect menu options to modules	🕓
+Task	Status	Notes
+Create student.py module	✅ Completed	Modular functions for add, view, edit, delete, search
+Add functionality to add/view student records	✅ Completed	Used in both admin and teacher menus
+Add functionality to delete student record	✅ Completed	Includes delete by name with confirmation
+Allow sorting by department/course	✅ Completed	sort_students_by_course() implemented
+Design timetable logic in schedule.py	🕓 In Progress	Subject slots per class to be linked with attendance
+Connect menu options to modules	✅ Completed	All menus now trigger correct functions from respective files
 🕒 PHASE 3: Attendance & Assignments (Days 15–21)
-Task	Status
-Create attendance marking system	🕓
-Link scheduled subjects to student list	🕓
-Input attendance status (P/A)	🕓
-Create assignment.py module	🕓
-Add topic + track student submissions	🕓
+Task	Status	Notes
+Create attendance marking system	✅ Completed	mark_attendance() in attendance.py, linked to teacher_menu()
+Link scheduled subjects to student list	🕓 In Progress	Will connect schedule.py with attendance.py
+Input attendance status (P/A)	✅ Completed	Stored in attendance.json with date and student status
+Create assignment.py module	🕓 In Progress	To include topic entry and submission tracking
+Add topic + track student submissions	🕓 In Progress	Will store per-student assignment status
 📊 PHASE 4: Tests & Dashboard (Days 22–26)
-Task	Status
-Create test scheduling in test.py	🕓
-Input and store marks per student	🕓
-Build student dashboard in dashboard.py	🕓
-Filter views for students (no login needed)	🕓
+Task	Status	Notes
+Create test scheduling in test.py	🕓 In Progress	Will allow test creation and date assignment
+Input and store marks per student	🕓 In Progress	To be linked with student IDs and subjects
+Build student dashboard in dashboard.py	🕓 In Progress	Will show attendance, marks, assignments
+Filter views for students (no login needed)	🕓 In Progress	Planned as read-only dashboard access
 🧹 PHASE 5: Final Touches & Testing (Days 27–30)
-Task	Status
-Test each module individually	🕓
-Fix bugs and refine logic	🕓
-Write docstrings & add comments	🕓
-Create README (optional GitHub upload)	🕓
+Task	Status	Notes
+Test each module individually	🕓 In Progress	Manual testing of all functions and menu flows
+Fix bugs and refine logic	🕓 In Progress	Includes input validation, file handling, edge cases
+Write docstrings & add comments	🕓 In Progress	For all major functions across modules
+Create README (optional GitHub upload)	🕓 In Progress	Project overview, setup instructions, module map
+🔐 Role-Based Access Logic (New Additions)
+Feature	Status	Notes
+Admin Login & Signup	✅ Completed	Via admin.py, stored in admins.json
+Admin Menu	✅ Completed	Full access to student and teacher management
+Admin can add/view teachers	✅ Completed	Linked in admin_menu()
+Teacher Login	✅ Completed	Via teacher.py, checks teachers.json
+Teacher Menu	✅ Completed	Includes attendance, student view, teacher view
+Teacher Signup	🕓 Planned	To be added in main.py
+Teacher can add teachers	🕓 Planned	Only if post == "HOD" (role-based check to be added)
