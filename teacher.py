@@ -1,6 +1,9 @@
 import json
 from student import view_students
 from attendance import mark_attendance
+from student import get_student_by_id
+from assignment import add_assignment, submit_assignment, view_submissions
+
 
 def add_teacher():
     # Load existing data
@@ -70,6 +73,10 @@ def teacher_menu():
         print("2. View Students")
         print("3. View Teachers")
         print("4. Logout")
+        print("5. Add Assignment")
+        print("6. Submit Assignment")
+        print("7. View Submissions")
+
 
         choice = input("Choose an option: ")
 
@@ -82,9 +89,36 @@ def teacher_menu():
         elif choice == "4":
             print("👋 Logging out...")
             break
+        elif choice == "5":
+            subject = input("Enter subject: ")
+            topic = input("Enter topic: ")
+            deadline = input("Enter deadline (YYYY-MM-DD): ")
+            confirm = input("Confirm assignment creation? (y/n): ").lower()
+            if confirm != "y":
+                print("❌ Cancelled.")
+                return
+            add_assignment(subject, topic, deadline)
+
+
+        elif choice == "6":
+            student_id = input("Enter student ID: ")
+            student = get_student_by_id(student_id)
+            if not student:
+                print("❌ Student ID not found.")
+                return
+
+            subject = input("Enter subject: ")
+            topic = input("Enter topic: ")
+            confirm = input("Confirm submission? (y/n): ").lower()
+            if confirm != "y":
+                print("❌ Cancelled.")
+                return
+
+            submit_assignment(student_id, subject, topic)
+        elif choice == "7":
+            view_submissions()
         else:
             print("❌ Invalid choice.")
 
 if __name__ == "__main__":
-    # add_teacher()
-    view_teachers()
+    teacher_menu()

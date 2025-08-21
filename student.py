@@ -77,6 +77,17 @@ def search_student():
     except FileNotFoundError:
         print("⚠️ Student records file not found.")
 
+def get_student_by_id(student_id):
+    try:
+        with open("students.json", "r") as f:
+            data = json.load(f)
+            for student in data.get("students", []):
+                if student.get("id") == student_id:
+                    return student
+    except FileNotFoundError:
+        return None
+    return None
+
 def search_student_by_name():
     name_input = input("Enter student name to search: ").strip().lower()
 
