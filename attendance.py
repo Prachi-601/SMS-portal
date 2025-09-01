@@ -1,7 +1,8 @@
 import json
 from datetime import date
+from schedule import get_current_subject_for_teacher
 
-def mark_attendance():
+def mark_attendance(teacher):
     try:
         with open("students.json", "r") as f:
             data = json.load(f)
@@ -14,10 +15,29 @@ def mark_attendance():
         print("ℹ️ No students to mark attendance for.")
         return
 
-    today = str(date.today())
-    attendance_record = {"date": today, "records": []}
+    # 🔍 Step 1: Get subject from timetable
+    scheduled_subject = get_current_subject_for_teacher(teacher)
 
-    print(f"\n📅 Marking Attendance for {today}")
+    if scheduled_subject:
+        print(f"🕒 Scheduled subject right now: {scheduled_subject}")
+        confirm = input("Do you want to mark attendance for this subject? (y/n): ").lower()
+        if confirm == "y":
+            subject = scheduled_subject
+        else:
+            subject = input("Enter subject manually: ").strip()
+    else:
+        print("⚠️ No subject scheduled for your department at this time.")
+        subject = input("Enter subject manually: ").strip()
+
+    today = str(date.today())
+    attendance_record = {
+        "date": today,
+        "subject": subject,
+        "teacher": teacher["username"],
+        "records": []
+    }
+
+    print(f"\n📅 Marking Attendance for {today} | Subject: {subject}")
     for student in students:
         print(f"\nStudent: {student['name']} (ID: {student['id']})")
         status = input("Enter status (P/A): ").strip().upper()

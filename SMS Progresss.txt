@@ -1,349 +1,79 @@
-Today
-C:\Users\prita\OneDrive\Desktop\Prachi\SMS>C:/Users/prita/AppData/Local/Programs/Python/Python313/python.exe c:/Users/prita/OneDrive/Desktop/Prachi/SMS/teacher.py 📚 Teacher Menu: 1. Mark Attendance 2. View Students 3. View Teachers 4. Logout 5. Add Assignment 6. Submit Assignment 7. View Submissions Choose an option: 1 📅 Marking Attendance for 2025-08-20 Student: Prachi Kavitkar (ID: 201) Enter status (P/A): p Student: Feezanoori Ansari (ID: 203) Enter status (P/A): a Student: Payal (ID: 301) Enter status (P/A): o ❌ Invalid input. Marking as Absent by default. ✅ Attendance marked and saved successfully! 📚 Teacher Menu: 1. Mark Attendance 2. View Students 3. View Teachers 4. Logout 5. Add Assignment 6. Submit Assignment 7. View Submissions Choose an option: 2 📚 Student Records: ------------------------------ ID: 201, Name: Prachi Kavitkar, Class: TYCS ID: 203, Name: Feezanoori Ansari, Class: TYCS ID: 301, Name: Payal, Class: BCom ------------------------------ Total students: 3 📚 Teacher Menu: 1. Mark Attendance 2. View Students 3. View Teachers 4. Logout 5. Add Assignment 6. Submit Assignment 7. View Submissions Choose an option: 3 🎓 Teacher Records: ---------------------------------------- Name: Prachi Kavitkar Department: CS Department Post: Assitant Professor Subject: INS(Information and Network Secuirty) ---------------------------------------- Total teachers: 1 📚 Teacher Menu: 1. Mark Attendance 2. View Students 3. View Teachers 4. Logout 5. Add Assignment 6. Submit Assignment 7. View Submissions Choose an option: 5 Enter subject: AI Enter topic: Questions Enter deadline (YYYY-MM-DD): 2025-2-3 ✅ Assignment added successfully. 📚 Teacher Menu: 1. Mark Attendance 2. View Students 3. View Teachers 4. Logout 5. Add Assignment 6. Submit Assignment 7. View Submissions Choose an option: 7 📚 Teacher Menu: 1. Mark Attendance 2. View Students 3. View Teachers 4. Logout 5. Add Assignment 6. Submit Assignment 7. View Submissions Choose an option: 7 📚 Teacher Menu: 1. Mark Attendance 2. View Students 3. View Teachers 4. Logout 5. Add Assignment 6. Submit Assignment 7. View Submissions Choose an option: 6 Enter student ID: 201 Enter subject: AI Enter topic: Questions ✅ Submission recorded for Student ID: 201 📚 Teacher Menu: 1. Mark Attendance 2. View Students 3. View Teachers 4. Logout 5. Add Assignment 6. Submit Assignment 7. View Submissions Choose an option: i checked all but i want to clarify that here it saves the presenty when we make the frontend can it show in a sheet format by date
-Yes, absolutely Pritam! Since your attendance data is already being saved with the date and student status in attendance.json, you can definitely display it in a sheet-like format by date when you build the frontend. Here's how it can work:
-
-🗂️ Your Backend Structure (Recap)
-Each attendance entry might look like this in attendance.json:
-
-json
-[
-  {
-    "date": "2025-08-20",
-    "student_id": "201",
-    "name": "Prachi Kavitkar",
-    "status": "P"
-  },
-  {
-    "date": "2025-08-20",
-    "student_id": "203",
-    "name": "Feezanoori Ansari",
-    "status": "A"
-  },
-  ...
-]
-🖥️ Frontend Display Idea (Sheet Format)
-You can show attendance like this:
-
-Date	Student ID	Name	Status
-2025-08-20	201	Prachi Kavitkar	P
-2025-08-20	203	Feezanoori Ansari	A
-2025-08-20	301	Payal	A
-Or group by date:
-
-📅 2025-08-20
-✅ Prachi Kavitkar (ID: 201) — Present
-
-❌ Feezanoori Ansari (ID: 203) — Absent
-
-❌ Payal (ID: 301) — Absent
-
-🧠 How to Implement in Frontend
-If you're using:
-
-Tkinter (Python GUI): Use Treeview widget to create a table view
-
-Web frontend (HTML/CSS/JS): Use a table with rows grouped by date
-
-Excel export: You can write a function to convert attendance.json into .csv format for easy viewing
-
-🔜 Want to Build a Function Now?
-I can help you write a Python function that:
-
-Reads attendance.json
-
-Groups entries by date
-
-Prints them in a clean sheet-like format
-
-Would you like to do that next? Or start planning how this will look in your dashboard module?
-
-okay i just wanted to confirm lets work on this 🛠️ Suggested Refinements (Optional but powerful) Validate Student ID Before Submission You could check if the student exists using student.py before accepting a submission. Example: python from student import get_student_by_id # You’d need to define this function student = get_student_by_id(student_id) if not student: print("❌ Student ID not found.") return Sort Submissions by Date or Subject In view_submissions(), you could sort the list before printing for better readability. Add Confirmation Prompts Before adding an assignment or recording a submission, ask for confirmation: python confirm = input("Confirm submission? (y/n): ").lower() if confirm != "y": print("❌ Cancelled.") return
-Perfect, Pritam! Let’s implement each refinement step-by-step so your project becomes even more robust and user-friendly 💪
-
-✅ Step 1: Validate Student ID Before Submission
-🔧 In student.py, add this helper function:
-python
-def get_student_by_id(student_id):
-    try:
-        with open("students.json", "r") as f:
-            data = json.load(f)
-            for student in data.get("students", []):
-                if student.get("id") == student_id:
-                    return student
-    except FileNotFoundError:
-        return None
-    return None
-This checks if a student with the given ID exists.
-
-🔗 In teacher.py, update the submission logic:
-python
-from student import get_student_by_id
-
-elif choice == "6":
-    student_id = input("Enter student ID: ")
-    student = get_student_by_id(student_id)
-    if not student:
-        print("❌ Student ID not found.")
-        return
-
-    subject = input("Enter subject: ")
-    topic = input("Enter topic: ")
-    confirm = input("Confirm submission? (y/n): ").lower()
-    if confirm != "y":
-        print("❌ Cancelled.")
-        return
-
-    submit_assignment(student_id, subject, topic)
-✅ Step 2: Sort Submissions by Date or Subject
-🔧 In assignment.py, update view_submissions():
-python
-def view_submissions():
-    try:
-        with open("assignment_submissions.json", "r") as f:
-            data = json.load(f)
-            # Sort by submitted_on date
-            sorted_data = sorted(data, key=lambda x: x["submitted_on"])
-            for s in sorted_data:
-                print(f"Student ID: {s['student_id']}, Subject: {s['subject']}, Topic: {s['topic']}, Submitted on: {s['submitted_on']}")
-    except FileNotFoundError:
-        print("No submissions found.")
-You can also sort by subject if needed:
-
-python
-sorted_data = sorted(data, key=lambda x: x["subject"])
-✅ Step 3: Add Confirmation Prompts for Assignment Creation
-🔧 In teacher.py, update option 5:
-python
-elif choice == "5":
-    subject = input("Enter subject: ")
-    topic = input("Enter topic: ")
-    deadline = input("Enter deadline (YYYY-MM-DD): ")
-    confirm = input("Confirm assignment creation? (y/n): ").lower()
-    if confirm != "y":
-        print("❌ Cancelled.")
-        return
-    add_assignment(subject, topic, deadline)
-Once you’ve added these, your teacher module will be smarter, safer, and more interactive. Want to test it together or move on to building the student dashboard next?
-
-import json def add_student(): try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: data = {"students": []} try: student_id = int(input("Enter student ID: ").strip()) except ValueError: print("❌ Invalid ID format. Please enter digits only.") return name = input("Enter student name: ").strip() student_class = input("Enter class: ").strip() for student in data["students"]: if student["id"] == student_id: print("⚠️ Student ID already exists. Try another.") return new_student = { "id": student_id, "name": name, "class": student_class } data["students"].append(new_student) with open("students.json", "w") as f: json.dump(data, f, indent=4) print("✅ Student added successfully!") def view_students(): try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ No student data found.") return students = data.get("students", []) if not students: print("ℹ️ No student records available.") return print("\n📚 Student Records:") print("-" * 30) for student in students: print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}") print("-" * 30) print(f"Total students: {len(students)}\n") def search_student(): try: student_id = int(input("Enter student ID to search: ")) except ValueError: print("❌ Invalid ID format.") return try: with open("students.json", "r") as f: students = json.load(f) for student in students.get("students", []): if student["id"] == student_id: print("\n🎓 Student Found:") print(f"ID: {student['id']}") print(f"Name: {student['name']}") print(f"Class: {student['class']}") return print("❌ Student not found.") except FileNotFoundError: print("⚠️ Student records file not found.") def search_student_by_name(): name_input = input("Enter student name to search: ").strip().lower() try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ Student records file not found.") return matched_students = [] for student in data.get("students", []): if name_input in student["name"].strip().lower(): matched_students.append(student) if matched_students: for student in matched_students: print("\n🎓 Student Found:") print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}") else: print("❌ No matching student found.") def edit_student(): student_id = input("Enter student ID to edit: ") try: student_id = int(student_id) except ValueError: print("❌ Invalid ID. Please enter a numeric value.") return with open("students.json", "r") as f: data = json.load(f) students = data["students"] for student in students: if student["id"] == student_id: print(f"\n🎓 Current Record:\nID: {student['id']}\nName: {student['name']}\nClass: {student['class']}") choice = input("\nWhat would you like to edit?\n1. Name\n2. Class\nChoose (1/2): ") if choice == "1": new_name = input("Enter new name: ") student["name"] = new_name elif choice == "2": new_class = input("Enter new class: ") student["class"] = new_class else: print("❌ Invalid choice.") return with open("students.json", "w") as f: json.dump(data, f, indent=4) print("✅ Student record updated successfully.") return print("❌ Student not found.") def edit_student_by_name(): name_input = input("Enter student name to edit: ").strip().lower() try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ Student records file not found.") return students = data.get("students", []) matched_students = [ student for student in students if name_input in student["name"].strip().lower() ] if not matched_students: print("❌ No matching student found.") return for student in matched_students: print(f"\n🎓 Match Found:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}") confirm = input("Do you want to edit this student? (Y/N): ").strip().lower() if confirm == "y": choice = input("\nWhat would you like to edit?\n1. Name\n2. Class\nChoose (1/2): ") if choice == "1": student["name"] = input("Enter new name: ") elif choice == "2": student["class"] = input("Enter new class: ") else: print("❌ Invalid choice.") return with open("students.json", "w") as f: json.dump(data, f, indent=4) print("✅ Student record updated successfully.") return print("ℹ️ No edits made.") def delete_specific_student_by_name(): name_input = input("Enter the student name to delete: ").strip().lower() try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ Student records file not found.") return students = data.get("students", []) matched_students = [ student for student in students if name_input in student["name"].strip().lower() ] if not matched_students: print("❌ No student found with that name.") return for student in matched_students: print("\n👁 Found Student:") print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}") confirm = input("\n⚠️ Do you want to delete this student? (Y/N): ").strip().lower() if confirm == "y": students.remove(student) with open("students.json", "w") as f: json.dump({"students": students}, f, indent=4) print("✅ Student deleted successfully.") return else: print("ℹ️ Deletion cancelled.") return def sort_students_by_course(): try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ Student records file not found.") return students = data.get("students", []) sorted_students = sorted(students, key=lambda x: x["class"]) print("\n📊 Students Sorted by Class:") for student in sorted_students: print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}") # Direct testing if __name__ == "__main__": add_student() where should i add def get_student_by_id(student_id): try: with open("students.json", "r") as f: data = json.load(f) for student in data.get("students", []): if student.get("id") == student_id: return student except FileNotFoundError: return None return None
-Great question, Pritam! You should add the get_student_by_id(student_id) function inside your student.py file, right alongside your other helper functions like search_student() and view_students().
-
-✅ Recommended Placement
-Place it after your search_student() function and before search_student_by_name() — this keeps related logic grouped together and easy to find.
-
-Here’s how it would look:
-
-python
-def search_student():
-    # ... existing code ...
-
-def get_student_by_id(student_id):
-    try:
-        with open("students.json", "r") as f:
-            data = json.load(f)
-            for student in data.get("students", []):
-                if student.get("id") == student_id:
-                    return student
-    except FileNotFoundError:
-        return None
-    return None
-
-def search_student_by_name():
-    # ... existing code ...
-✅ Why This Spot Works Well
-Keeps all search and lookup functions together
-
-Easy to maintain and reuse in other modules like teacher.py or dashboard.py
-
-Keeps your file organized and readable
-
-Once you’ve added it, you can safely import it in teacher.py like this:
-
-python
-from student import get_student_by_id
-Let me know once it’s added and tested—then we can move on to building your dashboard or refining more logic!
-
-import json from student import view_students from attendance import mark_attendance from student import get_student_by_id from assignment import add_assignment, submit_assignment, view_submissions def add_teacher(): # Load existing data try: with open("teachers.json", "r") as f: data = json.load(f) except FileNotFoundError: data = {"teachers": []} # Input teacher details name = input("Enter teacher name: ").strip() department = input("Enter department: ").strip() post = input("Enter post (e.g., Assistant Professor, HOD): ").strip() subject = input("Enter subject taught: ").strip() # Optional duplicate check for teacher in data["teachers"]: if (teacher["name"].lower() == name.lower() and teacher["department"].lower() == department.lower() and teacher["post"].lower() == post.lower() and teacher["subject"].lower() == subject.lower()): print("Teacher already exists.") return # Add new teacher new_teacher = { "name": name, "department": department, "post": post, "subject": subject } data["teachers"].append(new_teacher) # Save to JSON with open("teachers.json", "w") as f: json.dump(data, f, indent=4) print("✅ Teacher added successfully!") def view_teachers(): try: with open("teachers.json", "r") as f: data = json.load(f) except FileNotFoundError: print("No teacher data found.") return teachers = data.get("teachers", []) if not teachers: print("No teacher records available.") return print("\n🎓 Teacher Records:") print("-" * 40) for teacher in teachers: print(f"Name: {teacher['name']}") print(f"Department: {teacher['department']}") print(f"Post: {teacher['post']}") print(f"Subject: {teacher['subject']}") print("-" * 40) print(f"Total teachers: {len(teachers)}\n") def teacher_menu(): while True: print("\n📚 Teacher Menu:") print("1. Mark Attendance") print("2. View Students") print("3. View Teachers") print("4. Logout") print("5. Add Assignment") print("6. Submit Assignment") print("7. View Submissions") choice = input("Choose an option: ") if choice == "1": mark_attendance() elif choice == "2": view_students() elif choice == "3": view_teachers() elif choice == "4": print("👋 Logging out...") break elif choice == "5": subject = input("Enter subject: ") topic = input("Enter topic: ") deadline = input("Enter deadline (YYYY-MM-DD): ") confirm = input("Confirm assignment creation? (y/n): ").lower() if confirm != "y": print("❌ Cancelled.") return add_assignment(subject, topic, deadline) elif choice == "6": student_id = input("Enter student ID: ") student = get_student_by_id(student_id) if not student: print("❌ Student ID not found.") return subject = input("Enter subject: ") topic = input("Enter topic: ") confirm = input("Confirm submission? (y/n): ").lower() if confirm != "y": print("❌ Cancelled.") return submit_assignment(student_id, subject, topic) elif choice == "7": view_submissions() else: print("❌ Invalid choice.") if __name__ == "__main__": teacher_menu() teacher.py
-This is beautifully structured, Pritam! Your teacher.py module is now clean, modular, and packed with smart refinements. Here's a quick validation checklist and a few final polish suggestions to make it even more bulletproof:
-
-✅ What You’ve Done Perfectly
-Modular Imports: Clean separation of concerns across student, attendance, and assignment modules.
-
-Student ID Validation: Using get_student_by_id() ensures submissions are only accepted for valid students.
-
-Confirmation Prompts: Prevents accidental assignment creation or submission.
-
-Sorted Submissions: (Handled in assignment.py) ensures clarity when viewing records.
-
-Menu Flow: Easy to navigate and extend later.
-
-🧪 Final Touch Suggestions
-1. Type Conversion for Student ID
-In teacher.py, before calling get_student_by_id(student_id), convert student_id to int to match your student records:
-
-python
-try:
-    student_id = int(input("Enter student ID: "))
-except ValueError:
-    print("❌ Invalid ID format.")
-    return
-This avoids mismatches since your student IDs are stored as integers.
-
-2. Graceful Return to Menu
-Instead of return inside menu options (like when cancelling), use continue so the menu doesn’t exit:
-
-python
-if confirm != "y":
-    print("❌ Cancelled.")
-    continue
-3. Add Option to View Assignments
-You could add:
-
-python
-print("8. View Assignments")
-And:
-
-python
-elif choice == "8":
-    view_assignments()
-(Just import view_assignments from assignment.py)
-
-🔜 Next Steps
-If you’re happy with this module, we can:
-
-Start building dashboard.py to show student progress
-
-Add test scheduling and marks in test.py
-
-Create a simple frontend or export logic to Excel/CSV
-
-Let me know what you’d like to tackle next. You’re building this like a pro! 💻🔥
-
-import json def add_student(): try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: data = {"students": []} try: student_id = int(input("Enter student ID: ").strip()) except ValueError: print("❌ Invalid ID format. Please enter digits only.") return name = input("Enter student name: ").strip() student_class = input("Enter class: ").strip() for student in data["students"]: if student["id"] == student_id: print("⚠️ Student ID already exists. Try another.") return new_student = { "id": student_id, "name": name, "class": student_class } data["students"].append(new_student) with open("students.json", "w") as f: json.dump(data, f, indent=4) print("✅ Student added successfully!") def view_students(): try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ No student data found.") return students = data.get("students", []) if not students: print("ℹ️ No student records available.") return print("\n📚 Student Records:") print("-" * 30) for student in students: print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}") print("-" * 30) print(f"Total students: {len(students)}\n") def search_student(): try: student_id = int(input("Enter student ID to search: ")) except ValueError: print("❌ Invalid ID format.") return try: with open("students.json", "r") as f: students = json.load(f) for student in students.get("students", []): if student["id"] == student_id: print("\n🎓 Student Found:") print(f"ID: {student['id']}") print(f"Name: {student['name']}") print(f"Class: {student['class']}") return print("❌ Student not found.") except FileNotFoundError: print("⚠️ Student records file not found.") def get_student_by_id(student_id): try: with open("students.json", "r") as f: data = json.load(f) for student in data.get("students", []): if student.get("id") == student_id: return student except FileNotFoundError: return None return None def search_student_by_name(): name_input = input("Enter student name to search: ").strip().lower() try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ Student records file not found.") return matched_students = [] for student in data.get("students", []): if name_input in student["name"].strip().lower(): matched_students.append(student) if matched_students: for student in matched_students: print("\n🎓 Student Found:") print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}") else: print("❌ No matching student found.") def edit_student(): student_id = input("Enter student ID to edit: ") try: student_id = int(student_id) except ValueError: print("❌ Invalid ID. Please enter a numeric value.") return with open("students.json", "r") as f: data = json.load(f) students = data["students"] for student in students: if student["id"] == student_id: print(f"\n🎓 Current Record:\nID: {student['id']}\nName: {student['name']}\nClass: {student['class']}") choice = input("\nWhat would you like to edit?\n1. Name\n2. Class\nChoose (1/2): ") if choice == "1": new_name = input("Enter new name: ") student["name"] = new_name elif choice == "2": new_class = input("Enter new class: ") student["class"] = new_class else: print("❌ Invalid choice.") return with open("students.json", "w") as f: json.dump(data, f, indent=4) print("✅ Student record updated successfully.") return print("❌ Student not found.") def edit_student_by_name(): name_input = input("Enter student name to edit: ").strip().lower() try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ Student records file not found.") return students = data.get("students", []) matched_students = [ student for student in students if name_input in student["name"].strip().lower() ] if not matched_students: print("❌ No matching student found.") return for student in matched_students: print(f"\n🎓 Match Found:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}") confirm = input("Do you want to edit this student? (Y/N): ").strip().lower() if confirm == "y": choice = input("\nWhat would you like to edit?\n1. Name\n2. Class\nChoose (1/2): ") if choice == "1": student["name"] = input("Enter new name: ") elif choice == "2": student["class"] = input("Enter new class: ") else: print("❌ Invalid choice.") return with open("students.json", "w") as f: json.dump(data, f, indent=4) print("✅ Student record updated successfully.") return print("ℹ️ No edits made.") def delete_specific_student_by_name(): name_input = input("Enter the student name to delete: ").strip().lower() try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ Student records file not found.") return students = data.get("students", []) matched_students = [ student for student in students if name_input in student["name"].strip().lower() ] if not matched_students: print("❌ No student found with that name.") return for student in matched_students: print("\n👁 Found Student:") print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}") confirm = input("\n⚠️ Do you want to delete this student? (Y/N): ").strip().lower() if confirm == "y": students.remove(student) with open("students.json", "w") as f: json.dump({"students": students}, f, indent=4) print("✅ Student deleted successfully.") return else: print("ℹ️ Deletion cancelled.") return def sort_students_by_course(): try: with open("students.json", "r") as f: data = json.load(f) except FileNotFoundError: print("⚠️ Student records file not found.") return students = data.get("students", []) sorted_students = sorted(students, key=lambda x: x["class"]) print("\n📊 Students Sorted by Class:") for student in sorted_students: print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}") # Direct testing if __name__ == "__main__": add_student() student.py
-This is excellent, Pritam! Your student.py module is now fully equipped with everything from adding and viewing students to searching, editing, deleting, and sorting. And the addition of get_student_by_id() makes your cross-module validation seamless 👏
-
-Here’s a quick summary of what’s working and what you’ve unlocked:
-
-✅ What You’ve Accomplished
-Robust Student Management: Add, view, search (by ID and name), edit, delete, and sort students.
-
-Validation Ready: get_student_by_id() allows other modules (like teacher.py) to verify student existence before actions like assignment submission.
-
-Error Handling: Graceful handling of file not found, invalid inputs, and empty records.
-
-User-Friendly Prompts: Clear messages and confirmations for all actions.
-
-🧠 What This Enables
-✅ Secure assignment submissions (only for valid students)
-
-✅ Accurate attendance marking and dashboard linking
-
-✅ Future enhancements like exporting student data or filtering by class/department
-
-🔜 Next Steps You Can Explore
-📊 Build dashboard.py to show student progress (attendance, assignments, marks)
-
-🧪 Create test.py for test scheduling and marks entry
-
-📁 Export to CSV for Excel-style viewing
-
-🌐 Frontend Integration (Tkinter or web-based)
-
-Would you like to start building the dashboard module next? I can guide you through a clean layout that pulls data from all your JSON files and displays it per student. Let’s keep the momentum going!
-
-# assignment.py import json from datetime import datetime def add_assignment(subject, topic, deadline): assignment = { "subject": subject, "topic": topic, "deadline": deadline, "created_on": str(datetime.now().date()) } try: with open("assignments.json", "r") as f: data = json.load(f) except FileNotFoundError: data = [] data.append(assignment) with open("assignments.json", "w") as f: json.dump(data, f, indent=4) print("✅ Assignment added successfully.") def view_assignments(): try: with open("assignments.json", "r") as f: data = json.load(f) for a in data: print(f"Subject: {a['subject']}, Topic: {a['topic']}, Deadline: {a['deadline']}") except FileNotFoundError: print("No assignments found.") def submit_assignment(student_id, subject, topic): submission = { "student_id": student_id, "subject": subject, "topic": topic, "submitted_on": str(datetime.now().date()) } try: with open("assignment_submissions.json", "r") as f: data = json.load(f) except FileNotFoundError: data = [] data.append(submission) with open("assignment_submissions.json", "w") as f: json.dump(data, f, indent=4) print(f"✅ Submission recorded for Student ID: {student_id}") def view_submissions(): try: with open("assignment_submissions.json", "r") as f: data = json.load(f) # Sort by submitted_on date sorted_data = sorted(data, key=lambda x: x["submitted_on"]) for s in sorted_data: print(f"Student ID: {s['student_id']}, Subject: {s['subject']}, Topic: {s['topic']}, Submitted on: {s['submitted_on']}") except FileNotFoundError: print("No submissions found.") assignment.py
-This is beautifully structured, Pritam! Your assignment.py module now handles everything from assignment creation to submission tracking and sorted viewing. Here's a quick review and a couple of enhancement ideas to make it even more powerful:
-
-✅ What’s Working Perfectly
-Assignment Creation: add_assignment() stores subject, topic, deadline, and creation date.
-
-Submission Tracking: submit_assignment() logs student ID, subject, topic, and submission date.
-
-Sorted Viewing: view_submissions() neatly organizes submissions by date.
-
-Error Handling: Graceful fallback if files don’t exist.
-
-🛠️ Optional Enhancements (If You Want to Add More Logic)
-1. Prevent Duplicate Submissions
-You could check if a student has already submitted the same topic before appending:
-
-python
-for entry in data:
-    if entry["student_id"] == student_id and entry["subject"] == subject and entry["topic"] == topic:
-        print("⚠️ Submission already exists for this student and topic.")
-        return
-2. Link to Assignment Deadline
-You could validate if the submission is before the deadline by reading from assignments.json:
-
-python
-from datetime import datetime
-
-# Fetch deadline
-for a in assignments:
-    if a["subject"] == subject and a["topic"] == topic:
-        deadline_date = datetime.strptime(a["deadline"], "%Y-%m-%d").date()
-        if datetime.now().date() > deadline_date:
-            print("⚠️ Deadline has passed. Submission may be late.")
-3. Group View by Subject or Student
-In view_submissions(), you could group by subject or student for better readability.
-
-🔜 Next Module: dashboard.py
-If you're ready, we can start building a dashboard that:
-
-Shows assignment status per student
-
-Displays attendance records
-
-Later: includes test marks
-
-Want to begin with a basic dashboard view for one student? I’ll guide you step-by-step.
-
-first mark the progress in detail then move forward 📌 PHASE 1: Foundation Setup (Days 1–7) Task Status Notes Create project folder and file structure ✅ Completed Organized modules: admin.py, teacher.py, student.py, etc. Implement login function in auth.py ✅ Completed Now split into admin_login() in admin.py and teacher_login() in teacher.py Create user data dictionary (admin, teacher) ✅ Completed Stored in admins.json and teachers.json Validate login credentials (admin-controlled) ✅ Completed Admin login checks credentials and triggers admin_menu() Create Admin interface to add teachers ✅ Completed add_teacher() in teacher.py, accessible via admin_menu() Build role-based menu in menu.py ✅ Completed Replaced by admin_menu() and teacher_menu() Link login + menu in main.py ✅ Completed Centralized login flow with role-based menu access Allow student dashboard access (view-only) 🕓 In Progress Planned for Phase 4 via dashboard.py 🧾 PHASE 2: Student Info & Scheduling (Days 8–14) Task Status Notes Create student.py module ✅ Completed Modular functions for add, view, edit, delete, search Add functionality to add/view student records ✅ Completed Used in both admin and teacher menus Add functionality to delete student record ✅ Completed Includes delete by name with confirmation Allow sorting by department/course ✅ Completed sort_students_by_course() implemented Design timetable logic in schedule.py 🕓 In Progress Subject slots per class to be linked with attendance Connect menu options to modules ✅ Completed All menus now trigger correct functions from respective files 🕒 PHASE 3: Attendance & Assignments (Days 15–21) Task Status Notes Create attendance marking system ✅ Completed mark_attendance() in attendance.py, linked to teacher_menu() Link scheduled subjects to student list 🕓 In Progress Will connect schedule.py with attendance.py Input attendance status (P/A) ✅ Completed Stored in attendance.json with date and student status Create assignment.py module 🕓 In Progress To include topic entry and submission tracking Add topic + track student submissions 🕓 In Progress Will store per-student assignment status 📊 PHASE 4: Tests & Dashboard (Days 22–26) Task Status Notes Create test scheduling in test.py 🕓 In Progress Will allow test creation and date assignment Input and store marks per student 🕓 In Progress To be linked with student IDs and subjects Build student dashboard in dashboard.py 🕓 In Progress Will show attendance, marks, assignments Filter views for students (no login needed) 🕓 In Progress Planned as read-only dashboard access 🧹 PHASE 5: Final Touches & Testing (Days 27–30) Task Status Notes Test each module individually 🕓 In Progress Manual testing of all functions and menu flows Fix bugs and refine logic 🕓 In Progress Includes input validation, file handling, edge cases Write docstrings & add comments 🕓 In Progress For all major functions across modules Create README (optional GitHub upload) 🕓 In Progress Project overview, setup instructions, module map 🔐 Role-Based Access Logic (New Additions) Feature Status Notes Admin Login & Signup ✅ Completed Via admin.py, stored in admins.json Admin Menu ✅ Completed Full access to student and teacher management Admin can add/view teachers ✅ Completed Linked in admin_menu() Teacher Login ✅ Completed Via teacher.py, checks teachers.json Teacher Menu ✅ Completed Includes attendance, student view, teacher view Teacher Signup 🕓 Planned To be added in main.py Teacher can add teachers 🕓 Planned Only if post == "HOD" (role-based check to be added)
-Thanks for the detailed update, Pritam! Based on everything you've built and refined, here’s your updated progress tracker with full clarity and precision:
-
-📌 PHASE 1: Foundation Setup (Days 1–7)
+✅ PHASE 1: Foundation Setup (Days 1–7)
 Task	Status	Notes
-Create project folder and file structure	✅ Completed	Organized modules: admin.py, teacher.py, student.py, etc.
-Implement login function in auth.py	✅ Completed	Split into admin_login() and teacher_login()
-Create user data dictionary (admin, teacher)	✅ Completed	Stored in admins.json and teachers.json
-Validate login credentials (admin-controlled)	✅ Completed	Admin login triggers admin_menu()
-Create Admin interface to add teachers	✅ Completed	add_teacher() in teacher.py, accessible via admin_menu()
-Build role-based menu in menu.py	✅ Completed	Replaced by admin_menu() and teacher_menu()
-Link login + menu in main.py	✅ Completed	Centralized login flow with role-based routing
-Allow student dashboard access (view-only)	🕓 In Progress	Planned for Phase 4 via dashboard.py
-🧾 PHASE 2: Student Info & Scheduling (Days 8–14)
+Project structure	✅ Completed	Modular layout: admin.py, teacher.py, student.py, etc.
+Login system	✅ Completed	auth.py handles admin_login() and teacher_login()
+User data storage	✅ Completed	Stored in admins.json, teachers.json, students.json
+Credential validation	✅ Completed	Admin triggers admin_menu()
+Admin interface	✅ Completed	add_teacher() functional
+Role-based menus	✅ Completed	admin_menu() and teacher_menu()
+Login + menu linkage	✅ Completed	main.py routes based on role
+Student dashboard access	🕓 In Progress	Planned in dashboard.py (Phase 4)
+🔍 Backend Remaining: Just the student dashboard logic (read-only view) — will be tackled in Phase 4.
+
+✅ PHASE 2: Student Info & Scheduling (Days 8–14)
 Task	Status	Notes
-Create student.py module	✅ Completed	Includes add, view, edit, delete, search, sort
-Add functionality to add/view student records	✅ Completed	Used in both admin and teacher menus
-Add functionality to delete student record	✅ Completed	Includes confirmation and name-based deletion
-Allow sorting by department/course	✅ Completed	sort_students_by_course() implemented
-Design timetable logic in schedule.py	🕓 In Progress	Will define subject slots per class
-Connect menu options to modules	✅ Completed	All menus trigger correct functions
-🕒 PHASE 3: Attendance & Assignments (Days 15–21)
+student.py module	✅ Completed	CRUD + search/sort
+Add/view student records	✅ Completed	Accessible to admin & teacher
+Delete student record	✅ Completed	Includes confirmation
+Sort by course	✅ Completed	sort_students_by_course()
+Timetable logic	✅ Completed	Refactored schedule.py with dynamic slots
+Menu integration	✅ Completed	All options linked correctly
+🔍 Backend Remaining: None — Phase 2 is fully implemented and tested.
+
+🕓 PHASE 3: Attendance & Assignments (Days 15–21)
 Task	Status	Notes
-Create attendance marking system	✅ Completed	mark_attendance() stores data in attendance.json
-Link scheduled subjects to student list	🕓 In Progress	Will connect schedule.py with attendance.py
-Input attendance status (P/A)	✅ Completed	Includes validation and fallback for invalid input
-Create assignment.py module	✅ Completed	Includes add_assignment(), submit_assignment(), view_assignments()
-Add topic + track student submissions	✅ Completed	Submissions stored in assignment_submissions.json, sorted by date
-📊 PHASE 4: Tests & Dashboard (Days 22–26)
+Attendance system	✅ Completed	mark_attendance() → attendance.json
+Link schedule to attendance	🕓 In Progress	Need to fetch subject from schedule.py per class/time
+Input P/A status	✅ Completed	Includes fallback and validation
+Assignment module	✅ Completed	add_assignment(), submit_assignment(), view_assignments()
+Track submissions	✅ Completed	Stored in assignment_submissions.json
+🔍 Backend Remaining:
+
+Link attendance to scheduled subjects (e.g., auto-fetch subject for current time/class)
+
+Optional: Prevent attendance marking for unscheduled slots
+
+🕓 PHASE 4: Tests & Dashboard (Days 22–26)
 Task	Status	Notes
-Create test scheduling in test.py	🕓 In Progress	Will allow test creation and date assignment
-Input and store marks per student	🕓 In Progress	Will link marks to student ID and subject
-Build student dashboard in dashboard.py	🕓 In Progress	Will show attendance, assignments, marks
-Filter views for students (no login needed)	🕓 In Progress	Planned as read-only dashboard access
-🧹 PHASE 5: Final Touches & Testing (Days 27–30)
+Test scheduling	🕓 In Progress	test.py to allow test creation + date
+Store marks	🕓 In Progress	Link marks to student ID + subject
+Student dashboard	🕓 In Progress	dashboard.py to show attendance, assignments, marks
+Read-only student view	🕓 In Progress	No login required, just filtered display
+🔍 Backend Remaining:
+
+Finish test.py with test creation and marks input
+
+Build dashboard.py to aggregate data per student
+
+Add read-only dashboard access (e.g., via student name or ID)
+
+🕓 PHASE 5: Final Touches & Testing (Days 27–30)
 Task	Status	Notes
-Test each module individually	🕓 In Progress	Manual testing with sample data
-Fix bugs and refine logic	🕓 In Progress	Includes input validation and edge case handling
-Write docstrings & add comments	🕓 In Progress	For all major functions
-Create README (optional GitHub upload)	🕓 In Progress	Project overview, setup guide, module map
-🔐 Role-Based Access Logic (New Additions)
+Module testing	🕓 In Progress	Manual testing with sample data
+Bug fixes	🕓 In Progress	Input validation, edge cases
+Docstrings/comments	🕓 In Progress	Add to all major functions
+README	🕓 In Progress	Overview, setup, module map
+🔍 Backend Remaining:
+
+Finish documentation and polish
+
+Optional: Add GitHub upload or versioning
+
+🔐 Role-Based Access Logic
 Feature	Status	Notes
-Admin Login & Signup	✅ Completed	Via admin.py, stored in admins.json
-Admin Menu	✅ Completed	Full access to student and teacher management
-Admin can add/view teachers	✅ Completed	Linked in admin_menu()
-Teacher Login	✅ Completed	Via teacher.py, checks teachers.json
-Teacher Menu	✅ Completed	Includes attendance, student view, teacher view, assignments
-Teacher Signup	🕓 Planned	To be added in main.py
-Teacher can add teachers	🕓 Planned	Only if post == "HOD" (role-based check to be added)
+Admin login/signup	✅ Completed	Stored in admins.json
+Admin menu	✅ Completed	Full access
+Admin adds teachers	✅ Completed	Via admin_menu()
+Teacher login	✅ Completed	Checks teachers.json
+Teacher menu	✅ Completed	Attendance, assignments, student view
+Teacher signup	🔜 Planned	To be added in main.py
+Student login	✅ Completed	Validates against students.json
+Student signup	🔜 Planned	To be added in main.py — stores new student in students.json
+HOD privilege	🔜 Planned	Role check: post == "HOD" before adding teachers
+🔍 Backend Remaining:
+
+Add teacher_signup() with validation
+
+Add student_signup() with input checks and storage
+
+Add HOD-based privilege check for teacher creation

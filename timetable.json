@@ -1,14 +1,25 @@
 {
-    "23-08-2025": [
+    "02-09-2025": [
         {
-            "time": "09:00\u201310:00",
-            "TYCS": "STQA",
-            "FYCS": "python"
+            "time": "8:00-9:00",
+            "TYCS": "INS"
         },
         {
-            "time": "10:00\u201311:00",
-            "TYCS": "Recess",
-            "FYCS": "java"
+            "time": "09:00\u201310:00",
+            "TYCS": "STQA"
+        },
+        {
+            "time": "10:00-10:20",
+            "TYCS": "Recess"
+        },
+        {
+            "time": "10:20-11:20",
+            "TYCS": "Project"
+        },
+        {
+            "time": "11:20-12:20",
+            "TYCS": "Ins Practical"
         }
     ]
+    
 }

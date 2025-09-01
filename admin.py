@@ -10,7 +10,7 @@ if not os.path.exists("admins.json") or os.stat("admins.json").st_size == 0:
 
 # 🧭 Main login menu
 def main_login():
-    print("\n🔐 Welcome to School Portal")
+    print("\n🔐 Welcome to Portal")
     print("1. Admin Login")
     print("2. Admin Signup")
     choice = input("Choose an option (1 or 2): ")
@@ -66,7 +66,7 @@ def admin_signup():
 
     print("✅ Admin signup successful!")
 
-def admin_menu():
+def admin_menu(user):
     while True:
         print("\n📋 Admin Menu:")
         print("1. Add Student")
@@ -117,5 +117,7 @@ def admin_menu():
           sort_students_by_course()
         else:
             print("❌ Invalid choice!")
-# ▶️ Start the portal
-main_login()
+
+if __name__ == "__main__":
+    main_login()
+

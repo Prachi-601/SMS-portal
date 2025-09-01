@@ -1,5 +1,6 @@
 import json
 
+# 🔐 Admin Login
 def admin_login():
     username = input("Enter admin username: ")
     password = input("Enter admin password: ")
@@ -11,39 +12,68 @@ def admin_login():
         for admin in admins.get("admins", []):
             if admin["username"] == username and admin["password"] == password:
                 print(f"✅ Welcome, {username}!")
-                return True
+                return admin  # Return full admin data
         
         print("❌ Invalid credentials. Please try again.")
-        return False
+        return None
 
     except FileNotFoundError:
         print("⚠️ Admins file not found.")
-        return False
+        return None
 
-def admin_menu():
-    while True:
-        print("\n📋 Admin Menu:")
-        print("1. Add Student")
-        print("2. View Students")
-        print("3. Search Student by ID")
-        print("4. Edit Student Record")
-        print("5. Delete Student")
-        print("6. Logout")
 
-        choice = input("Choose an option: ")
+# 👨‍🏫 Teacher Login
+def teacher_login():
+    username = input("Enter teacher username: ")
+    password = input("Enter teacher password: ")
 
-        if choice == "1":
-            add_student()           # from student.py
-        elif choice == "2":
-            view_students()         # from student.py
-        elif choice == "3":
-            search_student()        # 👈 you’ll define this in student.py
-        elif choice == "4":
-            edit_student()          # 👈 also goes in student.py
-        elif choice == "5":
-            delete_student()        # 👈 student.py again!
-        elif choice == "6":
-            print("👋 Logging out...")
-            break
-        else:
-            print("❌ Invalid choice!")
+    try:
+        with open("teachers.json", "r") as file:
+            teachers = json.load(file)
+
+        for teacher in teachers.get("teachers", []):
+            if teacher["username"] == username and teacher["password"] == password:
+                print(f"✅ Welcome, {username}!")
+                return teacher
+        
+        print("❌ Invalid credentials.")
+        return None
+
+    except FileNotFoundError:
+        print("⚠️ Teachers file not found.")
+        return None
+
+
+# 🎓 Student Login
+def student_login():
+    username = input("Enter student username: ")
+    password = input("Enter student password: ")
+
+    try:
+        with open("students.json", "r") as file:
+            students = json.load(file)
+
+        for student in students.get("students", []):
+            if student["username"] == username and student["password"] == password:
+                print(f"✅ Welcome, {username}!")
+                return student
+        
+        print("❌ Invalid credentials.")
+        return None
+
+    except FileNotFoundError:
+        print("⚠️ Students file not found.")
+        return None
+
+
+# 🔄 Unified Login Dispatcher
+def login(role):
+    if role == "admin":
+        return admin_login()
+    elif role == "teacher":
+        return teacher_login()
+    elif role == "student":
+        return student_login()
+    else:
+        print("❌ Invalid role.")
+        return None

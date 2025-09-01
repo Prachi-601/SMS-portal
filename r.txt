@@ -1,0 +1,19 @@
+🧠 Remaining Gaps
+Role-based login: No teacher_login() or student_login() yet
+
+Test & Marks Module: test.py still needs to be built
+
+Student Dashboard: dashboard.py not yet created
+
+Timetable ↔ Attendance Link: Attendance doesn’t auto-fetch subjects from schedule
+
+Refactor login/menu logic: auth.py, admin.py, and teacher.py have overlapping menus
+
+💡 Optional Next Steps (if you're interested)
+Filter students by department before marking attendance
+
+Add view attendance logs per student or per subject
+
+Include CSV export or graphical summary for attendance/test marks
+
+Add role-based access (e.g., HOD can view all departments)
