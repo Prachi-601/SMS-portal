@@ -19,6 +19,10 @@ def mark_attendance(teacher):
     scheduled_subject = get_current_subject_for_teacher(teacher)
 
     if scheduled_subject:
+        if scheduled_subject.lower() == "recess":
+            print("⛔ Cannot mark attendance during recess.")
+            return
+
         print(f"🕒 Scheduled subject right now: {scheduled_subject}")
         confirm = input("Do you want to mark attendance for this subject? (y/n): ").lower()
         if confirm == "y":
@@ -26,7 +30,7 @@ def mark_attendance(teacher):
         else:
             subject = input("Enter subject manually: ").strip()
     else:
-        print("⚠️ No subject scheduled for your department at this time.")
+        print("⚠️ No subject scheduled for your class at this time.")
         subject = input("Enter subject manually: ").strip()
 
     today = str(date.today())
@@ -62,3 +66,10 @@ def mark_attendance(teacher):
         json.dump(all_attendance, f, indent=4)
 
     print("✅ Attendance marked and saved successfully!")
+
+if __name__ == "__main__":
+    teacher = {
+        "username": "Sneha",
+        "class": "TYCS"
+    }
+    mark_attendance(teacher)

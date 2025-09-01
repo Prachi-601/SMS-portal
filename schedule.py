@@ -70,7 +70,7 @@ def get_current_subject_for_teacher(teacher):
             continue  # Skip malformed time slots
 
         if start <= current_time <= end:
-            class_name = teacher["department"]  # e.g., "TYCS"
+            class_name = teacher.get("class")  # e.g., "TYCS"
             scheduled_subject = slot.get(class_name)
             return scheduled_subject  # May be None or "Recess"
 

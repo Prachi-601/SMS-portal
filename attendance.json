@@ -1,26 +1,6 @@
 [
     {
-        "date": "2025-08-20",
-        "records": [
-            {
-                "id": 201,
-                "name": "Prachi Kavitkar",
-                "status": "P"
-            },
-            {
-                "id": 203,
-                "name": "Feezanoori Ansari",
-                "status": "A"
-            },
-            {
-                "id": 301,
-                "name": "Payal",
-                "status": "A"
-            }
-        ]
-    },
-    {
-        "date": "2025-08-30",
+        "date": "2025-09-01",
         "subject": "STQA",
         "teacher": "Sneha",
         "records": [
