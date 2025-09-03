@@ -1,10 +1,20 @@
 {
     "teachers": [
         {
-            "name": "Prachi Kavitkar",
-            "department": "CS Department",
+            "username": "Sneha",
+            "password": "Sneha23",
+            "name": "Sneha Singh",
+            "department": "TYCS",
             "post": "Assitant Professor",
-            "subject": "INS(Information and Network Secuirty)"
+            "subject": "STQA"
+        },
+        {
+            "username": "Prachi",
+            "password": "Prachi601",
+            "name": "Prachi Kavitkar",
+            "department": "IT/CS Department",
+            "post": "Assistant Professor",
+            "subject": "Python"
         }
     ]
 }

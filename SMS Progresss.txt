@@ -2,7 +2,11 @@
 Task	Status	Notes
 Project structure	✅ Completed	Modular layout: admin.py, teacher.py, student.py, etc.
 Login system	✅ Completed	auth.py handles admin_login() and teacher_login()
+<<<<<<< HEAD
 User data storage	✅ Completed	Stored in admins.json, teachers.json
+=======
+User data storage	✅ Completed	Stored in admins.json, teachers.json, students.json
+>>>>>>> 6e64e29deb96b952253d6aaa46c02de98dccd646
 Credential validation	✅ Completed	Admin triggers admin_menu()
 Admin interface	✅ Completed	add_teacher() functional
 Role-based menus	✅ Completed	admin_menu() and teacher_menu()
@@ -67,9 +71,19 @@ Admin adds teachers	✅ Completed	Via admin_menu()
 Teacher login	✅ Completed	Checks teachers.json
 Teacher menu	✅ Completed	Attendance, assignments, student view
 Teacher signup	🔜 Planned	To be added in main.py
+<<<<<<< HEAD
+=======
+Student login	✅ Completed	Validates against students.json
+Student signup	🔜 Planned	To be added in main.py — stores new student in students.json
+>>>>>>> 6e64e29deb96b952253d6aaa46c02de98dccd646
 HOD privilege	🔜 Planned	Role check: post == "HOD" before adding teachers
 🔍 Backend Remaining:
 
 Add teacher_signup() with validation
 
+<<<<<<< HEAD
+=======
+Add student_signup() with input checks and storage
+
+>>>>>>> 6e64e29deb96b952253d6aaa46c02de98dccd646
 Add HOD-based privilege check for teacher creation

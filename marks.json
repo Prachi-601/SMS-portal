@@ -1,0 +1,30 @@
+[
+    {
+        "student_id": 201,
+        "name": "Prachi Kavitkar",
+        "subject": "STQA",
+        "date": "2023-09-08",
+        "marks": 23.0
+    },
+    {
+        "student_id": 203,
+        "name": "Feezanoori Ansari",
+        "subject": "STQA",
+        "date": "2023-09-08",
+        "marks": 41.0
+    },
+    {
+        "student_id": 201,
+        "name": "Prachi Kavitkar",
+        "subject": "INS",
+        "date": "2025-09-02",
+        "marks": 24.0
+    },
+    {
+        "student_id": 203,
+        "name": "Feezanoori Ansari",
+        "subject": "INS",
+        "date": "2025-09-02",
+        "marks": 24.0
+    }
+]
