@@ -10,7 +10,7 @@ if not os.path.exists("admins.json") or os.stat("admins.json").st_size == 0:
 
 # 🧭 Main login menu
 def main_login():
-    print("\n🔐 Welcome to School Portal")
+    print("\n🔐 Welcome to Portal")
     print("1. Admin Login")
     print("2. Admin Signup")
     choice = input("Choose an option (1 or 2): ")
