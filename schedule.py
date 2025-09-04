@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import json
 import os
 from subjects import load_subjects  # Make sure you have subjects.py
@@ -54,9 +54,7 @@ def get_today_timetable_for_class(class_name):
 
     return class_schedule
 
-def get_current_subject_for_teacher(teacher):
-    from datetime import datetime
-
+def get_current_subject_for_teacher(teacher, selected_class):
     today = datetime.today().strftime('%d-%m-%Y')
     current_time = datetime.now().strftime('%H:%M')
 
@@ -70,8 +68,7 @@ def get_current_subject_for_teacher(teacher):
             continue  # Skip malformed time slots
 
         if start <= current_time <= end:
-            class_name = teacher.get("class")  # e.g., "TYCS"
-            scheduled_subject = slot.get(class_name)
+            scheduled_subject = slot.get(selected_class)
             return scheduled_subject  # May be None or "Recess"
 
     return None

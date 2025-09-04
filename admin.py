@@ -1,7 +1,8 @@
 import json
 import os
 from student import add_student, view_students, search_student,search_student_by_name, edit_student, edit_student_by_name,delete_specific_student_by_name,sort_students_by_course
-
+from dashboard import student_dashboard
+from attendance import get_monthly_attendance
 
 # 🔧 Create the JSON file if it doesn’t exist or is empty
 if not os.path.exists("admins.json") or os.stat("admins.json").st_size == 0:
@@ -33,11 +34,12 @@ def admin_login():
 
     for admin in admins:
         if admin["username"] == username and admin["password"] == password:
-            print("✅ Welcome, Principal!")
-            admin_menu()
+            print("✅ Welcome, Admin!")
+            admin_menu(admin)  # ← pass the admin object here
             return
 
     print("❌ Wrong credentials")
+
 
 # ✍️ Admin signup function
 def admin_signup():
@@ -66,7 +68,7 @@ def admin_signup():
 
     print("✅ Admin signup successful!")
 
-def admin_menu(user):
+def admin_menu(admin):
     while True:
         print("\n📋 Admin Menu:")
         print("1. Add Student")
@@ -76,6 +78,8 @@ def admin_menu(user):
         print("5. Delete Student")
         print("6. Logout")
         print("7. Sort Students by Class")
+        print("8. View Student Dashboard")  
+        print("9. View Monthly Attendance Summary")
 
 
         choice = input("Choose an option: ")
@@ -115,6 +119,21 @@ def admin_menu(user):
             break
         elif choice == "7":
           sort_students_by_course()
+        elif choice == "8":
+            student_name = input("Enter student name to view dashboard: ").strip()
+            student_dashboard(student_name)
+        elif choice == "9":
+            student_name = input("Enter full student name: ").strip()
+            month = int(input("Enter month (1–12): "))
+            year = int(input("Enter year (e.g., 2025): "))
+
+            from attendance import get_monthly_attendance
+            present, total = get_monthly_attendance(student_name, month, year)
+            percent = (present / total * 100) if total else 0
+
+            print(f"\n📊 Monthly Attendance for {student_name} ({month:02d}/{year}):")
+            print(f"✅ Present: {present}, 📅 Working Days: {total}")
+            print(f"📌 Attendance: {percent:.1f}%")
         else:
             print("❌ Invalid choice!")
 

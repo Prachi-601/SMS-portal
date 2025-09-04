@@ -5,6 +5,9 @@ from student import get_student_by_id
 from assignment import add_assignment, submit_assignment, view_submissions
 from test import schedule_test, add_marks, view_marks_by_student, view_marks_by_subject
 from schedule import create_timetable_for_class, view_timetable_for_class
+from dashboard import student_dashboard
+from attendance import get_monthly_attendance
+
 
 def teacher_login():
     username = input("Enter username: ").strip()
@@ -40,6 +43,9 @@ def add_teacher():
     department = input("Enter department: ").strip()
     post = input("Enter post (e.g., Assistant Professor, HOD): ").strip()
     subject = input("Enter subject taught: ").strip()
+    class_list = input("Enter classes assigned (comma-separated, e.g., TYCS,FYCS): ").strip().split(",")
+    class_list = [cls.strip() for cls in class_list if cls.strip()]
+
 
     for teacher in data["teachers"]:
         if teacher.get("username", "").lower() == username.lower():
@@ -52,7 +58,8 @@ def add_teacher():
         "name": name,
         "department": department,
         "post": post,
-        "subject": subject
+        "subject": subject,
+        "class_list": class_list
     }
 
     data["teachers"].append(new_teacher)
@@ -99,8 +106,10 @@ def teacher_menu(teacher):
         print("9. Add Marks")
         print("10. View Marks by Student")
         print("11. View Marks by Subject")
-        print("12. Create Timetable for Class")   # 🆕
-        print("13. View Timetable for Class")     # 🆕
+        print("12. Create Timetable for Class")  
+        print("13. View Timetable for Class")     
+        print("14. View Student Dashboard")  
+        print("15. View Monthly Attendance Summary")
 
         choice = input("Choose an option: ")
 
@@ -114,14 +123,12 @@ def teacher_menu(teacher):
             print("👋 Logging out...")
             break
         elif choice == "5":
-            subject = input("Enter subject: ")
-            deadline = input("Enter deadline (YYYY-MM-DD): ")
-            notes = input("Any notes/details to add? (optional): ")
-            confirm = input("Confirm assignment creation? (y/n): ").lower()
-            if confirm != "y":
-                print("❌ Cancelled.")
-                return
-            add_assignment(subject, deadline, notes)
+            subject = input("Enter subject name: ").strip()
+            class_name = input("Enter class (e.g., TYCS, BCOM): ").strip()
+            deadline = input("Enter deadline (YYYY-MM-DD): ").strip()
+            notes = input("Enter any notes (optional): ").strip()
+
+            add_assignment(subject, class_name, deadline, notes)
 
         elif choice == "6":
             student_id = input("Enter student ID: ").strip()
@@ -137,13 +144,12 @@ def teacher_menu(teacher):
                 return
 
             subject = input("Enter subject: ")
-            topic = input("Enter topic: ")
             confirm = input("Confirm submission? (y/n): ").lower()
             if confirm != "y":
                 print("❌ Cancelled.")
                 return
 
-            submit_assignment(student_id, subject, topic)
+            submit_assignment(student_id, subject)
         elif choice == "7":
             view_submissions()
         elif choice == "8":
@@ -156,15 +162,42 @@ def teacher_menu(teacher):
             view_marks_by_subject()
         elif choice == "12":
             date = input("Enter date (DD-MM-YYYY): ")
-            class_name = teacher["department"]  # Auto-fill based on teacher's department
+            print(f"Assigned classes: {', '.join(teacher['class_list'])}")
+            class_name = input("Enter class to manage: ").strip()
+ 
             create_timetable_for_class(date, class_name)
         elif choice == "13":
             date = input("Enter date (DD-MM-YYYY) or press Enter for today: ").strip()
-            class_name = teacher["department"]
-            view_timetable_for_class(class_name, date if date else None)
+            print(f"Assigned classes: {', '.join(teacher['class_list'])}")
+            class_name = input("Enter class to manage: ").strip()
 
+            view_timetable_for_class(class_name, date if date else None)
+        elif choice == "14":
+            student_name = input("Enter student name to view dashboard: ").strip()
+            student_dashboard(student_name)
+        elif choice == "15":
+            student_name = input("Enter full student name: ").strip()
+            month = int(input("Enter month (1–12): "))
+            year = int(input("Enter year (e.g., 2025): "))
+
+            from attendance import get_monthly_attendance
+            present, total = get_monthly_attendance(student_name, month, year)
+            percent = (present / total * 100) if total else 0
+
+            print(f"\n📊 Monthly Attendance for {student_name} ({month:02d}/{year}):")
+            print(f"✅ Present: {present}, 📅 Working Days: {total}")
+            print(f"📌 Attendance: {percent:.1f}%")
         else:
             print("❌ Invalid choice.")
+
+def get_student_class(student_name):
+    import json
+    with open("students.json", "r") as f:
+        students = json.load(f).get("students", [])
+    for student in students:
+        if student["name"].strip().lower() == student_name.strip().lower():
+            return student["class"]
+    return None
 
 if __name__ == "__main__":
     teacher = teacher_login()

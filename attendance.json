@@ -1,8 +1,9 @@
 [
     {
-        "date": "2025-09-01",
+        "date": "2025-09-03",
         "subject": "STQA",
         "teacher": "Sneha",
+        "class": "TYCS",
         "records": [
             {
                 "id": 201,
@@ -13,11 +14,24 @@
                 "id": 203,
                 "name": "Feezanoori Ansari",
                 "status": "A"
+            }
+        ]
+    },
+    {
+        "date": "2025-09-04",
+        "subject": "STQA",
+        "teacher": "Sneha",
+        "class": "TYCS",
+        "records": [
+            {
+                "id": 201,
+                "name": "Prachi Kavitkar",
+                "status": "P"
             },
             {
-                "id": 301,
-                "name": "Payal",
-                "status": "A"
+                "id": 203,
+                "name": "Feezanoori Ansari",
+                "status": "P"
             }
         ]
     }

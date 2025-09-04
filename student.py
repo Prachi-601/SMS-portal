@@ -237,7 +237,16 @@ def sort_students_by_course():
     for student in sorted_students:
         print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
 
+def get_student_id_by_name(name):
+    with open("students.json", "r") as f:
+        students = json.load(f)
+    for student in students:
+        if student["name"].lower() == name.lower():
+            return student["id"]
+    return None
+
 
 # Direct testing
 if __name__ == "__main__":
     add_student()
+    
