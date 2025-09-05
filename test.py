@@ -139,3 +139,27 @@ def get_test_marks_by_name(name):
         m for m in marks_data
         if name in m.get("name", "").strip().lower()
     ]
+
+if __name__ == "__main__":
+    name = input("Enter student name to check test marks: ").strip()
+    marks = get_test_marks_by_name(name)
+    print(f"\n📊 Test Marks for {name}:")
+    if marks:
+        for m in marks:
+            print(f"Subject: {m['subject']}, Date: {m['date']}, Marks: {m['marks']}")
+    else:
+        print("No test marks found.")
+
+def get_test_marks_by_name(name):
+    name = name.strip().lower()
+
+    try:
+        with open("marks.json", "r") as f:
+            marks_data = json.load(f)
+    except FileNotFoundError:
+        return []
+
+    return [
+        m for m in marks_data
+        if name in m.get("name", "").strip().lower()
+    ]

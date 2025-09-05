@@ -65,6 +65,55 @@ def student_login():
         print("⚠️ Students file not found.")
         return None
 
+def get_teacher_by_username(username):
+    try:
+        with open("teachers.json", "r") as f:
+            data = json.load(f)
+            for teacher in data.get("teachers", []):
+                if teacher["username"] == username:
+                    return teacher
+    except FileNotFoundError:
+        print("⚠️ Teacher records not found.")
+    return None
+
+def teacher_signup(hod_verified=True):
+    if not hod_verified:
+        print("❌ Access denied. Only HOD can create teacher accounts.")
+        return
+
+    username = input("Enter teacher username: ").strip()
+    password = input("Enter password (min 6 chars): ").strip()
+    name = input("Enter full name: ").strip()
+    subjects = input("Enter subjects (comma-separated): ").strip()
+
+    if len(password) < 6:
+        print("⚠️ Password too short.")
+        return
+
+    new_teacher = {
+        "username": username,
+        "password": password,
+        "name": name,
+        "subjects": [s.strip() for s in subjects.split(",")]
+    }
+
+    try:
+        with open("teachers.json", "r") as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        data = {"teachers": []}
+
+    for teacher in data["teachers"]:
+        if teacher["username"] == username:
+            print("⚠️ Username already exists.")
+            return
+
+    data["teachers"].append(new_teacher)
+
+    with open("teachers.json", "w") as file:
+        json.dump(data, file, indent=4)
+
+    print(f"✅ Teacher account for {name} created successfully.")
 
 # 🔄 Unified Login Dispatcher
 def login(role):
