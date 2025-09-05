@@ -3,11 +3,27 @@
         {
             "username": "Sneha",
             "password": "Sneha23",
-            "name": "Sneha Singh",
-            "department": "IT and CS Department",
-            "post": "Assitant Professor",
+            "name": "Sneha Kolge",
+            "department": "IT/CS department",
+            "post": "Asssitant Professor",
             "subject": "STQA",
-            "class_list": ["TYCS", "FYCS"]
+            "class_list": [
+                "TYCS",
+                "FYCS",
+                "SYCS"
+            ]
+        },
+        {
+            "username": "Prachi",
+            "password": "Prachi601",
+            "name": "Prachi Kavitkar",
+            "department": "Commerce Department",
+            "post": "Assistant Professor",
+            "subject": "Business Law",
+            "class_list": [
+                "TYBCOM",
+                "FYBCOM"
+            ]
         }
     ]
 }

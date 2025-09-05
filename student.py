@@ -2,32 +2,43 @@ import json
 from assignment_views import view_assignments, view_submissions_by_id, show_pending_assignments
 from schedule import view_timetable_for_class
 from test import view_marks_by_student
+
 def add_student():
     try:
         with open("students.json", "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
+            raw = json.load(f)
+            data = raw if isinstance(raw, dict) else {"students": raw}
+    except (FileNotFoundError, json.JSONDecodeError):
         data = {"students": []}
+
 
     try:
         student_id = int(input("Enter student ID: ").strip())
     except ValueError:
-        print("❌ Invalid ID format. Please enter digits only.")
+        print("❌ Invalid ID format.")
         return
 
     name = input("Enter student name: ").strip()
     student_class = input("Enter class: ").strip()
+    username = input("Create username: ").strip()
+    password = input("Create password: ").strip()
 
     for student in data["students"]:
         if student["id"] == student_id:
-            print("⚠️ Student ID already exists. Try another.")
+            print("⚠️ Student ID already exists.")
+            return
+        if student["username"].lower() == username.lower():
+            print("⚠️ Username already taken.")
             return
 
     new_student = {
         "id": student_id,
         "name": name,
-        "class": student_class
+        "class": student_class,
+        "username": username,
+        "password": password
     }
+
     data["students"].append(new_student)
 
     with open("students.json", "w") as f:
@@ -36,24 +47,27 @@ def add_student():
     print("✅ Student added successfully!")
 
 def view_students():
+    class_filter = input("Enter class to filter (or press Enter to view all): ").strip()
+    
     try:
         with open("students.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ No student data found.")
         return
 
     students = data.get("students", [])
+    if class_filter:
+        students = [s for s in students if s.get("class", "").lower() == class_filter.lower()]
+
     if not students:
         print("ℹ️ No student records available.")
         return
 
     print("\n📚 Student Records:")
-    print("-" * 30)
     for student in students:
         print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
-    print("-" * 30)
-    print(f"Total students: {len(students)}\n")
+    print(f"Total students: {len(students)}")
 
 def search_student():
     try:
@@ -64,86 +78,65 @@ def search_student():
 
     try:
         with open("students.json", "r") as f:
-            students = json.load(f)
-
-        for student in students.get("students", []):
-            if student["id"] == student_id:
-                print("\n🎓 Student Found:")
-                print(f"ID: {student['id']}")
-                print(f"Name: {student['name']}")
-                print(f"Class: {student['class']}")
-                return
-
-        print("❌ Student not found.")
-
-    except FileNotFoundError:
+            students = json.load(f).get("students", [])
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ Student records file not found.")
+        return
 
-def get_student_by_id(student_id):
-    try:
-        with open("students.json", "r") as f:
-            data = json.load(f)
-            for student in data.get("students", []):
-                if student.get("id") == student_id:
-                    return student
-    except FileNotFoundError:
-        return None
-    return None
+    for student in students:
+        if student["id"] == student_id:
+            print(f"\n🎓 Student Found:\nID: {student['id']}\nName: {student['name']}\nClass: {student['class']}")
+            return
+
+    print("❌ Student not found.")
 
 def search_student_by_name():
     name_input = input("Enter student name to search: ").strip().lower()
 
     try:
         with open("students.json", "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
+            students = json.load(f).get("students", [])
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ Student records file not found.")
         return
 
-    matched_students = []
-    for student in data.get("students", []):
-        if name_input in student["name"].strip().lower():
-            matched_students.append(student)
-
-    if matched_students:
-        for student in matched_students:
-            print("\n🎓 Student Found:")
-            print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
+    matched = [s for s in students if name_input in s["name"].strip().lower()]
+    if matched:
+        for student in matched:
+            print(f"\n🎓 Match Found:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
     else:
         print("❌ No matching student found.")
 
 def edit_student():
-    student_id = input("Enter student ID to edit: ")
-    
     try:
-        student_id = int(student_id)
+        student_id = int(input("Enter student ID to edit: "))
     except ValueError:
-        print("❌ Invalid ID. Please enter a numeric value.")
+        print("❌ Invalid ID format.")
         return
 
-    with open("students.json", "r") as f:
-        data = json.load(f)
-        students = data["students"]
+    try:
+        with open("students.json", "r") as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("⚠️ Student records file not found.")
+        return
 
+    students = data.get("students", [])
     for student in students:
         if student["id"] == student_id:
             print(f"\n🎓 Current Record:\nID: {student['id']}\nName: {student['name']}\nClass: {student['class']}")
-            choice = input("\nWhat would you like to edit?\n1. Name\n2. Class\nChoose (1/2): ")
-
+            choice = input("Edit (1) Name or (2) Class: ").strip()
             if choice == "1":
-                new_name = input("Enter new name: ")
-                student["name"] = new_name
+                student["name"] = input("Enter new name: ").strip()
             elif choice == "2":
-                new_class = input("Enter new class: ")
-                student["class"] = new_class
+                student["class"] = input("Enter new class: ").strip()
             else:
                 print("❌ Invalid choice.")
                 return
 
             with open("students.json", "w") as f:
                 json.dump(data, f, indent=4)
-
-            print("✅ Student record updated successfully.")
+            print("✅ Student record updated.")
             return
 
     print("❌ Student not found.")
@@ -154,92 +147,101 @@ def edit_student_by_name():
     try:
         with open("students.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ Student records file not found.")
         return
 
     students = data.get("students", [])
-    matched_students = [
-        student for student in students
-        if name_input in student["name"].strip().lower()
-    ]
-
-    if not matched_students:
+    matched = [s for s in students if name_input in s["name"].strip().lower()]
+    if not matched:
         print("❌ No matching student found.")
         return
 
-    for student in matched_students:
+    for student in matched:
         print(f"\n🎓 Match Found:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
-        confirm = input("Do you want to edit this student? (Y/N): ").strip().lower()
+        confirm = input("Edit this student? (y/n): ").strip().lower()
         if confirm == "y":
-            choice = input("\nWhat would you like to edit?\n1. Name\n2. Class\nChoose (1/2): ")
+            choice = input("Edit (1) Name or (2) Class: ").strip()
             if choice == "1":
-                student["name"] = input("Enter new name: ")
+                student["name"] = input("Enter new name: ").strip()
             elif choice == "2":
-                student["class"] = input("Enter new class: ")
+                student["class"] = input("Enter new class: ").strip()
             else:
                 print("❌ Invalid choice.")
                 return
 
             with open("students.json", "w") as f:
                 json.dump(data, f, indent=4)
-
-            print("✅ Student record updated successfully.")
+            print("✅ Student record updated.")
             return
 
-    print("ℹ️ No edits made.")
-
 def delete_specific_student_by_name():
-    name_input = input("Enter the student name to delete: ").strip().lower()
+    name_input = input("Enter student name to delete: ").strip().lower()
 
     try:
         with open("students.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ Student records file not found.")
         return
 
     students = data.get("students", [])
-    matched_students = [
-        student for student in students
-        if name_input in student["name"].strip().lower()
-    ]
-
-    if not matched_students:
-        print("❌ No student found with that name.")
+    matched = [s for s in students if name_input in s["name"].strip().lower()]
+    if not matched:
+        print("❌ No student found.")
         return
 
-    for student in matched_students:
-        print("\n👁 Found Student:")
-        print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
-
-        confirm = input("\n⚠️ Do you want to delete this student? (Y/N): ").strip().lower()
+    for student in matched:
+        print(f"\n👁 Found Student:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
+        confirm = input("Delete this student? (y/n): ").strip().lower()
         if confirm == "y":
             students.remove(student)
             with open("students.json", "w") as f:
                 json.dump({"students": students}, f, indent=4)
-            print("✅ Student deleted successfully.")
-            return
-        else:
-            print("ℹ️ Deletion cancelled.")
+            print("✅ Student deleted.")
             return
 
-def sort_students_by_course():
+def get_student_by_id(student_id):
     try:
         with open("students.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
-        print("⚠️ Student records file not found.")
-        return
+            for student in data.get("students", []):
+                if student.get("id") == student_id:
+                    return student
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    return None
 
-    students = data.get("students", [])
-    sorted_students = sorted(students, key=lambda x: x["class"])
+def student_menu(student):
+    while True:
+        print(f"\n🎓 Welcome, {student['name']}!")
+        print("1. View Assignments")
+        print("2. View Submissions")
+        print("3. View Pending Assignments")
+        print("4. View Timetable")
+        print("5. View Test Marks")
+        print("6. Logout")
 
-    print("\n📊 Students Sorted by Class:")
-    for student in sorted_students:
-        print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
+        choice = input("Choose an option: ").strip()
 
-
-# Direct testing
-if __name__ == "__main__":
-    add_student()
+        if choice == "1":
+            view_assignments(student)
+        elif choice == "2":
+            submissions = view_submissions_by_id(student["id"])
+            if submissions:
+                print("\n📤 Your Submissions:")
+                for sub in submissions:
+                    print(f"- Class: {sub.get('class', 'Unknown')}, Subject: {sub['subject']}, Date: {sub.get('date', sub.get('submitted_on', 'Unknown'))}")
+            else:
+                print("📭 No submissions found.")
+        elif choice == "3":
+            show_pending_assignments(student["id"])
+        elif choice == "4":
+            view_timetable_for_class(student["class"])
+        elif choice == "5":
+            view_marks_by_student(student["id"])
+        elif choice == "6":
+            print("👋 Logging out...")
+            break
+        else:
+            print("❌ Invalid choice.")

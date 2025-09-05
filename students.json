@@ -2,28 +2,38 @@
     "students": [
         {
             "id": 201,
-            "name": "Prachi Kavitkar",
-            "class": "TYCS"
-        },
-        {
-            "id": 203,
-            "name": "Feezanoori Ansari",
-            "class": "TYCS"
+            "name": "Prachi Bhagwan Kavitkar",
+            "class": "TYCS",
+            "username": "Prachi.201",
+            "password": "Prachi201"
         },
         {
             "id": 301,
-            "name": "Payal",
-            "class": "BCom"
-        },
-        {
-            "id": 204,
-            "name": "Ram",
-            "class": "Bcom"
+            "name": "Payal Prajapati",
+            "class": "TYBCOM",
+            "username": "Payal.301",
+            "password": "Payal301"
         },
         {
             "id": 401,
-            "name": "Anushka Sharma",
-            "class": "BMS"
+            "name": "Ram Tiwari",
+            "class": "FYCS",
+            "username": "Ram.401",
+            "password": "Ram401"
+        },
+        {
+            "id": 402,
+            "name": "Anmol Shukla",
+            "class": "TYBMS",
+            "username": "Ram.402",
+            "password": "Ram402"
+        },
+        {
+            "id": 403,
+            "name": "Ram Singh",
+            "class": "FYCS",
+            "username": "Ram.403",
+            "password": "Ram403"
         }
     ]
 }

@@ -2,69 +2,65 @@ import json
 
 # 🔐 Admin Login
 def admin_login():
-    username = input("Enter admin username: ")
-    password = input("Enter admin password: ")
+    username = input("Enter admin username: ").strip()
+    password = input("Enter admin password: ").strip()
 
     try:
         with open("admins.json", "r") as file:
             admins = json.load(file)
-
-        for admin in admins.get("admins", []):
-            if admin["username"] == username and admin["password"] == password:
-                print(f"✅ Welcome, {username}!")
-                return admin  # Return full admin data
-        
-        print("❌ Invalid credentials. Please try again.")
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("⚠️ Admins file not found or corrupted.")
         return None
 
-    except FileNotFoundError:
-        print("⚠️ Admins file not found.")
-        return None
+    for admin in admins.get("admins", []):
+        if admin["username"] == username and admin["password"] == password:
+            print(f"✅ Welcome, {username}!")
+            return admin
 
+    print("❌ Invalid credentials.")
+    return None
 
-# 👨‍🏫 Teacher Login
 def teacher_login():
-    username = input("Enter teacher username: ")
-    password = input("Enter teacher password: ")
+    username = input("Enter teacher username: ").strip()
+    password = input("Enter teacher password: ").strip()
 
     try:
         with open("teachers.json", "r") as file:
-            teachers = json.load(file)
-
-        for teacher in teachers.get("teachers", []):
-            if teacher["username"] == username and teacher["password"] == password:
-                print(f"✅ Welcome, {username}!")
-                return teacher
-        
-        print("❌ Invalid credentials.")
+            raw = json.load(file)
+            teachers = raw if isinstance(raw, dict) else {"teachers": raw}
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("⚠️ Teachers file not found or corrupted.")
         return None
 
-    except FileNotFoundError:
-        print("⚠️ Teachers file not found.")
-        return None
+    for teacher in teachers.get("teachers", []):
+        if teacher["username"] == username and teacher["password"] == password:
+            print(f"✅ Welcome, {teacher['name']}!")
+            return teacher
 
+    print("❌ Invalid credentials.")
+    return None
 
 # 🎓 Student Login
 def student_login():
-    username = input("Enter student username: ")
-    password = input("Enter student password: ")
+    username = input("Enter student username: ").strip()
+    password = input("Enter student password: ").strip()
 
     try:
         with open("students.json", "r") as file:
             students = json.load(file)
-
-        for student in students.get("students", []):
-            if student["username"] == username and student["password"] == password:
-                print(f"✅ Welcome, {username}!")
-                return student
-        
-        print("❌ Invalid credentials.")
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("⚠️ Students file not found or corrupted.")
         return None
 
-    except FileNotFoundError:
-        print("⚠️ Students file not found.")
-        return None
+    for student in students.get("students", []):
+        if student["username"] == username and student["password"] == password:
+            print(f"✅ Welcome, {student['name']}!")
+            return student
 
+    print("❌ Invalid credentials.")
+    return None
+
+# 🔍 Get teacher by username
 def get_teacher_by_username(username):
     try:
         with open("teachers.json", "r") as f:
@@ -72,10 +68,11 @@ def get_teacher_by_username(username):
             for teacher in data.get("teachers", []):
                 if teacher["username"] == username:
                     return teacher
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ Teacher records not found.")
     return None
 
+# 🆕 Teacher Signup (HOD only)
 def teacher_signup(hod_verified=True):
     if not hod_verified:
         print("❌ Access denied. Only HOD can create teacher accounts.")
@@ -100,7 +97,7 @@ def teacher_signup(hod_verified=True):
     try:
         with open("teachers.json", "r") as file:
             data = json.load(file)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         data = {"teachers": []}
 
     for teacher in data["teachers"]:
@@ -126,3 +123,11 @@ def login(role):
     else:
         print("❌ Invalid role.")
         return None
+
+# 🧪 CLI block
+if __name__ == "__main__":
+    print("🔐 Login Test")
+    role = input("Login as (admin/teacher/student): ").strip().lower()
+    user = login(role)
+    if user:
+        print(f"✅ Logged in as {role}: {user.get('name', user.get('username'))}")

@@ -1,25 +1,19 @@
 import json
 from datetime import datetime
-from student import get_student_by_id
+from utils import get_student_by_id
 
 def add_assignment(class_name, subject, deadline):
-    from datetime import datetime
-    import json
-
-def add_assignment(subject, topic, deadline):
     assignment = {
         "class": class_name,
         "subject": subject,
-        "topic": topic,
         "deadline": deadline,
-        "notes": notes,
         "created_on": str(datetime.now().date())
     }
 
     try:
         with open("assignments.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         data = []
 
     data.append(assignment)
@@ -29,33 +23,58 @@ def add_assignment(subject, topic, deadline):
 
     print("✅ Assignment added successfully.")
 
-def view_assignments():
+def view_assignments(student_id=None):
     try:
         with open("assignments.json", "r") as f:
-            data = json.load(f)
-            for a in data:
-                print(f"Subject: {a['subject']}, Topic: {a['topic']}, Deadline: {a['deadline']}")
-    except FileNotFoundError:
-        print("No assignments found.")
+            assignments = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("⚠️ No assignments found.")
+        return
 
-def submit_assignment(student_id, subject, topic):
+    # Load submissions if student_id is provided
+    submitted_subjects = set()
+    if student_id is not None:
+        try:
+            with open("assignment_submissions.json", "r") as f:
+                submissions = json.load(f)
+            submitted_subjects = {
+                s["subject"].lower()
+                for s in submissions
+                if str(s["student_id"]) == str(student_id)
+            }
+        except (FileNotFoundError, json.JSONDecodeError):
+            submitted_subjects = set()
+
+    for a in assignments:
+        status = ""
+        if student_id is not None:
+            status = "✅ Submitted" if a["subject"].lower() in submitted_subjects else "🕒 Pending"
+        print(f"Class: {a['class']}, Subject: {a['subject']}, Deadline: {a['deadline']} {status}")
+
+def submit_assignment(student_id, subject):
+    student = get_student_by_id(student_id)
+    if not student:
+        print("❌ Student not found.")
+        return
+
+    student_class = student["class"]
+    today = str(datetime.now().date())
+
     submission = {
         "class": student_class,
         "student_id": student_id,
         "subject": subject,
-        "submitted_on": str(datetime.now().date())
+        "submitted_on": today
     }
 
-    # Step 4: Save to assignment_submissions.json
     try:
         with open("assignment_submissions.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         data = []
 
-    # Optional: prevent duplicate submission
     for s in data:
-        if s["student_id"] == student_id and s["subject"] == subject:
+        if s["student_id"] == student_id and s["subject"].lower() == subject.lower():
             print("⚠️ Submission already recorded for this subject.")
             return
 
@@ -66,29 +85,74 @@ def submit_assignment(student_id, subject, topic):
 
     print(f"✅ Submission recorded for Student ID: {student_id}")
 
-def view_submissions():
+def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
     try:
         with open("assignment_submissions.json", "r") as f:
             submissions = json.load(f)
-    except FileNotFoundError:
-        return 0
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("📭 No submissions found.")
+        return []
 
-    count = sum(
-        1 for s in submissions
-        if s.get("student_id") in matched_ids
-    )
+    filtered = [s for s in submissions if str(s.get("student_id")) == str(student_id)]
 
-    return count
+    if subject_filter:
+        filtered = [s for s in filtered if s.get("subject", "").strip().lower() == subject_filter.strip().lower()]
+    if date_filter:
+        filtered = [s for s in filtered if s.get("submitted_on", "").strip() == date_filter.strip()]
 
-# ✅ Get total number of assignments
-def get_total_assignments():
+    return [
+        {
+            "class": s["class"],
+            "subject": s["subject"],
+            "date": s["submitted_on"]
+        }
+        for s in filtered
+    ]
+
+def get_total_assignments_by_class(class_name):
     try:
         with open("assignments.json", "r") as f:
             data = json.load(f)
-            # Sort by submitted_on date
-            sorted_data = sorted(data, key=lambda x: x["submitted_on"])
-            for s in sorted_data:
-                print(f"Student ID: {s['student_id']}, Subject: {s['subject']}, Topic: {s['topic']}, Submitted on: {s['submitted_on']}")
-    except FileNotFoundError:
-        print("No submissions found.")
+    except (FileNotFoundError, json.JSONDecodeError):
+        return 0
 
+    return sum(1 for a in data if a.get("class", "").lower() == class_name.lower())
+
+def get_assignment_summary_by_name(name):
+    try:
+        with open("assignments.json", "r") as f:
+            assignments = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+    summary = [
+        a for a in assignments
+        if name.strip().lower() in a.get("subject", "").strip().lower()
+    ]
+    return summary
+
+# ✅ CLI block for testing
+if __name__ == "__main__":
+    print("📘 Assignment Module Test")
+    print("1. Add Assignment")
+    print("2. View Assignments")
+    print("3. Submit Assignment")
+    choice = input("Choose an option: ").strip()
+
+    if choice == "1":
+        class_name = input("Class: ")
+        subject = input("Subject: ")
+        deadline = input("Deadline (YYYY-MM-DD): ")
+        add_assignment(class_name, subject, deadline)
+
+    elif choice == "2":
+        view_assignments()
+
+    elif choice == "3":
+        try:
+            student_id = int(input("Student ID: "))
+        except ValueError:
+            print("❌ Invalid ID format.")
+        else:
+            subject = input("Subject: ")
+            submit_assignment(student_id, subject)

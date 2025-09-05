@@ -7,10 +7,17 @@
         "CF"
     ],
     "FYCS": [
-        "Python",
-        "java",
-        "DSA",
-        "Lnuinux",
-        "Computer Networks"
+        "PYTHON",
+        "JAVA",
+        "LINUX",
+        "COMPUTER NETWORKS",
+        "DSA"
+    ],
+    "TYBCOM": [
+        "Business Law",
+        "Tax",
+        "Computer",
+        "Excel",
+        "Tally"
     ]
 }

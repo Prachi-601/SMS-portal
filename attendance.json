@@ -1,36 +1,13 @@
 [
     {
-        "date": "2025-09-03",
-        "subject": "STQA",
-        "teacher": "Sneha",
-        "class": "TYCS",
+        "date": "2025-09-05",
+        "subject": "Business Law",
+        "teacher": "Prachi",
+        "class": "TYBCOM",
         "records": [
             {
-                "id": 201,
-                "name": "Prachi Kavitkar",
-                "status": "P"
-            },
-            {
-                "id": 203,
-                "name": "Feezanoori Ansari",
-                "status": "A"
-            }
-        ]
-    },
-    {
-        "date": "2025-09-04",
-        "subject": "STQA",
-        "teacher": "Sneha",
-        "class": "TYCS",
-        "records": [
-            {
-                "id": 201,
-                "name": "Prachi Kavitkar",
-                "status": "P"
-            },
-            {
-                "id": 203,
-                "name": "Feezanoori Ansari",
+                "id": 301,
+                "name": "Payal Prajapati",
                 "status": "P"
             }
         ]

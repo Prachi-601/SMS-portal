@@ -1,8 +1,18 @@
 import json
+from datetime import datetime
+from utils import get_student_by_id
+
+
 def schedule_test():
     class_name = input("Enter class name: ").strip()
     subject = input("Enter subject: ").strip()
     test_date = input("Enter test date (YYYY-MM-DD): ").strip()
+
+    try:
+        datetime.strptime(test_date, "%Y-%m-%d")
+    except ValueError:
+        print("❌ Invalid date format.")
+        return
 
     test = {
         "class": class_name,
@@ -13,8 +23,13 @@ def schedule_test():
     try:
         with open("tests.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         data = []
+
+    for t in data:
+        if t["class"] == class_name and t["subject"] == subject and t["date"] == test_date:
+            print("⚠️ Test already scheduled.")
+            return
 
     data.append(test)
 
@@ -23,7 +38,6 @@ def schedule_test():
 
     print("✅ Test scheduled successfully.")
 
-
 def add_marks():
     subject = input("Enter subject: ").strip()
     test_date = input("Enter test date (YYYY-MM-DD): ").strip()
@@ -31,15 +45,14 @@ def add_marks():
     try:
         with open("students.json", "r") as f:
             students = json.load(f).get("students", [])
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ No student data found.")
         return
 
-    # Filter students by class based on scheduled test
     try:
         with open("tests.json", "r") as f:
             tests = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ No test schedule found.")
         return
 
@@ -75,7 +88,7 @@ def add_marks():
     try:
         with open("marks.json", "r") as f:
             existing = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         existing = []
 
     existing.extend(marks_data)
@@ -85,18 +98,18 @@ def add_marks():
 
     print("✅ Marks recorded successfully.")
 
-
-def view_marks_by_student():
-    student_id = input("Enter student ID: ").strip()
+def view_marks_by_student(student_id=None):
+    if student_id is None:
+        student_id = input("Enter student ID: ").strip()
 
     try:
         with open("marks.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ No marks data found.")
         return
 
-    found = [m for m in data if str(m["student_id"]) == student_id]
+    found = [m for m in data if str(m["student_id"]) == str(student_id)]
 
     if not found:
         print("❌ No marks found for this student.")
@@ -112,7 +125,7 @@ def view_marks_by_subject():
     try:
         with open("marks.json", "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ No marks data found.")
         return
 
@@ -132,7 +145,7 @@ def get_test_marks_by_name(name):
     try:
         with open("marks.json", "r") as f:
             marks_data = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         return []
 
     return [
@@ -140,26 +153,29 @@ def get_test_marks_by_name(name):
         if name in m.get("name", "").strip().lower()
     ]
 
-if __name__ == "__main__":
-    name = input("Enter student name to check test marks: ").strip()
-    marks = get_test_marks_by_name(name)
-    print(f"\n📊 Test Marks for {name}:")
-    if marks:
-        for m in marks:
-            print(f"Subject: {m['subject']}, Date: {m['date']}, Marks: {m['marks']}")
-    else:
-        print("No test marks found.")
-
-def get_test_marks_by_name(name):
-    name = name.strip().lower()
-
+def view_all_tests():
     try:
-        with open("marks.json", "r") as f:
-            marks_data = json.load(f)
-    except FileNotFoundError:
-        return []
+        with open("tests.json", "r") as f:
+            tests = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("⚠️ No tests found.")
+        return
 
-    return [
-        m for m in marks_data
-        if name in m.get("name", "").strip().lower()
-    ]
+    print("\n🗓️ Scheduled Tests:")
+    for t in tests:
+        print(f"- Class: {t['class']}, Subject: {t['subject']}, Date: {t['date']}")
+
+# ✅ CLI block
+if __name__ == "__main__":
+    print("📘 Test Module")
+    print("1. Schedule Test")
+    print("2. Add Marks")
+    print("3. View All Tests")
+    choice = input("Choose: ").strip()
+
+    if choice == "1":
+        schedule_test()
+    elif choice == "2":
+        add_marks()
+    elif choice == "3":
+        view_all_tests()
