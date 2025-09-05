@@ -1,5 +1,7 @@
 import json
-
+from assignment_views import view_assignments, view_submissions_by_id, show_pending_assignments
+from schedule import view_timetable_for_class
+from test import view_marks_by_student
 def add_student():
     try:
         with open("students.json", "r") as f:
@@ -237,7 +239,40 @@ def sort_students_by_course():
     for student in sorted_students:
         print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
 
+def student_menu():
+    name = input("Enter your full name: ").strip()
+
+    while True:
+        print("\n🎓 Student Menu:")
+        print("1. View Assignments")
+        print("2. View Submitted Assignments")
+        print("3. View Pending Assignments")
+        print("4. View Timetable")
+        print("5. View Test Marks")
+        print("6. View Monthly Attendance")
+        print("7. Logout")
+
+        choice = input("Choose an option: ").strip()
+
+        if choice == "1":
+            view_assignments(name)
+        elif choice == "2":
+            view_submissions_by_id(student_id, caller="student")
+        elif choice == "3":
+            show_pending_assignments(student_id)
+        elif choice == "4":
+            view_timetable_for_class(class_name, date=None)
+        elif choice == "5":
+             view_marks_by_student(name)
+        elif choice == "6":
+            pass  # get_monthly_attendance(name, month, year)
+        elif choice == "7":
+            print("👋 Logging out...")
+            break
+        else:
+            print("❌ Invalid choice.")
 
 # Direct testing
 if __name__ == "__main__":
-    add_student()
+    # add_student()
+    student_menu()

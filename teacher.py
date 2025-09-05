@@ -1,8 +1,7 @@
 import json
-from student import view_students
+from student import view_students, get_student_by_id
 from attendance import mark_attendance
-from student import get_student_by_id
-from assignment import add_assignment, submit_assignment, view_submissions
+from assignment import add_assignment, submit_assignment, view_submissions_by_id
 from test import schedule_test, add_marks, view_marks_by_student, view_marks_by_subject
 from schedule import create_timetable_for_class, view_timetable_for_class
 
@@ -99,8 +98,8 @@ def teacher_menu(teacher):
         print("9. Add Marks")
         print("10. View Marks by Student")
         print("11. View Marks by Subject")
-        print("12. Create Timetable for Class")   # 🆕
-        print("13. View Timetable for Class")     # 🆕
+        print("12. Create Timetable for Class")
+        print("13. View Timetable for Class")
 
         choice = input("Choose an option: ")
 
@@ -114,15 +113,12 @@ def teacher_menu(teacher):
             print("👋 Logging out...")
             break
         elif choice == "5":
-            subject = input("Enter subject: ")
-            deadline = input("Enter deadline (YYYY-MM-DD): ")
-            notes = input("Any notes/details to add? (optional): ")
+            class_name = input("Enter class (e.g. TYCS): ").strip()
+            subject = input("Enter subject: ").strip()
+            deadline = input("Enter deadline (YYYY-MM-DD): ").strip()
             confirm = input("Confirm assignment creation? (y/n): ").lower()
-            if confirm != "y":
-                print("❌ Cancelled.")
-                return
-            add_assignment(subject, deadline, notes)
-
+            if confirm == "y":
+                add_assignment(class_name, subject, deadline)
         elif choice == "6":
             student_id = input("Enter student ID: ").strip()
             try:
@@ -130,22 +126,40 @@ def teacher_menu(teacher):
             except ValueError:
                 print("❌ Invalid ID format.")
                 return
-
             student = get_student_by_id(student_id)
             if not student:
                 print("❌ Student ID not found.")
                 return
-
             subject = input("Enter subject: ")
-            topic = input("Enter topic: ")
             confirm = input("Confirm submission? (y/n): ").lower()
             if confirm != "y":
                 print("❌ Cancelled.")
                 return
-
-            submit_assignment(student_id, subject, topic)
+            submit_assignment(student_id, subject)
         elif choice == "7":
-            view_submissions()
+            student_id = input("Enter student ID to view submissions: ").strip()
+            try:
+                student_id = int(student_id)
+                student = get_student_by_id(student_id)
+                subject_filter = input("Filter by subject (press Enter to skip): ").strip()
+                date_filter = input("Filter by date (YYYY-MM-DD, press Enter to skip): ").strip()
+
+                submissions = view_submissions_by_id(student_id, subject_filter, date_filter)
+
+                if student:
+                    print(f"\n📤 Submitted Assignments for {student['name']} (ID {student_id}):")
+                else:
+                    print(f"\n📤 Submitted Assignments for Student ID {student_id}:")
+
+                if not submissions:
+                    print("No submissions found.")
+                else:
+                    for sub in submissions:
+                        print(f"- Class: {sub['class']}, Subject: {sub['subject']}, Submitted on: {sub['date']}")
+                    print(f"\n🧾 Total submissions: {len(submissions)}")
+
+            except ValueError:
+                print("❌ Invalid student ID format.")
         elif choice == "8":
             schedule_test()
         elif choice == "9":
@@ -155,14 +169,16 @@ def teacher_menu(teacher):
         elif choice == "11":
             view_marks_by_subject()
         elif choice == "12":
-            date = input("Enter date (DD-MM-YYYY): ")
-            class_name = teacher["department"]  # Auto-fill based on teacher's department
+            class_name = input("Enter class name: ").strip()
+            date = input("Enter date (DD-MM-YYYY): ").strip()
             create_timetable_for_class(date, class_name)
         elif choice == "13":
+            class_name = input("Enter class name: ").strip()
             date = input("Enter date (DD-MM-YYYY) or press Enter for today: ").strip()
-            class_name = teacher["department"]
-            view_timetable_for_class(class_name, date if date else None)
-
+            if not date:
+                from datetime import datetime
+                date = datetime.today().strftime("%d-%m-%Y")
+            view_timetable_for_class(class_name, date)
         else:
             print("❌ Invalid choice.")
 

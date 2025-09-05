@@ -26,5 +26,40 @@
         "subject": "INS",
         "date": "2025-09-02",
         "marks": 24.0
+    },
+    {
+        "student_id": 201,
+        "name": "Prachi Kavitkar",
+        "subject": "STQA",
+        "date": "2025-09-05",
+        "marks": 12.0
+    },
+    {
+        "student_id": 203,
+        "name": "Feezanoori Ansari",
+        "subject": "STQA",
+        "date": "2025-09-05",
+        "marks": 13.0
+    },
+    {
+        "student_id": 201,
+        "name": "Prachi Kavitkar",
+        "subject": "AI",
+        "date": "2025-09-06",
+        "marks": 30.0
+    },
+    {
+        "student_id": 203,
+        "name": "Feezanoori Ansari",
+        "subject": "AI",
+        "date": "2025-09-06",
+        "marks": 29.0
+    },
+    {
+        "student_id": 301,
+        "name": "Payal",
+        "subject": "Business Law",
+        "date": "2025-09-06",
+        "marks": 23.0
     }
 ]

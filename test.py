@@ -125,3 +125,17 @@ def view_marks_by_subject():
     print(f"\n📊 Marks for Subject: {subject}")
     for m in found:
         print(f"Student ID: {m['student_id']}, Name: {m['name']}, Date: {m['date']}, Marks: {m['marks']}")
+
+def get_test_marks_by_name(name):
+    name = name.strip().lower()
+
+    try:
+        with open("marks.json", "r") as f:
+            marks_data = json.load(f)
+    except FileNotFoundError:
+        return []
+
+    return [
+        m for m in marks_data
+        if name in m.get("name", "").strip().lower()
+    ]

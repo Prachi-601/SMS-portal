@@ -13,5 +13,20 @@
         "class": "TYCS",
         "subject": "INS",
         "date": "2025-09-02"
+    },
+    {
+        "class": "TYCS",
+        "subject": "STQA",
+        "date": "2025-09-05"
+    },
+    {
+        "class": "TYCS",
+        "subject": "AI",
+        "date": "2025-09-06"
+    },
+    {
+        "class": "BCom",
+        "subject": "Business Law",
+        "date": "2025-09-06"
     }
 ]
