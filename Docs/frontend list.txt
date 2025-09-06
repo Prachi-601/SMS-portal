@@ -1,0 +1,35 @@
+✅ Project Flow: Task List for SMS Frontend (HTML + JS)
+Here’s the full roadmap we’ll follow:
+
+🔧 Setup
+Create project folder: sms-frontend-html
+
+Create files: index.html, student.html, teacher.html, admin.html, style.css, script.js
+
+🔐 Login Page (index.html)
+Build login form with role selection
+
+Add logic to redirect to correct dashboard
+
+Style the login page with CSS
+
+🧑‍🎓 Dashboards
+Create basic layout for each dashboard page
+
+Add navigation and role-specific content
+
+Style dashboards for clarity and usability
+
+🔗 Backend Integration
+Connect login form to backend using fetch() or Axios
+
+Handle login validation and session logic
+
+Display dynamic data (e.g. student marks, teacher uploads)
+
+🎨 Polish & Final Touches
+Add responsive design (optional Bootstrap)
+
+Add icons, colors, and feedback messages
+
+Test all flows and finalize
