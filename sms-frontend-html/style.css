@@ -1,68 +1,226 @@
+/* General Layout */
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  background-color: #f5f0ff;
+  margin: 0;
 }
 
+/* Login Page */
 .login-container {
   background-color: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  padding: 50px;
+  border-radius: 14px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
   text-align: center;
+  width: 480px;
+  font-size: 18px;
 }
 
-select, button {
-  padding: 10px;
-  font-size: 16px;
+.login-container h2 {
+  margin-bottom: 25px;
+  color: #6a1b9a;
+  font-size: 30px;
 }
 
-.dashboard {
-  background-color: white;
-  padding: 30px;
-  margin: 50px auto;
-  width: 80%;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  text-align: center;
-}
-
-.card {
-  background-color: #f9f9f9;
-  padding: 20px;
-  margin: 20px auto;
-  width: 80%;
-  border-radius: 8px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
-  text-align: left;
-}
-
-.card h3 {
-  margin-top: 0;
+label {
+  display: block;
+  margin-top: 15px;
+  font-size: 20px;
   color: #333;
 }
+
+input, select, button {
+  padding: 14px;
+  font-size: 20px;
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background-color: #b39ddb;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+button:hover {
+  background-color: #9575cd;
+}
+
+a {
+  display: block;
+  margin-top: 12px;
+  color: #6a1b9a;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Title */
+.site-title {
+  text-align: center;
+  font-size: 36px;
+  color: #6a1b9a;
+  font-weight: 600;
+  margin-top: 60px;
+  margin-bottom: 10px;
+}
+
+/* Login Wrapper */
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: calc(100vh - 100px);
+  padding-top: 20px;
+}
+
+/* Navbar */
 .navbar {
-  background-color: #333;
+  background-color: #b39ddb;
   color: white;
   padding: 15px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 18px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 1000;
+}
+
+.navbar-title {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .navbar button {
-  background-color: #f44336;
+  background-color: #ee0000;
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 20px;
+  width: auto;
 }
 
 .navbar button:hover {
-  background-color: #d32f2f;
+  background-color: #f93c3c;
+}
+
+/* Initial Menu */
+.menu-center {
+  margin-top: 100px;
+  display: flex;
+  justify-content: center;
+}
+
+.menu-card {
+  background-color: white;
+  padding: 50px;
+  border-radius: 14px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 600px; /* ⬅️ Increased from 500px */
+}
+
+.menu-card h2 {
+  font-size: 28px;
+  color: #6a1b9a;
+  margin-bottom: 30px;
+}
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.menu-options button {
+  background-color: #b39ddb;
+  color: white;
+  border: none;
+  padding: 20px 50px;
+  margin: 12px;
+  font-size: 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 80%;
+}
+
+.menu-options button:hover {
+  background-color: #9575cd;
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+  display: flex;
+  height: calc(100vh - 60px);
+  margin-top: 60px;
+}
+
+/* Sidebar redesigned as a white card */
+.sidebar {
+  width: 300px;
+  background-color: transparent;
+  padding: 40px 20px;
+}
+
+.sidebar-card {
+  background-color: white;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+.sidebar-card h3 {
+  font-size: 22px;
+  color: #6a1b9a;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.sidebar-card .menu {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-card .menu li {
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  background-color: #b39ddb;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  color: white;
+  text-align: center;
+  transition: background-color 0.3s;
+}
+
+.sidebar-card .menu li:hover {
+  background-color: #9575cd;
+}
+
+/* Content Area */
+.content-area {
+  flex-grow: 1;
+  padding: 40px;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+.content-area h2 {
+  color: #6a1b9a;
+  font-size: 28px;
+  margin-bottom: 20px;
 }

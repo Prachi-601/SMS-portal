@@ -6,62 +6,74 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- 🔼 Add this navigation bar at the top -->
+  <!-- Top Navbar -->
   <nav class="navbar">
-    <span>📘 Student Dashboard</span>
+    <span class="navbar-title">📘 Student Dashboard</span>
     <button onclick="logout()">Logout</button>
   </nav>
 
-  <div class="dashboard" id="student-data">
-  <h2>Welcome, <span id="student-name">Student</span>!</h2>
-
-  <div class="card">
-    <h3>📚 Subjects</h3>
-    <ul id="subjects-list"></ul>
-  </div>
-
-  <div class="card">
-    <h3>📝 Marks</h3>
-    <ul id="marks-list"></ul>
+  <!-- Initial Centered Menu -->
+  <div class="menu-center" id="menu-center">
+  <div class="menu-card">
+    <h2>👋 Welcome, <span id="student-name">Student</span></h2>
+    <div class="menu-options">
+      <button onclick="openDashboard('assignments')">📚 Assignments</button>
+      <button onclick="openDashboard('marks')">📝 Marks</button>
+      <button onclick="openDashboard('timetable')">📅 Timetable</button>
+    </div>
   </div>
 </div>
 
+  <!-- Sidebar + Content Area (hidden initially) -->
+  <div class="dashboard-container" id="dashboard" style="display: none;">
+    <div class="sidebar" id="sidebar">
+    <div class="sidebar-card">
+      <h3>👋 Welcome, <span id="student-name">Student</span></h3>
+      <ul class="menu">
+        <li onclick="loadContent('assignments')">📚 Assignments</li>
+        <li onclick="loadContent('marks')">📝 Marks</li>
+        <li onclick="loadContent('timetable')">📅 Timetable</li>
+      </ul>
+    </div>
+</div>
+    <div class="content-area" id="content-area">
+      <h2>Select an option from the menu</h2>
+    </div>
+  </div>
 
-  <!-- 🔽 Add this script at the bottom -->
   <script>
-  function logout() {
-    window.location.href = 'index.html';
-  }
+    function logout() {
+      window.location.href = 'index.html';
+    }
 
-  // Replace this with the actual logged-in username
-  const username = "Prachi.201";
+    const username = localStorage.getItem('username');
+    if (!username) {
+      alert("Session expired. Please log in again.");
+      window.location.href = 'index.html';
+    }
 
-  fetch(`http://localhost:5000/api/student/${username}`)
-    .then(res => res.json())
-    .then(data => {
-      // Show student name
-      document.getElementById("student-name").textContent = data.name || data.username;
-
-      // Show subjects
-      const subjectsList = document.getElementById("subjects-list");
-      data.subjects.forEach(sub => {
-        const li = document.createElement("li");
-        li.textContent = sub;
-        subjectsList.appendChild(li);
+    fetch(`http://localhost:5000/api/student/${username}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("student-name").textContent = data.name || data.username;
       });
 
-      // Show marks
-      const marksList = document.getElementById("marks-list");
-      data.marks.forEach(mark => {
-        const li = document.createElement("li");
-        li.textContent = `${mark.subject}: ${mark.score}`;
-        marksList.appendChild(li);
-      });
-    })
-    .catch(err => {
-      console.error("Error loading student data:", err);
-    });
-</script>
+    function openDashboard(section) {
+      document.getElementById("menu-center").style.display = "none";
+      document.getElementById("dashboard").style.display = "flex";
+      loadContent(section);
+    }
 
+    function loadContent(section) {
+      const content = document.getElementById("content-area");
+      if (section === 'assignments') {
+        content.innerHTML = "<h2>📚 Assignments</h2><p>Assignment list will appear here.</p>";
+      } else if (section === 'marks') {
+        content.innerHTML = "<h2>📝 Marks</h2><p>Marks details will appear here.</p>";
+      } else if (section === 'timetable') {
+        content.innerHTML = "<h2>📅 Timetable</h2><p>Your class schedule will appear here.</p>";
+      }
+    }
+  </script>
 </body>
 </html>

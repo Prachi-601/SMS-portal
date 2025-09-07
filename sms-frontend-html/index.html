@@ -4,34 +4,39 @@
   <meta charset="UTF-8">
   <title>SMS Portal Login</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="login-container">
-  <h2>Login to SMS Portal</h2>
+  <h1 class="site-title">📚 Student Management System</h1>
 
-  <label for="role">Select Role:</label>
-  <select id="role">
-    <option value="student">Student</option>
-    <option value="teacher">Teacher</option>
-    <option value="admin">Admin</option>
-  </select>
+  <!-- Wrapper for flex centering -->
+  <div class="login-wrapper">
+    <div class="login-container">
+      <h2>Login to SMS Portal</h2>
 
-  <br><br>
+      <label for="role">Select Role:</label>
+      <select id="role">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
 
-  <label for="username">Username:</label>
-  <input type="text" id="username" placeholder="Enter username">
+      <label for="username">Username:</label>
+      <input type="text" id="username" placeholder="Enter username">
 
-  <br><br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" placeholder="Enter password">
 
-  <label for="password">Password:</label>
-  <input type="password" id="password" placeholder="Enter password">
+      <button onclick="login()">Login</button>
 
-  <br><br>
+      <p id="error-message" style="color: red;"></p>
 
-  <button onclick="login()">Login</button>
+      <!-- 🔗 New links -->
+      <a href="forgot-password.html">🔐 Forgot Password?</a>
+      <a href="admin-register.html">📝 Register as Admin</a>
+    </div>
+  </div>
 
-  <p id="error-message" style="color: red;"></p>
-</div>
   <script src="script.js"></script>
 </body>
 </html>
