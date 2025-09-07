@@ -12,31 +12,56 @@
     <button onclick="logout()">Logout</button>
   </nav>
 
-  <!-- 🔽 Keep your existing dashboard content -->
-  <div class="dashboard">
-    <h2>Welcome, Student!</h2>
+  <div class="dashboard" id="student-data">
+  <h2>Welcome, <span id="student-name">Student</span>!</h2>
 
-    <div class="card">
-      <h3>📚 Assignments</h3>
-      <p>View and submit your assignments.</p>
-    </div>
-
-    <div class="card">
-      <h3>📝 Marks</h3>
-      <p>Check your latest exam results.</p>
-    </div>
-
-    <div class="card">
-      <h3>📅 Timetable</h3>
-      <p>See your weekly class schedule.</p>
-    </div>
+  <div class="card">
+    <h3>📚 Subjects</h3>
+    <ul id="subjects-list"></ul>
   </div>
+
+  <div class="card">
+    <h3>📝 Marks</h3>
+    <ul id="marks-list"></ul>
+  </div>
+</div>
+
 
   <!-- 🔽 Add this script at the bottom -->
   <script>
-    function logout() {
-      window.location.href = 'index.html';
-    }
-  </script>
+  function logout() {
+    window.location.href = 'index.html';
+  }
+
+  // Replace this with the actual logged-in username
+  const username = "Prachi.201";
+
+  fetch(`http://localhost:5000/api/student/${username}`)
+    .then(res => res.json())
+    .then(data => {
+      // Show student name
+      document.getElementById("student-name").textContent = data.name || data.username;
+
+      // Show subjects
+      const subjectsList = document.getElementById("subjects-list");
+      data.subjects.forEach(sub => {
+        const li = document.createElement("li");
+        li.textContent = sub;
+        subjectsList.appendChild(li);
+      });
+
+      // Show marks
+      const marksList = document.getElementById("marks-list");
+      data.marks.forEach(mark => {
+        const li = document.createElement("li");
+        li.textContent = `${mark.subject}: ${mark.score}`;
+        marksList.appendChild(li);
+      });
+    })
+    .catch(err => {
+      console.error("Error loading student data:", err);
+    });
+</script>
+
 </body>
 </html>
