@@ -6,35 +6,111 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="navbar">
-    <span>📘 Teacher Dashboard</span>
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <span class="navbar-title">📗 Teacher Dashboard</span>
     <button onclick="logout()">Logout</button>
   </nav>
-  <div class="dashboard">
-    <h2>Welcome, Teacher!</h2>
 
-    <div class="card">
-      <h3>📥 Submissions</h3>
-      <p>Review student assignment submissions.</p>
-    </div>
-
-    <div class="card">
-      <h3>🧮 Marks Entry</h3>
-      <p>Enter and update student marks.</p>
-    </div>
-
-    <div class="card">
-      <h3>📢 Announcements</h3>
-      <p>Post updates for your classes.</p>
+  <!-- Initial Centered Menu -->
+  <div class="menu-wrapper" id="menu-wrapper">
+    <div class="menu-card">
+      <h2>👋 Welcome, Teacher</h2>
+      <div class="menu-options">
+        <button onclick="openCategory('student')">👥 Student Management</button>
+        <button onclick="openCategory('attendance')">📊 Attendance & Teachers</button>
+        <button onclick="openCategory('assignments')">📚 Assignments</button>
+        <button onclick="openCategory('marks')">🧮 Marks</button>
+        <button onclick="openCategory('timetable')">🗓️ Timetable & Subjects</button>
+      </div>
     </div>
   </div>
-  <script>
-  function logout() {
-    window.location.href = 'index.html';
-  }
-</script>
-</body>
-</html>
 
+  <!-- Sidebar + Content Area -->
+  <div class="dashboard-container" id="dashboard" style="display: none;">
+    <div class="sidebar">
+      <div class="sidebar-card">
+        <ul class="menu" id="sidebar-menu">
+          <!-- Sub-options will be injected here -->
+        </ul>
+      </div>
+    </div>
+    <div class="content-area" id="content-area">
+  <div id="back-button" onclick="goBack()" class="back-arrow">⬅️ Back to Main Menu</div>
+  <div id="content-display">
+    <h2>Select an option from the menu</h2>
+  </div>
+</div>
+
+  <script>
+    function logout() {
+      window.location.href = 'index.html';
+    }
+
+    const subMenus = {
+      student: [
+        "View Students",
+        "Add Student",
+        "Search by ID / Name",
+        "Edit by ID / Name",
+        "Delete by Name"
+      ],
+      attendance: [
+        "Mark Attendance",
+        "View Teachers"
+      ],
+      assignments: [
+        "Add Assignment",
+        "Submit Assignment",
+        "View Submissions"
+      ],
+      marks: [
+        "Schedule Test",
+        "Add Marks",
+        "View Marks by Student",
+        "View Marks by Subject"
+      ],
+      timetable: [
+        "Create Timetable",
+        "View Timetable",
+        "Enter Subjects"
+      ]
+    };
+
+    function openCategory(category) {
+  document.getElementById("menu-wrapper").style.display = "none";
+  document.getElementById("dashboard").style.display = "flex";
+
+  const sidebarMenu = document.getElementById("sidebar-menu");
+  sidebarMenu.innerHTML = "";
+
+  // ✅ Add back button ONCE before the submenu items
+  const backItem = document.createElement("li");
+  backItem.textContent = "⬅️ Back to Main Menu";
+  backItem.classList.add("back-button");
+  backItem.onclick = goBack;
+  sidebarMenu.appendChild(backItem);
+
+  // ✅ Now add submenu items
+  subMenus[category].forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    li.onclick = () => loadContent(item);
+    sidebarMenu.appendChild(li);
+  });
+
+  loadContent(subMenus[category][0]);
+}
+
+  function loadContent(title) {
+  const content = document.getElementById("content-display");
+  content.innerHTML = `<h2>${title}</h2><p>Content for "${title}" will appear here.</p>`;
+}
+    function goBack() {
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("menu-wrapper").style.display = "flex";
+  document.getElementById("back-button").style.display = "none";
+}
+  </script>
 </body>
 </html>

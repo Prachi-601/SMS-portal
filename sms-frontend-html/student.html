@@ -13,9 +13,9 @@
   </nav>
 
   <!-- Initial Centered Menu -->
-  <div class="menu-center" id="menu-center">
+<div class="menu-wrapper">
   <div class="menu-card">
-    <h2>👋 Welcome, <span id="student-name">Student</span></h2>
+    <h2>👋 Welcome, Student</h2>
     <div class="menu-options">
       <button onclick="openDashboard('assignments')">📚 Assignments</button>
       <button onclick="openDashboard('marks')">📝 Marks</button>
@@ -28,7 +28,7 @@
   <div class="dashboard-container" id="dashboard" style="display: none;">
     <div class="sidebar" id="sidebar">
     <div class="sidebar-card">
-      <h3>👋 Welcome, <span id="student-name">Student</span></h3>
+      <h3>👋 Welcome, Student</h3>
       <ul class="menu">
         <li onclick="loadContent('assignments')">📚 Assignments</li>
         <li onclick="loadContent('marks')">📝 Marks</li>
@@ -51,12 +51,6 @@
       alert("Session expired. Please log in again.");
       window.location.href = 'index.html';
     }
-
-    fetch(`http://localhost:5000/api/student/${username}`)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("student-name").textContent = data.name || data.username;
-      });
 
     function openDashboard(section) {
       document.getElementById("menu-center").style.display = "none";

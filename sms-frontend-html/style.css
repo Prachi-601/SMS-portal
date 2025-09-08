@@ -126,20 +126,27 @@ a:hover {
   display: flex;
   justify-content: center;
 }
-
+.menu-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 60px); /* full height minus navbar */
+  margin-top: 60px; /* match navbar height */
+}
 .menu-card {
   background-color: white;
-  padding: 50px;
-  border-radius: 14px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  padding: 70px 60px;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.1);
   text-align: center;
-  width: 600px; /* ⬅️ Increased from 500px */
+  width: 700px; 
 }
 
 .menu-card h2 {
-  font-size: 28px;
+  font-size: 32px; /* ⬆️ Bigger welcome text */
   color: #6a1b9a;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  font-weight: 600;
 }
 .menu-options {
   display: flex;
@@ -150,12 +157,12 @@ a:hover {
   background-color: #b39ddb;
   color: white;
   border: none;
-  padding: 20px 50px;
-  margin: 12px;
-  font-size: 22px;
+  padding: 24px 60px;
+  margin: 16px 0;
+  font-size: 24px;
   border-radius: 10px;
   cursor: pointer;
-  width: 80%;
+  width: 85%;
 }
 
 .menu-options button:hover {
@@ -211,6 +218,22 @@ a:hover {
   background-color: #9575cd;
 }
 
+.sidebar-card .menu li.back-button {
+  background-color: transparent;
+  color: #6a1b9a;
+  font-weight: 500;
+  border: none;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.sidebar-card .menu li.back-button:hover {
+  text-decoration: underline;
+  background-color: transparent;
+}
 /* Content Area */
 .content-area {
   flex-grow: 1;
@@ -223,4 +246,14 @@ a:hover {
   color: #6a1b9a;
   font-size: 28px;
   margin-bottom: 20px;
+}
+.back-arrow {
+  font-size: 18px;
+  color: #6a1b9a;
+  cursor: pointer;
+  margin-bottom: 20px;
+  text-decoration: underline;
+}
+.back-arrow:hover {
+  color: #9575cd;
 }
