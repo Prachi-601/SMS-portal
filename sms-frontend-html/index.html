@@ -2,114 +2,87 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Teacher Dashboard</title>
+  <title>Student Management System</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .error-message {
+      color: red;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <!-- Top Navbar -->
-  <nav class="navbar">
-    <span class="navbar-title">📗 Teacher Dashboard</span>
-    <button onclick="logout()">Logout</button>
-  </nav>
+  <!-- Page Title -->
+  <div class="site-title">📘 Student Management System</div>
 
-  <!-- Initial Centered Menu -->
-  <div class="menu-wrapper" id="menu-wrapper">
-    <div class="menu-card">
-      <h2>👋 Welcome, Teacher</h2>
-      <div class="menu-options">
-        <button onclick="openCategory('student')">👥 Student Management</button>
-        <button onclick="openCategory('attendance')">📊 Attendance & Teachers</button>
-        <button onclick="openCategory('assignments')">📚 Assignments</button>
-        <button onclick="openCategory('marks')">🧮 Marks</button>
-        <button onclick="openCategory('timetable')">🗓️ Timetable & Subjects</button>
-      </div>
+  <!-- Login Form -->
+  <div class="login-wrapper">
+    <div class="login-container">
+      <h2>🔐 Login</h2>
+
+      <label for="role">Select Role:</label>
+      <select id="role">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <label for="username">Username:</label>
+      <input type="text" id="username" placeholder="Enter your username">
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" placeholder="Enter your password">
+
+      <button onclick="login()">Login</button>
+
+      <!-- Inline Error Message -->
+      <div id="error-message" class="error-message"></div>
+
+      <!-- Extra Links -->
+      <a href="#">Forgot Password?</a>
+      <a href="#">Admin Signup</a>
     </div>
   </div>
 
-  <!-- Sidebar + Content Area -->
-  <div class="dashboard-container" id="dashboard" style="display: none;">
-    <div class="sidebar">
-      <div class="sidebar-card">
-        <ul class="menu" id="sidebar-menu">
-          <!-- Back button + Sub-options will be injected here -->
-        </ul>
-      </div>
-    </div>
-    <div class="content-area" id="content-area">
-      <div id="content-display">
-        <h2>Select an option from the menu</h2>
-      </div>
-    </div>
-  </div>
+<script>
+  async function login() {
+    const role = document.getElementById("role").value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const errorDiv = document.getElementById("error-message");
+    errorDiv.textContent = ""; // Clear previous errors
 
-  <script>
-    function logout() {
-      window.location.href = 'index.html';
+    if (!username || !password) {
+      errorDiv.textContent = "Please enter both username and password.";
+      return;
     }
 
-    const subMenus = {
-      student: [
-        "View Students",
-        "Add Student",
-        "Search by ID / Name",
-        "Edit by ID / Name",
-        "Delete by Name"
-      ],
-      attendance: [
-        "Mark Attendance",
-        "View Teachers"
-      ],
-      assignments: [
-        "Add Assignment",
-        "Submit Assignment",
-        "View Submissions"
-      ],
-      marks: [
-        "Schedule Test",
-        "Add Marks",
-        "View Marks by Student",
-        "View Marks by Subject"
-      ],
-      timetable: [
-        "Create Timetable",
-        "View Timetable",
-        "Enter Subjects"
-      ]
-    };
-
-    function openCategory(category) {
-      document.getElementById("menu-wrapper").style.display = "none";
-      document.getElementById("dashboard").style.display = "flex";
-
-      const sidebarMenu = document.getElementById("sidebar-menu");
-      sidebarMenu.innerHTML = "";
-
-      // Add back button styled like menu item
-      const backItem = document.createElement("li");
-      backItem.textContent = "⬅️ Back to Main Menu";
-      backItem.onclick = goBack;
-      sidebarMenu.appendChild(backItem);
-
-      // Add submenu items
-      subMenus[category].forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = item;
-        li.onclick = () => loadContent(item);
-        sidebarMenu.appendChild(li);
+    try {
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, username, password })
       });
 
-      loadContent(subMenus[category][0]);
+      const result = await response.json();
+      if (result.success) {
+        localStorage.setItem("username", username);
+        if (role === "student") {
+          window.location.href = "student.html";
+        } else if (role === "teacher") {
+          window.location.href = "teacher.html";
+        } else if (role === "admin") {
+          window.location.href = "admin.html";
+        }
+      } else {
+        errorDiv.textContent = result.message || "Invalid username or password.";
+      }
+    } catch (error) {
+      errorDiv.textContent = "Server error. Please try again later.";
+      console.error("Login error:", error);
     }
-
-    function loadContent(title) {
-      const content = document.getElementById("content-display");
-      content.innerHTML = `<h2>${title}</h2><p>Content for "${title}" will appear here.</p>`;
-    }
-
-    function goBack() {
-      document.getElementById("dashboard").style.display = "none";
-      document.getElementById("menu-wrapper").style.display = "flex";
-    }
-  </script>
+  }
+</script>
 </body>
 </html>

@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <title>Student Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .back-button {
+      background: none;
+      border: none;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+  </style>
 </head>
 <body>
   <!-- Top Navbar -->
@@ -13,29 +23,33 @@
   </nav>
 
   <!-- Initial Centered Menu -->
-<div class="menu-wrapper">
-  <div class="menu-card">
-    <h2>👋 Welcome, Student</h2>
-    <div class="menu-options">
-      <button onclick="openDashboard('assignments')">📚 Assignments</button>
-      <button onclick="openDashboard('marks')">📝 Marks</button>
-      <button onclick="openDashboard('timetable')">📅 Timetable</button>
+  <div class="menu-wrapper" id="menu-center">
+    <div class="menu-card">
+      <h2>👋 Welcome, Student</h2>
+      <div class="menu-options">
+        <button onclick="openDashboard('attendance')">📊 Attendance</button>
+        <button onclick="openDashboard('timetable')">🗓️ Timetable</button>
+        <button onclick="openDashboard('assignments')">📚 Assignments</button>
+        <button onclick="openDashboard('marks')">🧮 Test Marks</button>
+      </div>
     </div>
   </div>
-</div>
 
-  <!-- Sidebar + Content Area (hidden initially) -->
+  <!-- Sidebar + Content Area -->
   <div class="dashboard-container" id="dashboard" style="display: none;">
     <div class="sidebar" id="sidebar">
-    <div class="sidebar-card">
-      <h3>👋 Welcome, Student</h3>
-      <ul class="menu">
-        <li onclick="loadContent('assignments')">📚 Assignments</li>
-        <li onclick="loadContent('marks')">📝 Marks</li>
-        <li onclick="loadContent('timetable')">📅 Timetable</li>
-      </ul>
+      <div class="sidebar-card">
+        <h3>📂 Menu</h3>
+        <button onclick="backToMain()" class="back-button">⬅️ Back to Main Menu</button>
+        <ul class="menu">
+          <li onclick="loadContent('attendance')">📊 Attendance</li>
+          <li onclick="loadContent('timetable')">🗓️ Timetable</li>
+          <li onclick="loadContent('assignments')">📚 Assignments</li>
+          <li onclick="loadContent('marks')">🧮 Test Marks</li>
+        </ul>
+      </div>
     </div>
-</div>
+
     <div class="content-area" id="content-area">
       <h2>Select an option from the menu</h2>
     </div>
@@ -43,12 +57,13 @@
 
   <script>
     function logout() {
+      localStorage.removeItem('username');
       window.location.href = 'index.html';
     }
 
     const username = localStorage.getItem('username');
-    if (!username) {
-      alert("Session expired. Please log in again.");
+    if (!username || username === "undefined") {
+      alert("Session expired or invalid. Please log in again.");
       window.location.href = 'index.html';
     }
 
@@ -58,14 +73,34 @@
       loadContent(section);
     }
 
+    function backToMain() {
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("menu-center").style.display = "flex";
+    }
+
     function loadContent(section) {
       const content = document.getElementById("content-area");
-      if (section === 'assignments') {
-        content.innerHTML = "<h2>📚 Assignments</h2><p>Assignment list will appear here.</p>";
-      } else if (section === 'marks') {
-        content.innerHTML = "<h2>📝 Marks</h2><p>Marks details will appear here.</p>";
+
+      if (section === 'attendance') {
+        content.innerHTML = `
+          <h2>📊 Attendance</h2>
+          <p>Calendar or table view of attendance will appear here.</p>
+        `;
       } else if (section === 'timetable') {
-        content.innerHTML = "<h2>📅 Timetable</h2><p>Your class schedule will appear here.</p>";
+        content.innerHTML = `
+          <h2>🗓️ Timetable</h2>
+          <p>Click a date to view your class schedule.</p>
+        `;
+      } else if (section === 'assignments') {
+        content.innerHTML = `
+          <h2>📚 Assignments</h2>
+          <p>Pending and submitted assignments will appear here.</p>
+        `;
+      } else if (section === 'marks') {
+        content.innerHTML = `
+          <h2>🧮 Test Marks</h2>
+          <p>Select a subject to view your marks.</p>
+        `;
       }
     }
   </script>

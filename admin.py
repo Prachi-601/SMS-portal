@@ -50,6 +50,11 @@ def admin_login():
 def admin_signup():
     username = input("Create admin username: ").strip().lower()
     password = input("Create password: ").strip()
+    email = input("Enter your email: ").strip().lower()
+
+    if "@" not in email or "." not in email:
+        print("❌ Invalid email format.")
+        return
 
     try:
         with open("admins.json", "r") as f:
@@ -66,7 +71,8 @@ def admin_signup():
 
     admins.append({
         "username": username,
-        "password": password
+        "password": password,
+        "email": email
     })
 
     with open("admins.json", "w") as f:

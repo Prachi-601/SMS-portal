@@ -4,37 +4,104 @@
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .back-button {
+      background: none;
+      border: none;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+  </style>
 </head>
 <body>
-    <nav class="navbar">
-    <span>📘 Admin Dashboard</span>
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <span class="navbar-title">📘 Admin Dashboard</span>
     <button onclick="logout()">Logout</button>
   </nav>
-  <div class="dashboard">
-    <h2>Welcome, Admin!</h2>
 
-    <div class="card">
-      <h3>👥 User Management</h3>
-      <p>Add, edit, or remove users from the system.</p>
-    </div>
-
-    <div class="card">
-      <h3>📊 System Reports</h3>
-      <p>View usage stats and performance metrics.</p>
-    </div>
-
-    <div class="card">
-      <h3>⚙️ Settings</h3>
-      <p>Configure portal settings and access controls.</p>
+  <!-- Main Menu -->
+  <div class="menu-wrapper" id="menu-center">
+    <div class="menu-card">
+      <h2>👋 Welcome, Admin</h2>
+      <div class="menu-options">
+        <button onclick="openDashboard('student')">👥 Manage Students</button>
+        <button onclick="openDashboard('teacher')">👨‍🏫 Manage Teachers</button>
+        <button onclick="openDashboard('attendance')">📅 Attendance Reports</button>
+        <button onclick="openDashboard('settings')">⚙️ System Settings</button>
+      </div>
     </div>
   </div>
-  <script>
-  function logout() {
-    window.location.href = 'index.html';
-  }
-</script>
-</body>
-</html>
 
+  <!-- Sidebar + Content Area -->
+  <div class="dashboard-container" id="dashboard" style="display: none;">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-card">
+        <h3>📂 Menu</h3>
+        <button onclick="backToMain()" class="back-button">⬅️ Back to Main Menu</button>
+        <ul class="menu" id="submenu">
+          <!-- Submenu items will be injected dynamically -->
+        </ul>
+      </div>
+    </div>
+
+    <div class="content-area" id="content-area">
+      <h2>Select an option from the menu</h2>
+    </div>
+  </div>
+
+  <script>
+    function logout() {
+      window.location.href = 'index.html';
+    }
+
+    function openDashboard(section) {
+      document.getElementById("menu-center").style.display = "none";
+      document.getElementById("dashboard").style.display = "flex";
+      loadSubmenu(section);
+    }
+
+    function backToMain() {
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("menu-center").style.display = "flex";
+    }
+
+    function loadSubmenu(section) {
+      const submenu = document.getElementById("submenu");
+      const content = document.getElementById("content-area");
+      submenu.innerHTML = "";
+      content.innerHTML = "<h2>Select an option from the menu</h2>";
+
+      if (section === "student") {
+        submenu.innerHTML = `
+          <li onclick="loadContent('addStudent')">➕ Add Student</li>
+          <li onclick="loadContent('viewStudents')">📋 View Students</li>
+          <li onclick="loadContent('searchStudent')">🔍 Search/Edit/Delete</li>
+        `;
+      } else if (section === "teacher") {
+        submenu.innerHTML = `
+          <li onclick="loadContent('addTeacher')">➕ Add Teacher</li>
+          <li onclick="loadContent('viewTeachers')">📋 View Teachers</li>
+        `;
+      } else if (section === "attendance") {
+        submenu.innerHTML = `
+          <li onclick="loadContent('studentDashboard')">📂 View Student Dashboard</li>
+          <li onclick="loadContent('monthlyAttendance')">📅 Monthly Attendance</li>
+        `;
+      } else if (section === "settings") {
+        submenu.innerHTML = `
+          <li onclick="loadContent('systemSettings')">⚙️ Portal Settings</li>
+          <li onclick="loadContent('accessControl')">🔐 Access Control</li>
+        `;
+      }
+    }
+
+    function loadContent(item) {
+      const content = document.getElementById("content-area");
+      content.innerHTML = `<h2>🔧 '${item}' section is under development.</h2>`;
+    }
+  </script>
 </body>
 </html>

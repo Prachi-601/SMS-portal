@@ -12,7 +12,20 @@ def admin_login(username, password):
         if admin["username"] == username and admin["password"] == password:
             return admin
     return None
+def update_student_password(username, old_pass, new_pass):
+    try:
+        with open("students.json", "r") as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return False
 
+    for student in data.get("students", []):
+        if student["username"] == username and student["password"] == old_pass:
+            student["password"] = new_pass
+            with open("students.json", "w") as f:
+                json.dump(data, f, indent=4)
+            return True
+    return False
 # 👨‍🏫 Teacher Login
 def teacher_login(username, password):
     try:
