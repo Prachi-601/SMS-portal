@@ -1,8 +1,14 @@
 {
   "admins": [
     {
-        "username":"ram",
-        "password":"54321"
+      "username": "ram123",
+      "password": "123456",
+      "email": "ram@gmail.com"
+    },
+    {
+      "username": "priti12",
+      "password": "Priti1234",
+      "email": "prachikavitkar@gmail.com"
     }
   ]
 }

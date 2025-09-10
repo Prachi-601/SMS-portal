@@ -13,6 +13,19 @@
       cursor: pointer;
       padding: 8px 0;
     }
+    .menu li {
+      padding: 12px 20px;
+      margin-bottom: 10px;
+      background-color: #b39ddb;
+      border-radius: 8px;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .menu li:hover {
+      background-color: #9575cd;
+    }
   </style>
 </head>
 <body>
@@ -76,31 +89,32 @@
 
       if (section === "student") {
         submenu.innerHTML = `
-          <li onclick="loadContent('addStudent')">➕ Add Student</li>
-          <li onclick="loadContent('viewStudents')">📋 View Students</li>
-          <li onclick="loadContent('searchStudent')">🔍 Search/Edit/Delete</li>
+          <li onclick="loadContent('add-student.html')">➕ Add Student</li>
+          <li onclick="loadContent('view-students.html')">📋 View Students</li>
+          <li onclick="loadContent('search-student.html')">🔍 Search Student</li>
+          <li onclick="loadContent('edit-delete-student.html')">✏️ Edit/Delete Student</li>
         `;
       } else if (section === "teacher") {
         submenu.innerHTML = `
-          <li onclick="loadContent('addTeacher')">➕ Add Teacher</li>
-          <li onclick="loadContent('viewTeachers')">📋 View Teachers</li>
+          <li onclick="loadContent('add-teacher.html')">➕ Add Teacher</li>
+          <li onclick="loadContent('view-teachers.html')">📋 View Teachers</li>
         `;
       } else if (section === "attendance") {
         submenu.innerHTML = `
-          <li onclick="loadContent('studentDashboard')">📂 View Student Dashboard</li>
-          <li onclick="loadContent('monthlyAttendance')">📅 Monthly Attendance</li>
+          <li onclick="loadContent('student-dashboard.html')">📂 Student Dashboard</li>
+          <li onclick="loadContent('monthly-attendance.html')">📅 Monthly Attendance</li>
         `;
       } else if (section === "settings") {
         submenu.innerHTML = `
-          <li onclick="loadContent('systemSettings')">⚙️ Portal Settings</li>
-          <li onclick="loadContent('accessControl')">🔐 Access Control</li>
+          <li onclick="loadContent('system-settings.html')">⚙️ Portal Settings</li>
+          <li onclick="loadContent('access-control.html')">🔐 Access Control</li>
         `;
       }
     }
 
-    function loadContent(item) {
+    function loadContent(page) {
       const content = document.getElementById("content-area");
-      content.innerHTML = `<h2>🔧 '${item}' section is under development.</h2>`;
+      content.innerHTML = `<iframe src="${page}" width="100%" height="100%" style="border:none;"></iframe>`;
     }
   </script>
 </body>

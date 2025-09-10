@@ -1,28 +1,15 @@
 {
     "teachers": [
         {
-            "username": "Sneha",
-            "password": "Sneha23",
-            "name": "Sneha Kolge",
-            "department": "IT/CS department",
-            "post": "Asssitant Professor",
+            "username": "Priya23",
+            "password": "2323",
+            "name": "Priya Patil",
+            "email": "priya@gmail.com",
+            "department": "IT/CS Department",
+            "post": "Assistant Professor",
             "subject": "STQA",
             "class_list": [
-                "TYCS",
-                "FYCS",
-                "SYCS"
-            ]
-        },
-        {
-            "username": "Prachi",
-            "password": "Prachi601",
-            "name": "Prachi Kavitkar",
-            "department": "Commerce Department",
-            "post": "Assistant Professor",
-            "subject": "Business Law",
-            "class_list": [
-                "TYBCOM",
-                "FYBCOM"
+                "TY BSC CS"
             ]
         }
     ]

@@ -6,10 +6,40 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="login-container">
-    <h2>📝 Register as Admin</h2>
-    <p>This feature is coming soon. Only authorized personnel can register.</p>
-    <a href="index.html">⬅️ Back to Login</a>
+  <div class="site-title">📝 Admin Registration</div>
+  <div class="login-wrapper">
+    <div class="login-container">
+      <h2>Register as Admin</h2>
+      <form id="adminSignupForm">
+        <input type="text" id="username" placeholder="Username" required><br>
+        <input type="email" id="email" placeholder="Email" required><br>
+        <input type="password" id="password" placeholder="Password" required><br>
+        <button type="submit">Register</button>
+      </form>
+      <p id="message"></p>
+      <a href="index.html">⬅️ Back to Login</a>
+    </div>
   </div>
+
+  <script>
+    document.getElementById("adminSignupForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("http://127.0.0.1:5000/api/admin-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password })
+      });
+
+      const result = await res.json();
+      document.getElementById("message").textContent = result.message;
+      if (result.success) {
+        document.getElementById("adminSignupForm").reset();
+      }
+    });
+  </script>
 </body>
 </html>

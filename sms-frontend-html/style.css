@@ -257,3 +257,22 @@ a:hover {
 .back-arrow:hover {
   color: #9575cd;
 }
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #e6e6fa; /* light purple */
+  padding: 0 20px; /* prevents edge hugging on small screens */
+  box-sizing: border-box;
+}
+
+.form-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}

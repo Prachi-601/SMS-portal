@@ -11,5 +11,23 @@
                 "status": "P"
             }
         ]
+    },
+    {
+        "date": "2025-09-10",
+        "subject": "STQA",
+        "teacher": "Sneha",
+        "class": "TY BSC CS",
+        "records": [
+            {
+                "id": 201,
+                "name": "Prachi Kavitkar",
+                "status": "P"
+            },
+            {
+                "id": 202,
+                "name": "Feezanoori Ansari",
+                "status": "A"
+            }
+        ]
     }
 ]

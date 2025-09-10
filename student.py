@@ -11,7 +11,6 @@ def add_student():
     except (FileNotFoundError, json.JSONDecodeError):
         data = {"students": []}
 
-
     try:
         student_id = int(input("Enter student ID: ").strip())
     except ValueError:
@@ -22,6 +21,11 @@ def add_student():
     student_class = input("Enter class: ").strip()
     username = input("Create username: ").strip()
     password = input("Create password: ").strip()
+    email = input("Enter student email: ").strip().lower()
+
+    if "@" not in email or "." not in email:
+        print("❌ Invalid email format.")
+        return
 
     for student in data["students"]:
         if student["id"] == student_id:
@@ -36,7 +40,8 @@ def add_student():
         "name": name,
         "class": student_class,
         "username": username,
-        "password": password
+        "password": password,
+        "email": email
     }
 
     data["students"].append(new_student)
@@ -66,7 +71,7 @@ def view_students():
 
     print("\n📚 Student Records:")
     for student in students:
-        print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
+        print(f"ID: {student['id']}, Name: {student['name']}, Class: {student['class']}, Email: {student.get('email', 'Not available')}")
     print(f"Total students: {len(students)}")
 
 def search_student():
@@ -85,7 +90,7 @@ def search_student():
 
     for student in students:
         if student["id"] == student_id:
-            print(f"\n🎓 Student Found:\nID: {student['id']}\nName: {student['name']}\nClass: {student['class']}")
+            print(f"\n🎓 Student Found:\nID: {student['id']}\nName: {student['name']}\nClass: {student['class']}\nEmail: {student.get('email', 'Not available')}")
             return
 
     print("❌ Student not found.")
@@ -103,7 +108,7 @@ def search_student_by_name():
     matched = [s for s in students if name_input in s["name"].strip().lower()]
     if matched:
         for student in matched:
-            print(f"\n🎓 Match Found:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
+            print(f"\n🎓 Match Found:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}, Email: {student.get('email', 'Not available')}")
     else:
         print("❌ No matching student found.")
 
@@ -124,21 +129,26 @@ def edit_student():
     students = data.get("students", [])
     for student in students:
         if student["id"] == student_id:
-            print(f"\n🎓 Current Record:\nID: {student['id']}\nName: {student['name']}\nClass: {student['class']}")
-            choice = input("Edit (1) Name or (2) Class: ").strip()
+            print(f"\n🎓 Current Record:\nID: {student['id']}\nName: {student['name']}\nClass: {student['class']}\nEmail: {student.get('email', 'Not available')}")
+            choice = input("Edit (1) Name, (2) Class, or (3) Email: ").strip()
+
             if choice == "1":
                 student["name"] = input("Enter new name: ").strip()
             elif choice == "2":
                 student["class"] = input("Enter new class: ").strip()
+            elif choice == "3":
+                new_email = input("Enter new email: ").strip().lower()
+                if "@" not in new_email or "." not in new_email:
+                    print("❌ Invalid email format.")
+                    return
+                student["email"] = new_email
             else:
                 print("❌ Invalid choice.")
                 return
-
             with open("students.json", "w") as f:
                 json.dump(data, f, indent=4)
             print("✅ Student record updated.")
             return
-
     print("❌ Student not found.")
 
 def edit_student_by_name():
@@ -158,14 +168,20 @@ def edit_student_by_name():
         return
 
     for student in matched:
-        print(f"\n🎓 Match Found:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}")
+        print(f"\n🎓 Match Found:\nID: {student['id']}, Name: {student['name']}, Class: {student['class']}, Email: {student.get('email', 'Not available')}")
         confirm = input("Edit this student? (y/n): ").strip().lower()
         if confirm == "y":
-            choice = input("Edit (1) Name or (2) Class: ").strip()
+            choice = input("Edit (1) Name, (2) Class, or (3) Email: ").strip()
             if choice == "1":
                 student["name"] = input("Enter new name: ").strip()
             elif choice == "2":
                 student["class"] = input("Enter new class: ").strip()
+            elif choice == "3":
+                new_email = input("Enter new email: ").strip().lower()
+                if "@" not in new_email or "." not in new_email:
+                    print("❌ Invalid email format.")
+                    return
+                student["email"] = new_email
             else:
                 print("❌ Invalid choice.")
                 return

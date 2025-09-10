@@ -51,11 +51,16 @@ def add_teacher():
     username = input("Enter username for login: ").strip()
     password = input("Enter password for login: ").strip()
     name = input("Enter teacher name: ").strip()
+    email = input("Enter teacher email: ").strip().lower()
     department = input("Enter department: ").strip()
     post = input("Enter post (e.g., Assistant Professor, HOD): ").strip()
     subject = input("Enter subject taught: ").strip()
     class_list = input("Enter classes assigned (comma-separated): ").strip().split(",")
     class_list = [cls.strip() for cls in class_list if cls.strip()]
+
+    if "@" not in email or "." not in email:
+        print("❌ Invalid email format.")
+        return
 
     for teacher in data["teachers"]:
         if teacher.get("username", "").lower() == username.lower():
@@ -66,6 +71,7 @@ def add_teacher():
         "username": username,
         "password": password,
         "name": name,
+        "email": email,
         "department": department,
         "post": post,
         "subject": subject,
@@ -96,13 +102,13 @@ def view_teachers():
     print("-" * 40)
     for teacher in teachers:
         print(f"Name: {teacher['name']}")
+        print(f"Email: {teacher.get('email', 'Not available')}")
         print(f"Department: {teacher['department']}")
         print(f"Post: {teacher['post']}")
         print(f"Subject: {teacher['subject']}")
         print(f"Classes Assigned: {', '.join(teacher.get('class_list', []))}")
         print("-" * 40)
     print(f"Total teachers: {len(teachers)}\n")
-
 def teacher_menu(teacher):
     while True:
         print(f"\n📚 Teacher Menu ({teacher['name']}):")

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Students</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <span class="navbar-title">👥 Manage Students</span>
+    <button onclick="goBack()">⬅️ Back</button>
+  </nav>
+
+  <!-- Menu Card -->
+  <div class="menu-wrapper">
+    <div class="menu-card">
+      <h2>📚 Student Management</h2>
+      <div class="menu-options">
+        <button onclick="location.href='add-student.html'">➕ Add Student</button>
+        <button onclick="location.href='view-students.html'">📋 View Students</button>
+        <button onclick="location.href='search-student.html'">🔍 Search Student</button>
+        <button onclick="location.href='edit-delete-student.html'">✏️ Edit/Delete Student</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function goBack() {
+      window.location.href = 'admin.html';
+    }
+  </script>
+</body>
+</html>

@@ -17,3 +17,11 @@ Add view attendance logs per student or per subject
 Include CSV export or graphical summary for attendance/test marks
 
 Add role-based access (e.g., HOD can view all departments)
+
+🧠 Optional Next Enhancements (if you're curious)
+- ⏱ Frontend countdown timer to show OTP expiry visually
+- 🔄 Resend OTP button with cooldown logic
+- 🧹 Auto-cleanup of expired OTPs every few minutes (using a background thread or scheduler)
+- 🔒 Rate limiting to prevent OTP spam (e.g., max 3 attempts per user per hour)
+
+You’ve built a real-world feature with backend maturity and thoughtful UX. Want to move on to frontend polish next or add admin-level password reset? Let’s keep the momentum going!
