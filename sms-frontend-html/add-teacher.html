@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Teacher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="site-title">👩‍🏫 Add Teacher</div>
+  <div class="login-wrapper">
+    <div class="login-container">
+      <form id="addTeacherForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" required>
+
+        <label for="department">Department:</label>
+        <input type="text" id="department" required>
+
+        <label for="post">Post:</label>
+        <input type="text" id="post" required>
+
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" required>
+
+        <label for="classList">Class List (comma-separated):</label>
+        <input type="text" id="classList" required>
+
+        <button type="submit">Add Teacher</button>
+      </form>
+
+      <p id="message" style="margin-top: 10px; font-weight: bold; color: green;"></p>
+
+      <button type="button" onclick="resetForm()">➕ Add More Teachers</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("addTeacherForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const teacher = {
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value,
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim().toLowerCase(),
+        department: document.getElementById("department").value.trim(),
+        post: document.getElementById("post").value.trim(),
+        subject: document.getElementById("subject").value.trim(),
+        class_list: document.getElementById("classList").value.split(",").map(cls => cls.trim()).filter(cls => cls)
+      };
+
+      if (!teacher.email.includes("@") || !teacher.email.includes(".")) {
+        document.getElementById("message").textContent = "❌ Invalid email format.";
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5000/api/add-teacher", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(teacher)
+        });
+
+        const result = await res.json();
+        document.getElementById("message").textContent = result.message;
+
+        if (result.success) {
+          document.getElementById("addTeacherForm").reset();
+        }
+      } catch (err) {
+        document.getElementById("message").textContent = "❌ Server error.";
+      }
+    });
+
+    function resetForm() {
+      document.getElementById("addTeacherForm").reset();
+      document.getElementById("message").textContent = "";
+    }
+  </script>
+</body>
+</html>

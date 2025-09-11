@@ -94,12 +94,13 @@
           <li onclick="loadContent('search-student.html')">🔍 Search Student</li>
           <li onclick="loadContent('edit-delete-student.html')">✏️ Edit/Delete Student</li>
         `;
-      } else if (section === "teacher") {
-        submenu.innerHTML = `
-          <li onclick="loadContent('add-teacher.html')">➕ Add Teacher</li>
-          <li onclick="loadContent('view-teachers.html')">📋 View Teachers</li>
-        `;
-      } else if (section === "attendance") {
+     } else if (section === "teacher") {
+      submenu.innerHTML = `
+        <li onclick="loadContent('add-teacher.html')">➕ Add Teacher</li>
+        <li onclick="loadContent('view-teachers.html')">📋 View Teachers</li>
+        <li onclick="loadContent('edit-delete-teacher.html')">✏️ Edit/Delete Teacher</li>
+  `   ;
+    } else if (section === "attendance") {
         submenu.innerHTML = `
           <li onclick="loadContent('student-dashboard.html')">📂 Student Dashboard</li>
           <li onclick="loadContent('monthly-attendance.html')">📅 Monthly Attendance</li>

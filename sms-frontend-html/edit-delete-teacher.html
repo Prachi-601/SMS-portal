@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit/Delete Teacher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="site-title">✏️ Edit/Delete Teacher</div>
+  <div class="login-wrapper">
+    <div class="login-container">
+      <label for="searchName">Search by Name:</label>
+      <input type="text" id="searchName" placeholder="Enter teacher name..." required>
+      <button onclick="searchTeacher()">Search</button>
+
+      <div id="resultSection" style="margin-top: 20px;"></div>
+      <div id="editFormSection" style="display:none; margin-top: 20px;">
+        <form id="editTeacherForm">
+          <label for="username">Username:</label>
+          <input type="text" id="username" readonly>
+
+          <label for="name">Name:</label>
+          <input type="text" id="name" required>
+
+          <label for="email">Email:</label>
+          <input type="email" id="email" required>
+
+          <label for="department">Department:</label>
+          <input type="text" id="department" required>
+
+          <label for="post">Post:</label>
+          <input type="text" id="post" required>
+
+          <label for="subject">Subject:</label>
+          <input type="text" id="subject" required>
+
+          <label for="classList">Class List (comma-separated):</label>
+          <input type="text" id="classList" required>
+
+          <button type="submit">✅ Update Teacher</button>
+        </form>
+      </div>
+      <p id="message" style="margin-top: 10px; font-weight: bold;"></p>
+    </div>
+  </div>
+
+  <script>
+    let currentTeacher = null;
+
+    async function searchTeacher() {
+      const query = document.getElementById("searchName").value.trim().toLowerCase();
+      if (!query) return;
+
+      try {
+        const res = await fetch("http://localhost:5000/api/search-teacher", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+
+        const result = await res.json();
+        const section = document.getElementById("resultSection");
+        section.innerHTML = "";
+        document.getElementById("editFormSection").style.display = "none";
+        document.getElementById("message").textContent = "";
+
+        if (result.success) {
+          currentTeacher = result.teacher;
+          section.innerHTML = `
+            <strong>Teacher Found:</strong><br>
+            <p><strong>Username:</strong> ${currentTeacher.username}</p>
+            <p><strong>Name:</strong> ${currentTeacher.name}</p>
+            <p><strong>Email:</strong> ${currentTeacher.email}</p>
+            <p><strong>Department:</strong> ${currentTeacher.department}</p>
+            <p><strong>Post:</strong> ${currentTeacher.post}</p>
+            <p><strong>Subject:</strong> ${currentTeacher.subject}</p>
+            <p><strong>Classes:</strong> ${currentTeacher.class_list.join(", ")}</p>
+            <button onclick="showEditForm()">✏️ Edit</button>
+            <button onclick="deleteTeacher()">🗑️ Delete</button>
+          `;
+        } else {
+          section.innerHTML = "<p>❌ Teacher not found.</p>";
+        }
+      } catch {
+        document.getElementById("message").textContent = "❌ Server error.";
+      }
+    }
+
+    function showEditForm() {
+      document.getElementById("editFormSection").style.display = "block";
+      document.getElementById("username").value = currentTeacher.username;
+      document.getElementById("name").value = currentTeacher.name;
+      document.getElementById("email").value = currentTeacher.email;
+      document.getElementById("department").value = currentTeacher.department;
+      document.getElementById("post").value = currentTeacher.post;
+      document.getElementById("subject").value = currentTeacher.subject;
+      document.getElementById("classList").value = currentTeacher.class_list.join(", ");
+    }
+
+    document.getElementById("editTeacherForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const updated = {
+        username: currentTeacher.username,
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim().toLowerCase(),
+        department: document.getElementById("department").value.trim(),
+        post: document.getElementById("post").value.trim(),
+        subject: document.getElementById("subject").value.trim(),
+        class_list: document.getElementById("classList").value.split(",").map(cls => cls.trim()).filter(cls => cls)
+      };
+
+      try {
+        const res = await fetch("http://localhost:5000/api/edit-teacher", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated)
+        });
+
+        const result = await res.json();
+        document.getElementById("message").textContent = result.message;
+      } catch {
+        document.getElementById("message").textContent = "❌ Update failed.";
+      }
+    });
+
+    async function deleteTeacher() {
+      if (!confirm("Are you sure you want to delete this teacher?")) return;
+
+      try {
+        const res = await fetch("http://localhost:5000/api/delete-teacher", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: currentTeacher.username })
+        });
+
+        const result = await res.json();
+        document.getElementById("message").textContent = result.message;
+        if (result.success) {
+          document.getElementById("resultSection").innerHTML = "";
+          document.getElementById("editFormSection").style.display = "none";
+          document.getElementById("searchName").value = "";
+        }
+      } catch {
+        document.getElementById("message").textContent = "❌ Deletion failed.";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -7,9 +7,46 @@
             "email": "priya@gmail.com",
             "department": "IT/CS Department",
             "post": "Assistant Professor",
-            "subject": "STQA",
+            "subject": "AI",
             "class_list": [
                 "TY BSC CS"
+            ]
+        },
+        {
+            "username": "Sneha22",
+            "password": "Sneha1234",
+            "name": "Sneha Menon",
+            "email": "sneha123@gmail.com",
+            "department": "IT/CS Department",
+            "post": "Assistant Professor",
+            "subject": "STQA",
+            "class_list": [
+                "TY BSC CS",
+                "FY BSC CS"
+            ]
+        },
+        {
+            "username": "Vaishali345",
+            "password": "Vaishali3455",
+            "name": "Vaishali Sawant",
+            "email": "vaishalisawant345@gmail.com",
+            "department": "Commerce Department",
+            "post": "Assistant Professor",
+            "subject": "Business Law",
+            "class_list": [
+                "TY BCom"
+            ]
+        },
+        {
+            "username": "Nilesh89",
+            "password": "Nilesh89",
+            "name": "Nilesh Rane",
+            "email": "nileshrane89@gmail.com",
+            "department": "Management Studies",
+            "post": "Assistant Professor",
+            "subject": "Ethics and Governance",
+            "class_list": [
+                "TY BMS"
             ]
         }
     ]

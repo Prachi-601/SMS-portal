@@ -320,6 +320,97 @@ def delete_student_api():
         return jsonify({"success": True, "message": "✅ Student deleted."})
     except:
         return jsonify({"success": False, "message": "❌ Deletion failed."})
+
+@app.route("/api/add-teacher", methods=["POST"])
+def add_teacher_api():
+    try:
+        data = request.get_json()
+        with open("teachers.json", "r") as f:
+            teachers = json.load(f).get("teachers", [])
+
+        for t in teachers:
+            if t["username"].lower() == data["username"].lower():
+                return jsonify({"success": False, "message": "❌ Teacher already exists."})
+
+        teachers.append(data)
+        with open("teachers.json", "w") as f:
+            json.dump({"teachers": teachers}, f, indent=4)
+
+        return jsonify({"success": True, "message": "✅ Teacher added successfully."})
+    except Exception as e:
+        print("🔥 Error in /api/add-teacher:", e)
+        return jsonify({"success": False, "message": "❌ Failed to add teacher."})
+@app.route("/api/teachers", methods=["GET"])
+def get_all_teachers():
+    try:
+        with open("teachers.json", "r") as f:
+            teachers = json.load(f).get("teachers", [])
+        return jsonify({"teachers": teachers})
+    except:
+        return jsonify({"teachers": []})
+@app.route("/api/search-teacher", methods=["POST"])
+def search_teacher_api():
+    data = request.get_json()
+    query = data.get("query", "").strip().lower()
+
+    try:
+        with open("teachers.json", "r") as f:
+            teachers = json.load(f).get("teachers", [])
+    except:
+        return jsonify({"success": False})
+
+    for t in teachers:
+        if query in t["name"].lower() or query == t["username"].lower():
+            return jsonify({"success": True, "teacher": t})
+
+    return jsonify({"success": False})
+@app.route("/api/edit-teacher", methods=["PUT"])
+def edit_teacher_api():
+    data = request.get_json()
+    username = data.get("username", "").strip().lower()
+
+    try:
+        with open("teachers.json", "r") as f:
+            teachers = json.load(f).get("teachers", [])
+
+        for t in teachers:
+            if t["username"].lower() == username:
+                t["name"] = data.get("name", t["name"])
+                t["email"] = data.get("email", t["email"])
+                t["department"] = data.get("department", t["department"])
+                t["post"] = data.get("post", t["post"])
+                t["subject"] = data.get("subject", t["subject"])
+                t["class_list"] = data.get("class_list", t["class_list"])
+                break
+        else:
+            return jsonify({"success": False, "message": "❌ Teacher not found."})
+
+        with open("teachers.json", "w") as f:
+            json.dump({"teachers": teachers}, f, indent=4)
+
+        return jsonify({"success": True, "message": "✅ Teacher updated."})
+    except:
+        return jsonify({"success": False, "message": "❌ Update failed."})
+@app.route("/api/delete-teacher", methods=["DELETE"])
+def delete_teacher_api():
+    data = request.get_json()
+    username = data.get("username", "").strip().lower()
+
+    try:
+        with open("teachers.json", "r") as f:
+            teachers = json.load(f).get("teachers", [])
+
+        updated_teachers = [t for t in teachers if t["username"].lower() != username]
+
+        if len(updated_teachers) == len(teachers):
+            return jsonify({"success": False, "message": "❌ Teacher not found."})
+
+        with open("teachers.json", "w") as f:
+            json.dump({"teachers": updated_teachers}, f, indent=4)
+
+        return jsonify({"success": True, "message": "✅ Teacher deleted."})
+    except:
+        return jsonify({"success": False, "message": "❌ Deletion failed."})
 # 🚀 Run Server
 if __name__ == '__main__':
     app.run(port=5000)
