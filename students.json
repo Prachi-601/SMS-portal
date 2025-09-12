@@ -63,6 +63,14 @@
             "username": "anmol501",
             "password": "501501",
             "email": "anmolshukla@gmail.com"
+        },
+        {
+            "id": 502,
+            "name": "Pritam Kavitkar",
+            "class": "FY BSC CS",
+            "username": "pritam502",
+            "password": "pritam7474",
+            "email": "pritam502@gmail.com"
         }
     ]
 }

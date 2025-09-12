@@ -47,34 +47,33 @@
     }
 
     const subMenus = {
-      student: [
-        "View Students",
-        "Add Student",
-        "Search by ID / Name",
-        "Edit by ID / Name",
-        "Delete by Name"
-      ],
-      attendance: [
-        "Mark Attendance",
-        "View Teachers"
-      ],
-      assignments: [
-        "Add Assignment",
-        "Submit Assignment",
-        "View Submissions"
-      ],
-      marks: [
-        "Schedule Test",
-        "Add Marks",
-        "View Marks by Student",
-        "View Marks by Subject"
-      ],
-      timetable: [
-        "Create Timetable",
-        "View Timetable",
-        "Enter Subjects"
-      ]
-    };
+  student: [
+    "📋 View Students",
+    "➕ Add Student",
+    "🔍 Search by ID / Name",
+    "✏️ Edit/Delete Student"
+  ],
+  attendance: [
+    "📝 Mark Attendance",
+    "👨‍🏫 View Teachers"
+  ],
+  assignments: [
+    "🆕 Add Assignment",
+    "📤 Submit Assignment",
+    "📥 View Submissions"
+  ],
+  marks: [
+    "📅 Schedule Test",
+    "🧮 Add Marks",
+    "👤 View Marks by Student",
+    "📘 View Marks by Subject"
+  ],
+  timetable: [
+    "🗓️ Create Timetable",
+    "📖 View Timetable",
+    "📚 Enter Subjects"
+  ]
+};
 
     function openCategory(category) {
   document.getElementById("menu-wrapper").style.display = "none";
@@ -103,7 +102,32 @@
 
   function loadContent(title) {
   const content = document.getElementById("content-display");
-  content.innerHTML = `<h2>${title}</h2><p>Content for "${title}" will appear here.</p>`;
+
+const pageMap = {
+  "📋 View Students": "teacher-view-students.html",
+  "➕ Add Student": "teacher-add-student.html",
+  "🔍 Search by ID / Name": "teacher-search-student.html",
+  "✏️ Edit/Delete Student": "teacher-edit-delete-student.html",
+  "📝 Mark Attendance": "mark-attendance.html",
+  "👨‍🏫 View Teachers": "view-teachers.html",
+  "🆕 Add Assignment": "add-assignment.html",
+  "📤 Submit Assignment": "submit-assignment.html",
+  "📥 View Submissions": "view-submissions.html",
+  "📅 Schedule Test": "schedule-test.html",
+  "🧮 Add Marks": "add-marks.html",
+  "👤 View Marks by Student": "view-marks-student.html",
+  "📘 View Marks by Subject": "view-marks-subject.html",
+  "🗓️ Create Timetable": "create-timetable.html",
+  "📖 View Timetable": "view-timetable.html",
+  "📚 Enter Subjects": "enter-subjects.html"
+};
+
+  const page = pageMap[title];
+  if (page) {
+    content.innerHTML = `<iframe src="${page}" width="100%" height="600px" style="border:none;"></iframe>`;
+  } else {
+    content.innerHTML = `<h2>${title}</h2><p>Content for "${title}" will appear here.</p>`;
+  }
 }
     function goBack() {
   document.getElementById("dashboard").style.display = "none";
