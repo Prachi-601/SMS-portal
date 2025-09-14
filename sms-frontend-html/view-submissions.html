@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Submissions</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .submission-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .submission-name {
+      font-weight: 500;
+    }
+
+    .submission-date {
+      font-style: italic;
+      color: #555;
+    }
+
+    #submission-list h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    #submission-list p {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>📊 View Submissions</h2>
+
+    <!-- Dropdowns -->
+    <label for="class">Select Class:</label>
+    <select id="class"></select>
+
+    <label for="subject">Select Subject:</label>
+    <select id="subject"></select>
+
+    <!-- Action Button -->
+    <button id="view-btn">View Submissions</button>
+
+    <!-- Results -->
+    <div id="submission-list"></div>
+  </div>
+
+  <script>
+    window.onload = () => {
+      populateClassDropdown("class");
+    };
+
+    // Populate class dropdown with default option
+    function populateClassDropdown(dropdownId) {
+      fetch("http://localhost:5000/api/classes")
+        .then(res => res.json())
+        .then(data => {
+          const dropdown = document.getElementById(dropdownId);
+          dropdown.innerHTML = "";
+
+          const defaultOption = document.createElement("option");
+          defaultOption.value = "";
+          defaultOption.textContent = "— Select Class —";
+          defaultOption.disabled = true;
+          defaultOption.selected = true;
+          dropdown.appendChild(defaultOption);
+
+          data.classes.forEach(cls => {
+            const opt = document.createElement("option");
+            opt.value = cls;
+            opt.textContent = cls;
+            dropdown.appendChild(opt);
+          });
+        })
+        .catch(err => {
+          console.error("❌ Error loading class list:", err);
+        });
+    }
+
+    // Load subjects when class changes
+    document.getElementById("class").onchange = () => {
+      const className = document.getElementById("class").value.trim();
+      if (!className) return;
+
+      console.log("📊 View Submissions → Selected class:", className);
+      fetch(`http://localhost:5000/api/class-assignments?class=${className}`)
+        .then(res => res.json())
+        .then(assignments => {
+          const subjectDropdown = document.getElementById("subject");
+          subjectDropdown.innerHTML = "";
+
+          const defaultOption = document.createElement("option");
+          defaultOption.value = "";
+          defaultOption.textContent = "— Select Subject —";
+          defaultOption.disabled = true;
+          defaultOption.selected = true;
+          subjectDropdown.appendChild(defaultOption);
+
+          assignments.forEach(a => {
+            const opt = document.createElement("option");
+            opt.value = a.subject;
+            opt.textContent = `${a.subject} (Deadline: ${a.deadline})`;
+            subjectDropdown.appendChild(opt);
+          });
+
+          document.getElementById("submission-list").innerHTML = ""; // Clear previous results
+        })
+        .catch(err => {
+          console.error("❌ Failed to load subjects:", err);
+          document.getElementById("submission-list").innerHTML = "<p>❌ Failed to load subjects.</p>";
+        });
+    };
+
+    // Fetch submissions when button is clicked
+    document.getElementById("view-btn").onclick = () => {
+      const className = document.getElementById("class").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+
+      if (!className || !subject) {
+        alert("⚠️ Please select both class and subject.");
+        return;
+      }
+
+      fetch(`http://localhost:5000/api/view-submissions?class=${className}&subject=${subject}`)
+        .then(res => res.json())
+        .then(submissions => {
+          const container = document.getElementById("submission-list");
+          container.innerHTML = "<h3>✅ Submitted Students:</h3>";
+
+          if (!Array.isArray(submissions) || submissions.length === 0) {
+            container.innerHTML += "<p>📭 No submissions found.</p>";
+            return;
+          }
+
+          submissions.forEach(s => {
+            const row = document.createElement("div");
+            row.className = "submission-row";
+            row.innerHTML = `
+              <span class="submission-name">${s.name} (ID: ${s.id})</span>
+              <span class="submission-date">${s.submitted_on}</span>
+            `;
+            container.appendChild(row);
+          });
+        })
+        .catch(err => {
+          console.error("❌ Error fetching submissions:", err);
+          document.getElementById("submission-list").innerHTML = "<p>❌ Failed to load submissions.</p>";
+        });
+    };
+  </script>
+</body>
+</html>

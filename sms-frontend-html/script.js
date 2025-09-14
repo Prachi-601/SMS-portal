@@ -31,3 +31,20 @@ function login() {
     errorMsg.textContent = 'Server error. Please try again later.';
   });
 }
+function populateClassDropdown(dropdownId) {
+  fetch("http://localhost:5000/api/classes")
+    .then(res => res.json())
+    .then(data => {
+      const dropdown = document.getElementById(dropdownId);
+      dropdown.innerHTML = "";
+      data.classes.forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls;
+        opt.textContent = cls;
+        dropdown.appendChild(opt);
+      });
+    })
+    .catch(error => {
+      console.error("❌ Failed to load classes:", error);
+    });
+}

@@ -1,20 +1,26 @@
 [
     {
-        "class": "TYBCOM",
-        "subject": "Business Law",
-        "deadline": "2025-09-10",
-        "created_on": "2025-09-05"
-    },
-    {
-        "class": "TYCS",
+        "class": "TY BSC CS",
         "subject": "STQA",
-        "deadline": "2025-09-15",
-        "created_on": "2025-09-05"
+        "deadline": "2025-09-20",
+        "created_on": "2025-09-12"
     },
     {
-        "class": "TYCS",
-        "subject": "AI",
+        "class": "FY BSC CS",
+        "subject": "Python",
         "deadline": "2025-09-20",
-        "created_on": "2025-09-05"
+        "created_on": "2025-09-14"
+    },
+    {
+        "class": "TY BMS",
+        "subject": "Ethics and Governance",
+        "deadline": "2025-09-25",
+        "created_on": "2025-09-14"
+    },
+    {
+        "class": "TY BCom",
+        "subject": "Business Law",
+        "deadline": "2025-10-10",
+        "created_on": "2025-09-14"
     }
 ]

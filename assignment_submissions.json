@@ -1,8 +1,50 @@
 [
     {
-        "class": "TYCS",
+        "class": "TY BSC CS",
         "student_id": 201,
         "subject": "STQA",
-        "submitted_on": "2025-09-05"
+        "submitted_on": "2025-09-14"
+    },
+    {
+        "class": "TY BSC CS",
+        "student_id": 202,
+        "subject": "STQA",
+        "submitted_on": "2025-09-14"
+    },
+    {
+        "class": "FY BSC CS",
+        "student_id": 501,
+        "subject": "Python",
+        "submitted_on": "2025-09-14"
+    },
+    {
+        "class": "FY BSC CS",
+        "student_id": 502,
+        "subject": "Python",
+        "submitted_on": "2025-09-14"
+    },
+    {
+        "class": "TY BCom",
+        "student_id": 301,
+        "subject": "Business Law",
+        "submitted_on": "2025-09-14"
+    },
+    {
+        "class": "TY BCom",
+        "student_id": 302,
+        "subject": "Business Law",
+        "submitted_on": "2025-09-14"
+    },
+    {
+        "class": "TY BMS",
+        "student_id": 401,
+        "subject": "Ethics and Governance",
+        "submitted_on": "2025-09-14"
+    },
+    {
+        "class": "TY BMS",
+        "student_id": 402,
+        "subject": "Ethics and Governance",
+        "submitted_on": "2025-09-14"
     }
 ]

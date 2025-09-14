@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submit Assignment</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .student-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .student-name {
+      font-weight: 500;
+    }
+
+    .submitted-tag {
+      color: green;
+      font-size: 0.9em;
+      margin-left: 8px;
+    }
+
+    .student-checkbox {
+      margin-left: 12px;
+    }
+
+    #student-list h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    #status-message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>📤 Submit Assignment</h2>
+
+    <!-- Dropdowns -->
+    <label for="class">Select Class:</label>
+    <select id="class"></select>
+
+    <label for="subject">Select Subject:</label>
+    <select id="subject"></select>
+
+    <!-- Student List -->
+    <div id="student-list"></div>
+
+    <!-- Action Button -->
+    <button id="submit-btn">Mark Submitted</button>
+
+    <!-- Status Message -->
+    <p id="status-message"></p>
+  </div>
+
+  <script>
+    window.onload = () => {
+      populateClassDropdown("class");
+    };
+
+    function populateClassDropdown(dropdownId) {
+      fetch("http://localhost:5000/api/classes")
+        .then(res => res.json())
+        .then(data => {
+          const dropdown = document.getElementById(dropdownId);
+          dropdown.innerHTML = "";
+
+          const defaultOption = document.createElement("option");
+          defaultOption.value = "";
+          defaultOption.textContent = "— Select Class —";
+          defaultOption.disabled = true;
+          defaultOption.selected = true;
+          dropdown.appendChild(defaultOption);
+
+          data.classes.forEach(cls => {
+            const opt = document.createElement("option");
+            opt.value = cls;
+            opt.textContent = cls;
+            dropdown.appendChild(opt);
+          });
+        })
+        .catch(err => {
+          console.error("❌ Error loading class list:", err);
+        });
+    }
+
+    document.getElementById("class").onchange = () => {
+      const className = document.getElementById("class").value.trim();
+      if (!className) return;
+      fetchSubjectsAndStudents(className);
+    };
+
+    document.getElementById("subject").onchange = () => {
+      const className = document.getElementById("class").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+      if (!className || !subject) return;
+      triggerStudentFetch(className, subject);
+    };
+
+    function fetchSubjectsAndStudents(className) {
+      fetch(`http://localhost:5000/api/class-assignments?class=${className}`)
+        .then(res => res.json())
+        .then(assignments => {
+          const subjectDropdown = document.getElementById("subject");
+          subjectDropdown.innerHTML = "";
+
+          const defaultOption = document.createElement("option");
+          defaultOption.value = "";
+          defaultOption.textContent = "— Select Subject —";
+          defaultOption.disabled = true;
+          defaultOption.selected = true;
+          subjectDropdown.appendChild(defaultOption);
+
+          assignments.forEach(a => {
+            const opt = document.createElement("option");
+            opt.value = a.subject;
+            opt.textContent = `${a.subject} (Deadline: ${a.deadline})`;
+            subjectDropdown.appendChild(opt);
+          });
+
+          document.getElementById("student-list").innerHTML = "";
+        })
+        .catch(err => {
+          console.error("❌ Error loading subjects:", err);
+          document.getElementById("student-list").innerHTML = "<p>❌ Failed to load subjects.</p>";
+        });
+    }
+
+    function triggerStudentFetch(className, subject) {
+      console.log("📥 Fetching students for class:", className);
+
+      fetch(`http://localhost:5000/api/class-students?class=${className}&subject=${subject}`)
+        .then(res => res.json())
+        .then(students => {
+          const container = document.getElementById("student-list");
+          container.innerHTML = "<h3>👥 Students:</h3>";
+
+          if (!Array.isArray(students) || students.length === 0) {
+            container.innerHTML += "<p>📭 No students found for this class.</p>";
+            return;
+          }
+
+          students.forEach(s => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "student-row";
+
+            const submittedTag = s.submitted
+              ? `<span class="submitted-tag">✅ Submitted</span>`
+              : "";
+
+            const checkbox = s.submitted
+              ? `<input type="checkbox" disabled class="student-checkbox">`
+              : `<input type="checkbox" value="${s.id}" class="student-checkbox">`;
+
+            wrapper.innerHTML = `
+              <span class="student-name">${s.name} ${submittedTag}</span>
+              ${checkbox}
+            `;
+            container.appendChild(wrapper);
+          });
+        })
+        .catch(err => {
+          console.error("❌ Error fetching students:", err);
+          document.getElementById("student-list").innerHTML = "<p>❌ Failed to load students.</p>";
+        });
+    }
+
+    document.getElementById("submit-btn").onclick = () => {
+      const subject = document.getElementById("subject").value.trim();
+      const checkboxes = document.querySelectorAll("#student-list input:checked");
+      const student_ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+      if (student_ids.length === 0 || !subject) {
+        document.getElementById("status-message").textContent = "⚠️ Please select students and subject.";
+        return;
+      }
+
+      fetch("http://localhost:5000/api/submit-assignment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_ids, subject })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("status-message").textContent = data.success
+          ? "✅ Submissions recorded."
+          : "❌ Failed to record submissions.";
+      })
+      .catch(err => {
+        console.error("❌ Submission error:", err);
+        document.getElementById("status-message").textContent = "❌ Server error. Try again.";
+      });
+    };
+  </script>
+</body>
+</html>

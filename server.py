@@ -9,6 +9,10 @@ import os
 from dotenv import load_dotenv
 import time
 from student import add_student  
+from assignment import add_assignment
+from assignment import submit_assignment
+from utils import get_student_by_class
+
 load_dotenv()
 app = Flask(__name__)
 CORS(app)
@@ -411,6 +415,96 @@ def delete_teacher_api():
         return jsonify({"success": True, "message": "✅ Teacher deleted."})
     except:
         return jsonify({"success": False, "message": "❌ Deletion failed."})
+
+@app.route('/api/add-assignment', methods=['POST'])
+def api_add_assignment():
+    data = request.get_json()
+    add_assignment(data["class"], data["subject"], data["deadline"])
+    return jsonify({"success": True})
+
+@app.route('/api/submit-assignment', methods=['POST'])
+def api_submit_assignment():
+    data = request.get_json()
+    subject = data["subject"]
+    submitted_ids = []
+    skipped_ids = []
+
+    for student_id in data["student_ids"]:
+        # ✅ Check if already submitted
+        existing = view_submissions_by_id(student_id, subject_filter=subject)
+        if not existing:
+            submit_assignment(student_id, subject)
+            submitted_ids.append(student_id)
+        else:
+            skipped_ids.append(student_id)
+
+    return jsonify({
+        "success": True,
+        "submitted_ids": submitted_ids,
+        "skipped_ids": skipped_ids
+    })
+
+@app.route('/api/class-assignments', methods=['GET'])
+def get_class_assignments():
+    class_name = request.args.get("class")
+    with open("assignments.json", "r") as f:
+        data = json.load(f)
+    filtered = [a for a in data if a["class"] == class_name]
+    return jsonify(filtered)
+
+@app.route('/api/class-students', methods=['GET'])
+def get_class_students():
+    class_name = request.args.get("class")
+    subject = request.args.get("subject")  # ✅ NEW: subject filter
+
+    with open("students.json", "r") as f:
+        students = json.load(f)["students"]
+
+    filtered = [
+        s for s in students
+        if s.get("class", "").strip().lower() == class_name.strip().lower()
+    ]
+
+    result = []
+    for student in filtered:
+        submitted = False
+        if subject:
+            subs = view_submissions_by_id(student["id"], subject_filter=subject)
+            submitted = bool(subs)
+        result.append({
+            "id": student["id"],
+            "name": student["name"],
+            "class": student["class"],
+            "submitted": submitted  # ✅ NEW: submission status
+        })
+
+    return jsonify(result)
+
+@app.route('/api/view-submissions', methods=['GET'])
+def api_view_submissions():
+    class_name = request.args.get("class")
+    subject = request.args.get("subject")
+
+    with open("students.json", "r") as f:
+        students = json.load(f)["students"]
+
+    filtered = [
+        s for s in students
+        if s["class"].strip().lower() == class_name.strip().lower()
+    ]
+
+    result = []
+    for student in filtered:
+        subs = view_submissions_by_id(student["id"], subject_filter=subject)
+        if subs:
+            result.append({
+                "name": student["name"],
+                "id": student["id"],
+                "submitted_on": subs[0]["date"]
+            })
+
+    return jsonify(result)
+
 # 🚀 Run Server
 if __name__ == '__main__':
     app.run(port=5000)

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Assignment</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="form-container">
+    <h2>📘 Add Assignment</h2>
+<form id="assignment-form">
+  <label>Class:</label>
+  <input type="text" id="class" placeholder="Enter class name">
+
+  <label>Subject:</label>
+  <input type="text" id="subject" placeholder="Enter subject">
+
+  <label>Deadline:</label>
+  <input type="date" id="deadline">
+
+  <button type="submit">Add Assignment</button>
+  <p id="status-message"></p>
+</form>
+
+<script src="script.js"></script>
+<script>
+  window.onload = () => {
+    populateClassDropdown("class");
+  };
+
+  document.getElementById("assignment-form").onsubmit = (e) => {
+    e.preventDefault();
+    const className = document.getElementById("class").value.trim();
+    const subject = document.getElementById("subject").value.trim();
+    const deadline = document.getElementById("deadline").value;
+    const status = document.getElementById("status-message");
+
+    fetch("http://localhost:5000/api/add-assignment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ class: className, subject, deadline })
+    })
+    .then(res => res.json())
+    .then(data => {
+      status.textContent = data.success ? "✅ Assignment added!" : "❌ Failed to add.";
+    })
+    .catch(err => {
+      console.error("Error:", err);
+      status.textContent = "❌ Server error.";
+    });
+  };
+</script>
+</body>
+</html>

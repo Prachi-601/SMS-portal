@@ -54,7 +54,7 @@ def view_assignments(student_id=None):
 def submit_assignment(student_id, subject):
     student = get_student_by_id(student_id)
     if not student:
-        print("❌ Student not found.")
+        print(f"❌ Student ID {student_id} not found. Skipping.")
         return
 
     student_class = student["class"]
@@ -75,7 +75,7 @@ def submit_assignment(student_id, subject):
 
     for s in data:
         if s["student_id"] == student_id and s["subject"].lower() == subject.lower():
-            print("⚠️ Submission already recorded for this subject.")
+            print(f"⚠️ Already submitted: Student {student_id}, Subject {subject}")
             return
 
     data.append(submission)
@@ -83,8 +83,7 @@ def submit_assignment(student_id, subject):
     with open("assignment_submissions.json", "w") as f:
         json.dump(data, f, indent=4)
 
-    print(f"✅ Submission recorded for Student ID: {student_id}")
-
+    print(f"✅ Submission recorded for Student ID: {student_id}, Subject: {subject}")
 def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
     try:
         with open("assignment_submissions.json", "r") as f:
