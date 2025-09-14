@@ -36,10 +36,11 @@
       </div>
     </div>
     <div class="content-area" id="content-area">
-  <div id="content-display">
-    <h2>Select an option from the menu</h2>
+      <div id="content-display">
+        <h2>Select an option from the menu</h2>
+      </div>
+    </div>
   </div>
-</div>
 
   <script>
     function logout() {
@@ -47,93 +48,94 @@
     }
 
     const subMenus = {
-  student: [
-    "📋 View Students",
-    "➕ Add Student",
-    "🔍 Search by ID / Name",
-    "✏️ Edit/Delete Student"
-  ],
-  attendance: [
-    "📝 Mark Attendance",
-    "👨‍🏫 View Teachers"
-  ],
-  assignments: [
-    "🆕 Add Assignment",
-    "📤 Submit Assignment",
-    "📥 View Submissions"
-  ],
-  marks: [
-    "📅 Schedule Test",
-    "🧮 Add Marks",
-    "👤 View Marks by Student",
-    "📘 View Marks by Subject"
-  ],
-  timetable: [
-    "🗓️ Create Timetable",
-    "📖 View Timetable",
-    "📚 Enter Subjects"
-  ]
-};
+      student: [
+        "📋 View Students",
+        "➕ Add Student",
+        "🔍 Search by ID / Name",
+        "✏️ Edit/Delete Student"
+      ],
+      attendance: [
+        "📝 Mark Attendance",
+        "👨‍🏫 View Teachers"
+      ],
+      assignments: [
+        "🆕 Add Assignment",
+        "📤 Submit Assignment",
+        "📥 View Submissions",
+        "🛠️ Edit/Delete Assignment"  // ✅ New submenu item
+      ],
+      marks: [
+        "📅 Schedule Test",
+        "🧮 Add Marks",
+        "👤 View Marks by Student",
+        "📘 View Marks by Subject"
+      ],
+      timetable: [
+        "🗓️ Create Timetable",
+        "📖 View Timetable",
+        "📚 Enter Subjects"
+      ]
+    };
 
     function openCategory(category) {
-  document.getElementById("menu-wrapper").style.display = "none";
-  document.getElementById("dashboard").style.display = "flex";
+      document.getElementById("menu-wrapper").style.display = "none";
+      document.getElementById("dashboard").style.display = "flex";
 
-  const sidebarMenu = document.getElementById("sidebar-menu");
-  sidebarMenu.innerHTML = "";
+      const sidebarMenu = document.getElementById("sidebar-menu");
+      sidebarMenu.innerHTML = "";
 
-  // ✅ Add back button ONCE before the submenu items
-  const backItem = document.createElement("li");
-  backItem.textContent = "⬅️ Back to Main Menu";
-  backItem.classList.add("back-button");
-  backItem.onclick = goBack;
-  sidebarMenu.appendChild(backItem);
+      const backItem = document.createElement("li");
+      backItem.textContent = "⬅️ Back to Main Menu";
+      backItem.classList.add("back-button");
+      backItem.onclick = goBack;
+      sidebarMenu.appendChild(backItem);
 
-  // ✅ Now add submenu items
-  subMenus[category].forEach(item => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    li.onclick = () => loadContent(item);
-    sidebarMenu.appendChild(li);
-  });
+      subMenus[category].forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        li.onclick = () => loadContent(item);
+        sidebarMenu.appendChild(li);
+      });
 
-  loadContent(subMenus[category][0]);
-}
+      loadContent(subMenus[category][0]);
+    }
 
-  function loadContent(title) {
-  const content = document.getElementById("content-display");
+    function loadContent(title) {
+      const content = document.getElementById("content-display");
 
-const pageMap = {
-  "📋 View Students": "teacher-view-students.html",
-  "➕ Add Student": "teacher-add-student.html",
-  "🔍 Search by ID / Name": "teacher-search-student.html",
-  "✏️ Edit/Delete Student": "teacher-edit-delete-student.html",
-  "📝 Mark Attendance": "mark-attendance.html",
-  "👨‍🏫 View Teachers": "view-teachers.html",
-  "🆕 Add Assignment": "add-assignment.html",
-  "📤 Submit Assignment": "submit-assignment.html",
-  "📥 View Submissions": "view-submissions.html",
-  "📅 Schedule Test": "schedule-test.html",
-  "🧮 Add Marks": "add-marks.html",
-  "👤 View Marks by Student": "view-marks-student.html",
-  "📘 View Marks by Subject": "view-marks-subject.html",
-  "🗓️ Create Timetable": "create-timetable.html",
-  "📖 View Timetable": "view-timetable.html",
-  "📚 Enter Subjects": "enter-subjects.html"
-};
+      const pageMap = {
+        "📋 View Students": "teacher-view-students.html",
+        "➕ Add Student": "teacher-add-student.html",
+        "🔍 Search by ID / Name": "teacher-search-student.html",
+        "✏️ Edit/Delete Student": "teacher-edit-delete-student.html",
+        "📝 Mark Attendance": "mark-attendance.html",
+        "👨‍🏫 View Teachers": "view-teachers.html",
+        "🆕 Add Assignment": "add-assignment.html",
+        "📤 Submit Assignment": "submit-assignment.html",
+        "📥 View Submissions": "view-submissions.html",
+        "🛠️ Edit/Delete Assignment": "edit-delete-assignment.html",  // ✅ New page mapping
+        "📅 Schedule Test": "schedule-test.html",
+        "🧮 Add Marks": "add-marks.html",
+        "👤 View Marks by Student": "view-marks-student.html",
+        "📘 View Marks by Subject": "view-marks-subject.html",
+        "🗓️ Create Timetable": "create-timetable.html",
+        "📖 View Timetable": "view-timetable.html",
+        "📚 Enter Subjects": "enter-subjects.html"
+      };
 
-  const page = pageMap[title];
-  if (page) {
-    content.innerHTML = `<iframe src="${page}" width="100%" height="600px" style="border:none;"></iframe>`;
-  } else {
-    content.innerHTML = `<h2>${title}</h2><p>Content for "${title}" will appear here.</p>`;
-  }
-}
+      const page = pageMap[title];
+      if (page) {
+        content.innerHTML = `<iframe src="${page}" width="100%" height="600px" style="border:none;"></iframe>`;
+      } else {
+        content.innerHTML = `<h2>${title}</h2><p>Content for "${title}" will appear here.</p>`;
+      }
+    }
+
     function goBack() {
-  document.getElementById("dashboard").style.display = "none";
-  document.getElementById("menu-wrapper").style.display = "flex";
-  document.getElementById("back-button").style.display = "none";
-}
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("menu-wrapper").style.display = "flex";
+      document.getElementById("back-button").style.display = "none";
+    }
   </script>
 </body>
 </html>

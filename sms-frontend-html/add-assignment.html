@@ -4,51 +4,95 @@
   <meta charset="UTF-8">
   <title>Add Assignment</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .assignment-form {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .assignment-form label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .assignment-form input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .assignment-form button {
+      padding: 10px 16px;
+      background-color: #b39ddb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .assignment-form button:hover {
+      background-color: #9575cd;
+    }
+
+    #status-message {
+      margin-top: 12px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <div class="form-container">
+  <div class="assignment-form">
     <h2>📘 Add Assignment</h2>
-<form id="assignment-form">
-  <label>Class:</label>
-  <input type="text" id="class" placeholder="Enter class name">
+    <form id="assignment-form">
+      <label>Class:</label>
+      <input type="text" id="class" placeholder="Enter class name">
 
-  <label>Subject:</label>
-  <input type="text" id="subject" placeholder="Enter subject">
+      <label>Subject:</label>
+      <input type="text" id="subject" placeholder="Enter subject">
 
-  <label>Deadline:</label>
-  <input type="date" id="deadline">
+      <label>Deadline:</label>
+      <input type="date" id="deadline">
 
-  <button type="submit">Add Assignment</button>
-  <p id="status-message"></p>
-</form>
+      <button type="submit">Add Assignment</button>
+      <p id="status-message"></p>
+    </form>
+  </div>
 
-<script src="script.js"></script>
-<script>
-  window.onload = () => {
-    populateClassDropdown("class");
-  };
+  <script src="script.js"></script>
+  <script>
+    window.onload = () => {
+      populateClassDropdown("class");
+    };
 
-  document.getElementById("assignment-form").onsubmit = (e) => {
-    e.preventDefault();
-    const className = document.getElementById("class").value.trim();
-    const subject = document.getElementById("subject").value.trim();
-    const deadline = document.getElementById("deadline").value;
-    const status = document.getElementById("status-message");
+    document.getElementById("assignment-form").onsubmit = (e) => {
+      e.preventDefault();
+      const className = document.getElementById("class").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+      const deadline = document.getElementById("deadline").value;
+      const status = document.getElementById("status-message");
 
-    fetch("http://localhost:5000/api/add-assignment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ class: className, subject, deadline })
-    })
-    .then(res => res.json())
-    .then(data => {
-      status.textContent = data.success ? "✅ Assignment added!" : "❌ Failed to add.";
-    })
-    .catch(err => {
-      console.error("Error:", err);
-      status.textContent = "❌ Server error.";
-    });
-  };
-</script>
+      fetch("http://localhost:5000/api/add-assignment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ class: className, subject, deadline })
+      })
+      .then(res => res.json())
+      .then(data => {
+        status.textContent = data.success ? "✅ Assignment added!" : "❌ Failed to add.";
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        status.textContent = "❌ Server error.";
+      });
+    };
+  </script>
 </body>
 </html>

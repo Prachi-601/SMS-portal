@@ -9,8 +9,8 @@ import os
 from dotenv import load_dotenv
 import time
 from student import add_student  
-from assignment import add_assignment
-from assignment import submit_assignment
+from assignment import add_assignment,submit_assignment,edit_assignment_by_fields,delete_assignment_by_fields
+from assignment_views import view_submissions_by_id
 from utils import get_student_by_class
 
 load_dotenv()
@@ -430,7 +430,6 @@ def api_submit_assignment():
     skipped_ids = []
 
     for student_id in data["student_ids"]:
-        # ✅ Check if already submitted
         existing = view_submissions_by_id(student_id, subject_filter=subject)
         if not existing:
             submit_assignment(student_id, subject)
@@ -505,6 +504,32 @@ def api_view_submissions():
 
     return jsonify(result)
 
+@app.route('/api/edit-assignment', methods=['PATCH'])
+def api_edit_assignment():
+    data = request.get_json()
+    print("🛠️ Edit request received:", data)
+    success = edit_assignment_by_fields(
+        data["class"],
+        data["subject"],
+        data["deadline"],
+        {
+            "class": data.get("new_class"),
+            "subject": data.get("new_subject"),
+            "deadline": data.get("new_deadline")
+        }
+    )
+    return jsonify({"success": success})
+
+@app.route('/api/delete-assignment', methods=['DELETE'])
+def api_delete_assignment():
+    data = request.get_json()
+    print("🗑️ Delete request received:", data)
+    success = delete_assignment_by_fields(
+        data["class"],
+        data["subject"],
+        data["deadline"]
+    )
+    return jsonify({"success": success})
 # 🚀 Run Server
 if __name__ == '__main__':
     app.run(port=5000)

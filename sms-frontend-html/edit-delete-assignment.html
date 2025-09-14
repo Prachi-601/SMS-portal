@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Assignments</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .assignment-form {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    label, select {
+      display: block;
+      margin-top: 15px;
+      font-size: 18px;
+      width: 100%;
+    }
+
+    select {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .assignment-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .assignment-info {
+      flex-grow: 1;
+    }
+
+    .assignment-actions button {
+      margin-left: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #b39ddb;
+      color: white;
+    }
+
+    .assignment-actions button:hover {
+      background-color: #9575cd;
+    }
+
+    .edit-form {
+      margin-top: 10px;
+      background-color: #f5f0ff;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .edit-form input {
+      width: 100%;
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .edit-form button {
+      margin-top: 10px;
+      background-color: #6a1b9a;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .edit-form button:hover {
+      background-color: #4e1480;
+    }
+
+    #status-message {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #6a1b9a;
+    }
+  </style>
+</head>
+<body>
+  <div class="assignment-form">
+    <h2>🛠️ Manage Assignments</h2>
+
+    <label for="class">Select Class:</label>
+    <select id="class"></select>
+
+    <div id="assignment-list"></div>
+
+    <p id="status-message"></p>
+  </div>
+<script>
+  window.onload = () => {
+    fetch("http://localhost:5000/api/classes")
+      .then(res => res.json())
+      .then(data => {
+        const dropdown = document.getElementById("class");
+        dropdown.innerHTML = "<option disabled selected>— Select Class —</option>";
+        data.classes.forEach(cls => {
+          const opt = document.createElement("option");
+          opt.value = cls;
+          opt.textContent = cls;
+          dropdown.appendChild(opt);
+        });
+      });
+
+    document.getElementById("class").onchange = () => {
+      const className = document.getElementById("class").value;
+      fetch(`http://localhost:5000/api/class-assignments?class=${className}`)
+        .then(res => res.json())
+        .then(assignments => {
+          const container = document.getElementById("assignment-list");
+          container.innerHTML = "";
+
+          if (!assignments.length) {
+            container.innerHTML = "<p>📭 No assignments found.</p>";
+            return;
+          }
+
+          assignments.forEach(a => {
+            const row = document.createElement("div");
+            row.className = "assignment-row";
+
+            const info = document.createElement("div");
+            info.className = "assignment-info";
+            info.textContent = `📚 ${a.subject} — Deadline: ${a.deadline}`;
+
+            const actions = document.createElement("div");
+            actions.className = "assignment-actions";
+
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "✏️ Edit";
+            editBtn.onclick = () => showEditForm(a);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "🗑️ Delete";
+            deleteBtn.onclick = () => deleteAssignment(a.class, a.subject, a.deadline);
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+
+            row.appendChild(info);
+            row.appendChild(actions);
+            container.appendChild(row);
+          });
+        });
+    };
+  };
+
+  function showEditForm(assignment) {
+    const container = document.getElementById("assignment-list");
+    const form = document.createElement("div");
+    form.className = "edit-form";
+
+    form.innerHTML = `
+      <label>Edit Subject:</label>
+      <input type="text" id="edit-subject" value="${assignment.subject}">
+      <label>Edit Deadline:</label>
+      <input type="date" id="edit-deadline" value="${assignment.deadline}">
+      <label>Edit Class:</label>
+      <input type="text" id="edit-class" value="${assignment.class}">
+      <button onclick="submitEdit('${assignment.class}', '${assignment.subject}', '${assignment.deadline}')">Save Changes</button>
+    `;
+
+    container.appendChild(form);
+  }
+
+  function submitEdit(originalClass, originalSubject, originalDeadline) {
+    const newSubject = document.getElementById("edit-subject").value.trim();
+    const newDeadline = document.getElementById("edit-deadline").value;
+    const newClass = document.getElementById("edit-class").value.trim();
+
+    fetch("http://localhost:5000/api/edit-assignment", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        class: originalClass,
+        subject: originalSubject,
+        deadline: originalDeadline,
+        new_class: newClass,
+        new_subject: newSubject,
+        new_deadline: newDeadline
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("status-message").textContent = data.success
+        ? "✅ Assignment updated successfully."
+        : "❌ Failed to update assignment.";
+      document.getElementById("class").dispatchEvent(new Event("change"));
+    });
+  }
+
+  function deleteAssignment(className, subject, deadline) {
+    if (!confirm("Are you sure you want to delete this assignment?")) return;
+
+    fetch("http://localhost:5000/api/delete-assignment", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ class: className, subject: subject, deadline: deadline })
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("status-message").textContent = data.success
+        ? "🗑️ Assignment deleted."
+        : "❌ Failed to delete assignment.";
+      document.getElementById("class").dispatchEvent(new Event("change"));
+    });
+  }
+</script>
+</body>
+</html>

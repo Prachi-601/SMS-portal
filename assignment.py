@@ -31,7 +31,6 @@ def view_assignments(student_id=None):
         print("⚠️ No assignments found.")
         return
 
-    # Load submissions if student_id is provided
     submitted_subjects = set()
     if student_id is not None:
         try:
@@ -84,6 +83,7 @@ def submit_assignment(student_id, subject):
         json.dump(data, f, indent=4)
 
     print(f"✅ Submission recorded for Student ID: {student_id}, Subject: {subject}")
+
 def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
     try:
         with open("assignment_submissions.json", "r") as f:
@@ -129,6 +129,80 @@ def get_assignment_summary_by_name(name):
         if name.strip().lower() in a.get("subject", "").strip().lower()
     ]
     return summary
+
+# ✅ NEW FUNCTIONS FOR EDIT/DELETE MODULES (ID-Free)
+
+def get_assignments_by_class(class_name):
+    try:
+        with open("assignments.json", "r") as f:
+            assignments = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+    return [
+        a for a in assignments
+        if a.get("class", "").strip().lower() == class_name.strip().lower()
+    ]
+
+def edit_assignment_by_fields(class_name, subject, deadline, updated_fields):
+    try:
+        with open("assignments.json", "r") as f:
+            assignments = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return False
+
+    for a in assignments:
+        if (
+            a.get("class") == class_name and
+            a.get("subject") == subject and
+            a.get("deadline") == deadline
+        ):
+            for key in ["class", "subject", "deadline"]:
+                if key in updated_fields and updated_fields[key]:
+                    a[key] = updated_fields[key]
+            break
+    else:
+        return False
+
+    with open("assignments.json", "w") as f:
+        json.dump(assignments, f, indent=4)
+    return True
+
+def delete_assignment_by_fields(class_name, subject, deadline):
+    try:
+        with open("assignments.json", "r") as f:
+            assignments = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return False
+
+    updated = [
+        a for a in assignments
+        if not (
+            a.get("class") == class_name and
+            a.get("subject") == subject and
+            a.get("deadline") == deadline
+        )
+    ]
+
+    if len(updated) == len(assignments):
+        return False
+
+    with open("assignments.json", "w") as f:
+        json.dump(updated, f, indent=4)
+    return True
+
+def get_submission_records(class_name, subject):
+    try:
+        with open("assignment_submissions.json", "r") as f:
+            submissions = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+    return [
+        s for s in submissions
+        if s.get("class", "").lower() == class_name.lower()
+        and s.get("subject", "").lower() == subject.lower()
+    ]
 
 # ✅ CLI block for testing
 if __name__ == "__main__":

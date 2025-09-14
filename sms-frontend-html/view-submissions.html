@@ -5,6 +5,15 @@
   <title>View Submissions</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    .assignment-form {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
     .submission-row {
       display: flex;
       justify-content: space-between;
@@ -30,10 +39,36 @@
     #submission-list p {
       margin: 4px 0;
     }
+
+    label, select, button {
+      display: block;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #b39ddb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #9575cd;
+    }
   </style>
 </head>
 <body>
-  <div class="form-container">
+  <div class="assignment-form">
     <h2>📊 View Submissions</h2>
 
     <!-- Dropdowns -->
@@ -55,7 +90,6 @@
       populateClassDropdown("class");
     };
 
-    // Populate class dropdown with default option
     function populateClassDropdown(dropdownId) {
       fetch("http://localhost:5000/api/classes")
         .then(res => res.json())
@@ -82,7 +116,6 @@
         });
     }
 
-    // Load subjects when class changes
     document.getElementById("class").onchange = () => {
       const className = document.getElementById("class").value.trim();
       if (!className) return;
@@ -108,7 +141,7 @@
             subjectDropdown.appendChild(opt);
           });
 
-          document.getElementById("submission-list").innerHTML = ""; // Clear previous results
+          document.getElementById("submission-list").innerHTML = "";
         })
         .catch(err => {
           console.error("❌ Failed to load subjects:", err);
@@ -116,7 +149,6 @@
         });
     };
 
-    // Fetch submissions when button is clicked
     document.getElementById("view-btn").onclick = () => {
       const className = document.getElementById("class").value.trim();
       const subject = document.getElementById("subject").value.trim();
