@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Schedule Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #f5f0ff; margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;">
+  <div class="content-wrapper" style="width: 100%; max-width: 700px; background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 0 12px rgba(0,0,0,0.06); text-align: center;">
+    <h2 style="margin-bottom: 20px; font-size: 24px; color: #4b3c7d;">📅 Schedule a New Test</h2>
+
+    <form id="scheduleForm">
+      <label>Class:</label>
+      <select id="classSelect" name="class" required>
+        <option value="">-- Select Class --</option>
+      </select>
+
+      <label>Subject:</label>
+      <input type="text" name="subject" required />
+
+      <label>Date:</label>
+      <input type="date" name="date" required />
+
+      <label>Max Marks:</label>
+      <input type="number" name="max_marks" min="1" required />
+
+      <button type="submit">✅ Schedule Test</button>
+      <div id="test-message" style="margin-top: 15px; font-weight: bold;"></div>
+    </form>
+  </div>
+
+  <script>
+    async function loadClasses() {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/api/classes");
+        const result = await res.json();
+
+        const select = document.getElementById("classSelect");
+        select.innerHTML = '<option value="">-- Select Class --</option>';
+
+        result.classes.forEach(cls => {
+          const option = document.createElement("option");
+          option.value = cls;
+          option.textContent = cls;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error("Failed to load classes:", err);
+        alert("⚠️ Could not load class list.");
+      }
+    }
+
+    document.getElementById("scheduleForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const payload = Object.fromEntries(formData.entries());
+
+      // ✅ Convert date to DD-MM-YYYY before sending
+      const rawDate = payload.date;
+      if (rawDate.includes("-")) {
+        const [year, month, day] = rawDate.split("-");
+        payload.date = `${day}-${month}-${year}`;
+      }
+
+      const msgBox = document.getElementById("test-message");
+      msgBox.textContent = "";
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/api/schedule-test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        msgBox.textContent = result.message || (result.success ? "✅ Test scheduled!" : "❌ Failed to schedule test.");
+        msgBox.style.color = result.success ? "green" : "red";
+
+        if (result.success) e.target.reset();
+
+        setTimeout(() => {
+          msgBox.textContent = "";
+        }, 4000);
+      } catch (err) {
+        console.error("Submission error:", err);
+        msgBox.textContent = "❌ Error submitting test schedule.";
+        msgBox.style.color = "red";
+      }
+    });
+
+    window.onload = loadClasses;
+  </script>
+</body>
+</html>

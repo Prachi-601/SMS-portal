@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
 import time
+from datetime import datetime
 from student import add_student  
 from assignment import add_assignment,submit_assignment,edit_assignment_by_fields,delete_assignment_by_fields
 from assignment_views import view_submissions_by_id
@@ -530,6 +531,438 @@ def api_delete_assignment():
         data["deadline"]
     )
     return jsonify({"success": success})
+def convert_date(date_str):
+    try:
+        return datetime.strptime(date_str.strip(), "%Y-%m-%d").strftime("%d-%m-%Y")
+    except ValueError:
+        return None
+
+# 🔧 Helper: View test marks by student ID
+def view_test_marks_by_id(student_id, subject_filter="", date_filter=""):
+    try:
+        with open("marks.json", "r") as f:
+            marks = json.load(f)
+    except:
+        return []
+
+    filtered = [m for m in marks if str(m.get("student_id")) == str(student_id)]
+
+    if subject_filter:
+        filtered = [m for m in filtered if m.get("subject", "").strip().lower() == subject_filter.strip().lower()]
+    if date_filter:
+        filtered = [m for m in filtered if m.get("date", "").strip() == date_filter.strip()]
+
+    return filtered
+
+# ✅ Schedule Test
+@app.route('/api/scheduled-tests', methods=['GET'])
+def get_scheduled_tests():
+    class_name = request.args.get("class", "").strip()
+    if not class_name:
+        return jsonify({"success": False, "message": "Missing class name"}), 400
+
+    try:
+        with open("tests.json", "r", encoding="utf-8") as f:
+            tests = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify({"success": False, "message": "Could not load test data"}), 500
+
+    # ✅ Normalize class name for matching
+    filtered = [t for t in tests if t.get("class", "").strip().lower() == class_name.lower()]
+    filtered.sort(key=lambda t: datetime.strptime(t["date"], "%d-%m-%Y"))
+
+    return jsonify({"success": True, "tests": filtered})
+
+# ✅ Save Marks
+@app.route('/api/save-marks', methods=['POST'])
+def api_save_marks():
+    try:
+        data = request.get_json()
+        subject = data.get("subject", "").strip()
+        test_date = data.get("date", "").strip()
+        marks_data = data.get("marks_data", [])
+
+        if not subject or not test_date or not marks_data:
+            return jsonify({"success": False, "message": "Missing fields"}), 400
+
+        try:
+            datetime.strptime(test_date, "%d-%m-%Y")
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid date format"}), 400
+
+        with open("tests.json", "r", encoding="utf-8") as f:
+            tests = json.load(f)
+
+        test_info = next(
+            (t for t in tests if t["subject"].strip().lower() == subject.lower() and t["date"].strip() == test_date),
+            None
+        )
+
+        if not test_info:
+            return jsonify({"success": False, "message": "Test not found"}), 404
+
+        test_class = test_info["class"]
+        max_marks = test_info.get("max_marks")
+
+        try:
+            with open("marks.json", "r", encoding="utf-8") as f:
+                existing = json.load(f)
+        except:
+            existing = []
+
+        existing_keys = {(m["student_id"], m["subject"], m["date"]) for m in existing}
+        new_entries = []
+
+        for entry in marks_data:
+            key = (entry["student_id"], subject, test_date)
+            if key in existing_keys:
+                continue
+            try:
+                marks = float(entry["marks"])
+                if marks < 0 or marks > max_marks:
+                    continue
+            except:
+                continue
+
+            new_entries.append({
+                "student_id": entry["student_id"],
+                "name": entry["name"],
+                "subject": subject,
+                "date": test_date,
+                "marks": marks,
+                "max_marks": max_marks,
+                "class": test_class
+            })
+
+        existing.extend(new_entries)
+
+        with open("marks.json", "w", encoding="utf-8") as f:
+            json.dump(existing, f, indent=4)
+
+        return jsonify({
+            "success": True,
+            "added": len(new_entries),
+            "skipped": len(marks_data) - len(new_entries)
+        })
+    except Exception as e:
+        print("🔥 Error in /api/save-marks:", e)
+        return jsonify({"success": False, "message": "Server error"}), 500
+
+# ✅ Subject Marks Analytics
+@app.route('/api/subject-marks', methods=['GET'])
+def api_subject_marks():
+    subject = request.args.get("subject", "").strip().lower()
+    test_date = request.args.get("date", "").strip()
+
+    try:
+        datetime.strptime(test_date, "%d-%m-%Y")
+    except ValueError:
+        return jsonify({"success": False, "message": "Invalid date format"}), 400
+
+    try:
+        with open("marks.json", "r") as f:
+            data = json.load(f)
+    except:
+        return jsonify({"success": False, "message": "No marks data found"}), 404
+
+    found = [
+        m for m in data
+        if m.get("subject", "").strip().lower() == subject and m.get("date", "").strip() == test_date
+    ]
+
+    if not found:
+        return jsonify({"success": False, "message": "No marks found"}), 404
+
+    try:
+        total = sum(m["marks"] for m in found)
+        highest = max(m["marks"] for m in found)
+        lowest = min(m["marks"] for m in found)
+        average = round(total / len(found), 2)
+    except:
+        return jsonify({"success": False, "message": "Invalid marks data"}), 500
+
+    return jsonify({
+        "success": True,
+        "subject": subject,
+        "date": test_date,
+        "marks": found,
+        "analytics": {
+            "average": average,
+            "highest": highest,
+            "lowest": lowest
+        }
+    })
+@app.route('/api/student-marks', methods=['GET'])
+def api_student_marks():
+    query = request.args.get("query", "").strip().lower()
+    subject_filter = request.args.get("subject", "").strip().lower()
+
+    if not query:
+        return jsonify({"success": False, "message": "Missing student query"}), 400
+
+    # Load students
+    try:
+        with open("students.json", "r") as f:
+            students_data = json.load(f)["students"]
+    except:
+        return jsonify({"success": False, "message": "Student data not found"}), 500
+
+    # Load marks
+    try:
+        with open("marks.json", "r") as f:
+            marks_data = json.load(f)
+    except:
+        marks_data = []
+
+    # Load tests
+    try:
+        with open("tests.json", "r") as f:
+            tests_data = json.load(f)
+    except:
+        tests_data = []
+
+    # Find student
+    student = None
+    for s in students_data:
+        sid = str(s.get("id", "")).strip().lower()
+        name = s.get("name", "").strip().lower()
+        if query in sid or query in name:
+            student = s
+            break
+
+    if not student:
+        return jsonify({"success": False, "message": "Student not found in records"}), 404
+
+    student_class = student.get("class", "").strip().lower()
+
+    # Filter marks
+    student_marks = []
+    for m in marks_data:
+        sid = str(m.get("student_id", "")).strip().lower()
+        name = m.get("name", "").strip().lower()
+        subject = m.get("subject", "").strip().lower()
+
+        if query not in sid and query not in name:
+            continue
+        if subject_filter and subject != subject_filter:
+            continue
+
+        student_marks.append({
+            "subject": m.get("subject", "Unknown"),
+            "date": m.get("date", "Unknown"),
+            "marks": m.get("marks", 0),
+            "max_marks": m.get("max_marks", "N/A")
+        })
+
+    if student_marks:
+        return jsonify({
+            "success": True,
+            "student": {
+                "id": student.get("id"),
+                "name": student.get("name")
+            },
+            "marks": student_marks
+        })
+
+    # Check if test was scheduled
+    test_found = False
+    for t in tests_data:
+        t_class = t.get("class", "").strip().lower()
+        t_subject = t.get("subject", "").strip().lower()
+        if t_class == student_class and (not subject_filter or t_subject == subject_filter):
+            test_found = True
+            break
+
+    if test_found:
+        return jsonify({
+            "success": False,
+            "message": "Test scheduled but not attempted",
+            "student": {
+                "id": student.get("id"),
+                "name": student.get("name")
+            }
+        }), 404
+
+    return jsonify({
+        "success": False,
+        "message": "No test scheduled for this student",
+        "student": {
+            "id": student.get("id"),
+            "name": student.get("name")
+        }
+    }), 404
+@app.route('/api/edit-test', methods=['PATCH'])
+def edit_test_api():
+    try:
+        data = request.get_json()
+        subject = data.get("subject", "").strip()
+        date = data.get("date", "").strip()
+        new_max = data.get("new_max_marks")
+
+        if not subject or not date or new_max is None:
+            return jsonify({"success": False, "message": "Missing fields"}), 400
+
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d")
+            date = parsed_date.strftime("%d-%m-%Y")
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid date format"}), 400
+
+        try:
+            new_max = int(new_max)
+            if new_max <= 0:
+                raise ValueError
+        except:
+            return jsonify({"success": False, "message": "Invalid max marks"}), 400
+
+        try:
+            with open("tests.json", "r") as f:
+                tests = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return jsonify({"success": False, "message": "No test data found"}), 404
+
+        updated = False
+        for test in tests:
+            if test["subject"].lower() == subject.lower() and test["date"] == date:
+                test["max_marks"] = new_max
+                updated = True
+                break
+
+        if not updated:
+            return jsonify({"success": False, "message": "Test not found"}), 404
+
+        with open("tests.json", "w") as f:
+            json.dump(tests, f, indent=4)
+
+        return jsonify({"success": True, "message": "✅ Test updated successfully"})
+    except Exception as e:
+        print("🔥 Error in /api/edit-test:", e)
+        return jsonify({"success": False, "message": "Server error"}), 500
+@app.route('/api/delete-test', methods=['DELETE'])
+def delete_test_api():
+    try:
+        data = request.get_json()
+        subject = data.get("subject", "").strip()
+        date = data.get("date", "").strip()
+
+        if not subject or not date:
+            return jsonify({"success": False, "message": "Missing subject or date"}), 400
+
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d")
+            date = parsed_date.strftime("%d-%m-%Y")
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid date format"}), 400
+
+        try:
+            with open("tests.json", "r") as f:
+                tests = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return jsonify({"success": False, "message": "No test data found"}), 404
+
+        original_len = len(tests)
+        tests = [
+            t for t in tests
+            if not (t["subject"].lower() == subject.lower() and t["date"] == date)
+        ]
+
+        if len(tests) == original_len:
+            return jsonify({"success": False, "message": "Test not found"}), 404
+
+        with open("tests.json", "w") as f:
+            json.dump(tests, f, indent=4)
+
+        return jsonify({"success": True, "message": "🗑️ Test deleted successfully"})
+    except Exception as e:
+        print("🔥 Error in /api/delete-test:", e)
+        return jsonify({"success": False, "message": "Server error"}), 500   
+@app.route('/api/edit-marks', methods=['PATCH'])
+def edit_marks_api():
+    try:
+        data = request.get_json()
+        student_id = str(data.get("student_id", "")).strip()
+        subject = data.get("subject", "").strip()
+        date = data.get("date", "").strip()
+        new_marks = data.get("new_marks")
+
+        if not student_id or not subject or not date or new_marks is None:
+            return jsonify({"success": False, "message": "Missing fields"}), 400
+
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d")
+            date = parsed_date.strftime("%d-%m-%Y")
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid date format"}), 400
+
+        try:
+            new_marks = float(new_marks)
+            if new_marks < 0:
+                raise ValueError
+        except:
+            return jsonify({"success": False, "message": "Invalid marks"}), 400
+
+        try:
+            with open("marks.json", "r") as f:
+                marks_data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return jsonify({"success": False, "message": "No marks data found"}), 404
+
+        updated = False
+        for m in marks_data:
+            if str(m["student_id"]) == student_id and m["subject"].lower() == subject.lower() and m["date"] == date:
+                m["marks"] = new_marks
+                updated = True
+                break
+
+        if not updated:
+            return jsonify({"success": False, "message": "Marks entry not found"}), 404
+
+        with open("marks.json", "w") as f:
+            json.dump(marks_data, f, indent=4)
+
+        return jsonify({"success": True, "message": "✏️ Marks updated successfully"})
+    except Exception as e:
+        print("🔥 Error in /api/edit-marks:", e)
+        return jsonify({"success": False, "message": "Server error"}), 500
+@app.route('/api/delete-marks', methods=['DELETE'])
+def delete_marks_api():
+    try:
+        data = request.get_json()
+        student_id = str(data.get("student_id", "")).strip()
+        subject = data.get("subject", "").strip()
+        date = data.get("date", "").strip()
+
+        if not student_id or not subject or not date:
+            return jsonify({"success": False, "message": "Missing fields"}), 400
+
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d")
+            date = parsed_date.strftime("%d-%m-%Y")
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid date format"}), 400
+
+        try:
+            with open("marks.json", "r") as f:
+                marks_data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return jsonify({"success": False, "message": "No marks data found"}), 404
+
+        original_len = len(marks_data)
+        marks_data = [
+            m for m in marks_data
+            if not (str(m["student_id"]) == student_id and m["subject"].lower() == subject.lower() and m["date"] == date)
+        ]
+
+        if len(marks_data) == original_len:
+            return jsonify({"success": False, "message": "Marks entry not found"}), 404
+
+        with open("marks.json", "w") as f:
+            json.dump(marks_data, f, indent=4)
+
+        return jsonify({"success": True, "message": "🗑️ Marks deleted successfully"})
+    except Exception as e:
+        print("🔥 Error in /api/delete-marks:", e)
+        return jsonify({"success": False, "message": "Server error"}), 500
 # 🚀 Run Server
 if __name__ == '__main__':
     app.run(port=5000)

@@ -3,11 +3,18 @@ from datetime import datetime
 from utils import get_student_by_id
 
 def add_assignment(class_name, subject, deadline):
+    try:
+        # ✅ Validate deadline format
+        datetime.strptime(deadline.strip(), "%d-%m-%Y")
+    except ValueError:
+        print("❌ Invalid deadline format. Use dd-mm-yyyy.")
+        return
+
     assignment = {
         "class": class_name,
         "subject": subject,
-        "deadline": deadline,
-        "created_on": str(datetime.now().date())
+        "deadline": deadline.strip(),
+        "created_on": datetime.now().strftime("%d-%m-%Y")
     }
 
     try:
@@ -57,7 +64,7 @@ def submit_assignment(student_id, subject):
         return
 
     student_class = student["class"]
-    today = str(datetime.now().date())
+    today = datetime.now().strftime("%d-%m-%Y")
 
     submission = {
         "class": student_class,
@@ -215,7 +222,7 @@ if __name__ == "__main__":
     if choice == "1":
         class_name = input("Class: ")
         subject = input("Subject: ")
-        deadline = input("Deadline (YYYY-MM-DD): ")
+        deadline = input("Deadline (dd-mm-yyyy): ")
         add_assignment(class_name, subject, deadline)
 
     elif choice == "2":

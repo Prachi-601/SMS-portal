@@ -121,38 +121,36 @@ a:hover {
 }
 
 /* Initial Menu */
-.menu-center {
-  margin-top: 100px;
-  display: flex;
-  justify-content: center;
-}
 .menu-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: calc(100vh - 60px); /* full height minus navbar */
-  margin-top: 60px; /* match navbar height */
+  height: calc(100vh - 60px);
+  margin-top: 60px;
 }
+
 .menu-card {
   background-color: white;
   padding: 70px 60px;
   border-radius: 16px;
   box-shadow: 0 0 25px rgba(0,0,0,0.1);
   text-align: center;
-  width: 700px; 
+  width: 700px;
 }
 
 .menu-card h2 {
-  font-size: 32px; /* ⬆️ Bigger welcome text */
+  font-size: 32px;
   color: #6a1b9a;
   margin-bottom: 40px;
   font-weight: 600;
 }
+
 .menu-options {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .menu-options button {
   background-color: #b39ddb;
   color: white;
@@ -176,7 +174,7 @@ a:hover {
   margin-top: 60px;
 }
 
-/* Sidebar redesigned as a white card */
+/* Sidebar */
 .sidebar {
   width: 300px;
   background-color: transparent;
@@ -234,6 +232,7 @@ a:hover {
   text-decoration: underline;
   background-color: transparent;
 }
+
 /* Content Area */
 .content-area {
   flex-grow: 1;
@@ -247,6 +246,7 @@ a:hover {
   font-size: 28px;
   margin-bottom: 20px;
 }
+
 .back-arrow {
   font-size: 18px;
   color: #6a1b9a;
@@ -254,19 +254,23 @@ a:hover {
   margin-bottom: 20px;
   text-decoration: underline;
 }
+
 .back-arrow:hover {
   color: #9575cd;
 }
+
+/* Page Wrapper */
 .page-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #e6e6fa; /* light purple */
-  padding: 0 20px; /* prevents edge hugging on small screens */
+  background-color: #e6e6fa;
+  padding: 0 20px;
   box-sizing: border-box;
 }
 
+/* Form Container */
 .form-container {
   background-color: white;
   padding: 30px;
@@ -275,4 +279,77 @@ a:hover {
   width: 100%;
   max-width: 400px;
   text-align: center;
+}
+
+/* Content Wrapper for Embedded Pages */
+.content-wrapper {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.content-wrapper h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #4b3c7d;
+}
+
+.content-wrapper label {
+  display: block;
+  margin: 20px 0 8px;
+  font-weight: bold;
+  font-size: 16px;
+  color: #2f273b;
+}
+
+.content-wrapper input,
+.content-wrapper select {
+  width: 80%;
+  max-width: 500px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #c8bfe7;
+  border-radius: 6px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.content-wrapper input:focus,
+.content-wrapper select:focus {
+  border-color: #a18bd1;
+  outline: none;
+}
+
+.content-wrapper button {
+  margin-top: 30px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #a18bd1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.content-wrapper button:hover {
+  background-color: #8e76c4;
+}
+
+@media (max-width: 600px) {
+  .content-wrapper {
+    padding: 20px;
+  }
+
+  .content-wrapper input,
+  .content-wrapper select,
+  .content-wrapper button {
+    width: 100%;
+    font-size: 15px;
+  }
 }

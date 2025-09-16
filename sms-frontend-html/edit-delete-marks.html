@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit/Delete Marks</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="content-wrapper">
+  <h2>🛠️ Edit/Delete Student Marks</h2>
+
+  <label for="classSelect">Class:</label>
+  <select id="classSelect">
+    <option value="">-- Choose Class --</option>
+    <option value="TYCS">TYCS</option>
+    <option value="SYCS">SYCS</option>
+    <option value="FYCS">FYCS</option>
+  </select>
+
+  <label for="subjectInput">Subject:</label>
+  <input type="text" id="subjectInput" placeholder="Enter subject" />
+
+  <label for="dateInput">Date:</label>
+  <input type="date" id="dateInput" />
+
+  <button onclick="loadMarks()">🔍 Load Marks</button>
+
+  <div id="marksList" style="margin-top: 20px;"></div>
+
+  <script>
+    async function loadMarks() {
+      const className = document.getElementById("classSelect").value.trim();
+      const subject = document.getElementById("subjectInput").value.trim();
+      const date = document.getElementById("dateInput").value.trim();
+
+      if (!className || !subject || !date) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const res = await fetch(`/api/subject-marks?class=${className}&subject=${subject}&date=${date}`);
+      const result = await res.json();
+
+      const container = document.getElementById("marksList");
+      container.innerHTML = "";
+
+      if (!result.success || result.marks.length === 0) {
+        container.innerHTML = "<p>⚠️ No marks found for this test.</p>";
+        return;
+      }
+
+      result.marks.forEach(m => {
+        const row = document.createElement("div");
+        row.classList.add("mark-row");
+        row.innerHTML = `
+          ${m.name} (${m.student_id}) → 
+          <input type="number" value="${m.marks}" min="0" style="width: 60px;" />
+          / ${m.max_marks}
+          <button onclick="updateMarks('${m.student_id}', '${subject}', '${date}', this.previousElementSibling.value)">Update</button>
+          <button onclick="deleteMarks('${m.student_id}', '${subject}', '${date}')">Delete</button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    async function updateMarks(studentId, subject, date, newMarks) {
+      const res = await fetch("/api/edit-marks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_id: studentId, subject, date, new_marks: newMarks })
+      });
+
+      const result = await res.json();
+      alert(result.message);
+    }
+
+    async function deleteMarks(studentId, subject, date) {
+      if (!confirm(`Delete marks for ${studentId} in ${subject} on ${date}?`)) return;
+
+      const res = await fetch("/api/delete-marks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_id: studentId, subject, date })
+      });
+
+      const result = await res.json();
+      alert(result.message);
+      loadMarks(); // Refresh list
+    }
+  </script>
+  </div>
+</body>
+</html>

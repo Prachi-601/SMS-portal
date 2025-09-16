@@ -1,7 +1,32 @@
 [
     {
-        "class": "TYCS",
-        "subject": "STQA",
-        "date": "2025-09-06"
+        "class": "TY BSC CS",
+        "subject": "PM",
+        "date": "20-09-2025",
+        "max_marks": 25
+    },
+    {
+        "class": "FY BSC CS",
+        "subject": "DSA",
+        "date": "20-09-2025",
+        "max_marks": 20
+    },
+    {
+        "class": "TY BMS",
+        "subject": "Taxation",
+        "date": "18-09-2025",
+        "max_marks": 20
+    },
+    {
+        "class": "TY BCom",
+        "subject": "Taxation",
+        "date": "18-09-2025",
+        "max_marks": 20
+    },
+    {
+        "class": "FY BSC CS",
+        "subject": "Linux",
+        "date": "27-09-2025",
+        "max_marks": 20
     }
 ]

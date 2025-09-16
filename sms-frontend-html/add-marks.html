@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Marks</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="content-wrapper">
+    <h2>🧮 Enter Marks for Scheduled Test</h2>
+
+    <label for="classSelect">Class:</label>
+    <select id="classSelect">
+      <option value="">-- Select Class --</option>
+    </select>
+
+    <label for="testSelect">Test:</label>
+    <select id="testSelect">
+      <option value="">-- Select Test --</option>
+    </select>
+
+    <div id="marksForm" style="margin-top: 20px;"></div>
+
+    <script>
+      async function loadClasses() {
+        try {
+          const res = await fetch("http://127.0.0.1:5000/api/classes");
+          const result = await res.json();
+
+          const select = document.getElementById("classSelect");
+          select.innerHTML = '<option value="">-- Select Class --</option>';
+
+          result.classes.forEach(cls => {
+            const option = document.createElement("option");
+            option.value = cls;
+            option.textContent = cls;
+            select.appendChild(option);
+          });
+        } catch (err) {
+          console.error("Failed to load classes:", err);
+          alert("⚠️ Could not load class list.");
+        }
+      }
+
+      document.getElementById("classSelect").addEventListener("change", async (e) => {
+        const className = e.target.value;
+        if (!className) return;
+
+        const res = await fetch(`http://127.0.0.1:5000/api/scheduled-tests?class=${encodeURIComponent(className)}`);
+        const result = await res.json();
+
+        const testSelect = document.getElementById("testSelect");
+        testSelect.innerHTML = "";
+
+        if (!result.success || result.tests.length === 0) {
+          testSelect.innerHTML = "<option>No tests found</option>";
+          return;
+        }
+
+        testSelect.innerHTML = '<option value="">-- Select Test --</option>';
+        result.tests.forEach(t => {
+          const option = document.createElement("option");
+          option.value = `${t.subject}|${t.date}|${t.max_marks}`;
+          option.textContent = `${t.subject} on ${t.date} (Max: ${t.max_marks})`;
+          testSelect.appendChild(option);
+        });
+
+        testSelect.onchange = () => loadStudents(className);
+      });
+
+      async function loadStudents(className) {
+        const testValue = document.getElementById("testSelect").value;
+        if (!testValue) return;
+
+        const [subject, date, max_marks] = testValue.split("|");
+
+        const res = await fetch(`http://127.0.0.1:5000/api/class-students?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subject)}`);
+        const students = await res.json();
+
+        const container = document.getElementById("marksForm");
+        container.innerHTML = `<h3>Enter marks for ${subject} (${date})</h3>`;
+
+        const form = document.createElement("form");
+        form.id = "marksEntryForm";
+
+        students.forEach(s => {
+          const row = document.createElement("div");
+          row.classList.add("mark-row");
+          row.innerHTML = `
+            ${s.name} (${s.id}) ${s.submitted ? "✅" : "❌"}:
+            <input type="number" name="${s.id}" data-name="${s.name}" min="0" max="${max_marks}" ${s.submitted ? "disabled" : "required"} />
+          `;
+          form.appendChild(row);
+        });
+
+        const allDisabled = [...form.querySelectorAll("input")].every(input => input.disabled);
+        if (allDisabled) {
+          const msg = document.createElement("p");
+          msg.textContent = "✅ All students have already submitted marks for this test.";
+          msg.style.color = "green";
+          form.appendChild(msg);
+        }
+
+        const submitBtn = document.createElement("button");
+        submitBtn.textContent = "✅ Submit Marks";
+        submitBtn.type = "submit";
+        form.appendChild(submitBtn);
+
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const marks_data = [];
+
+          for (let [id, value] of formData.entries()) {
+            if (!id || value === "") continue;
+
+            const input = form.querySelector(`input[name="${id}"]`);
+            const name = input.dataset.name || "Unknown";
+
+            marks_data.push({
+              student_id: id,
+              name: name,
+              marks: parseFloat(value)
+            });
+          }
+
+          if (!subject || !date || !max_marks || marks_data.length === 0) {
+            alert("❌ Missing fields");
+            return;
+          }
+
+          console.log("📤 Submitting marks:", marks_data);
+
+          const res = await fetch("http://127.0.0.1:5000/api/save-marks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              subject: subject.trim(),
+              date: date.trim(),
+              marks_data
+            })
+          });
+
+          const result = await res.json();
+          alert(result.success
+            ? `✅ Marks saved!\nAdded: ${result.added}\nSkipped: ${result.skipped}${result.skipped_ids?.length ? "\nSkipped IDs: " + result.skipped_ids.join(", ") : ""}`
+            : result.message);
+
+          if (result.success) form.reset();
+        };
+
+        container.appendChild(form);
+      }
+
+      window.onload = loadClasses;
+    </script>
+  </div>
+</body>
+</html>

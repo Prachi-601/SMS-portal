@@ -2,22 +2,31 @@ import json
 from datetime import datetime
 from utils import get_student_by_id
 
-
 def schedule_test():
     class_name = input("Enter class name: ").strip()
     subject = input("Enter subject: ").strip()
-    test_date = input("Enter test date (YYYY-MM-DD): ").strip()
+    test_date = input("Enter test date (DD-MM-YYYY): ").strip()
 
     try:
-        datetime.strptime(test_date, "%Y-%m-%d")
+        datetime.strptime(test_date, "%d-%m-%Y")  # ✅ Validate DD-MM-YYYY
     except ValueError:
         print("❌ Invalid date format.")
+        return
+
+    try:
+        max_marks = int(input("Enter maximum marks: ").strip())
+        if max_marks <= 0:
+            print("❌ Max marks must be positive.")
+            return
+    except ValueError:
+        print("❌ Invalid marks input.")
         return
 
     test = {
         "class": class_name,
         "subject": subject,
-        "date": test_date
+        "date": test_date,
+        "max_marks": max_marks
     }
 
     try:
@@ -40,36 +49,57 @@ def schedule_test():
 
 def add_marks():
     subject = input("Enter subject: ").strip()
-    test_date = input("Enter test date (YYYY-MM-DD): ").strip()
+    test_date = input("Enter test date (DD-MM-YYYY): ").strip()
+
+    try:
+        datetime.strptime(test_date, "%d-%m-%Y")
+    except ValueError:
+        print("❌ Invalid date format.")
+        return
 
     try:
         with open("students.json", "r") as f:
             students = json.load(f).get("students", [])
-    except (FileNotFoundError, json.JSONDecodeError):
+    except:
         print("⚠️ No student data found.")
         return
 
     try:
         with open("tests.json", "r") as f:
             tests = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+    except:
         print("⚠️ No test schedule found.")
         return
 
     test_class = None
+    max_marks = None
     for test in tests:
         if test["subject"] == subject and test["date"] == test_date:
             test_class = test["class"]
+            max_marks = test.get("max_marks")
             break
 
-    if not test_class:
+    if not test_class or max_marks is None:
         print("❌ No matching test found.")
         return
 
     filtered_students = [s for s in students if s["class"] == test_class]
 
+    try:
+        with open("marks.json", "r") as f:
+            existing = json.load(f)
+    except:
+        existing = []
+
+    existing_keys = {(m["student_id"], m["subject"], m["date"]) for m in existing}
     marks_data = []
+
     for student in filtered_students:
+        key = (student["id"], subject, test_date)
+        if key in existing_keys:
+            print(f"⚠️ Marks already recorded for {student['name']} (ID: {student['id']}). Skipping.")
+            continue
+
         print(f"\nStudent: {student['name']} (ID: {student['id']})")
         try:
             marks = float(input("Enter marks: "))
@@ -82,14 +112,9 @@ def add_marks():
             "name": student["name"],
             "subject": subject,
             "date": test_date,
-            "marks": marks
+            "marks": marks,
+            "max_marks": max_marks
         })
-
-    try:
-        with open("marks.json", "r") as f:
-            existing = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        existing = []
 
     existing.extend(marks_data)
 
@@ -102,62 +127,110 @@ def view_marks_by_student(student_id=None):
     if student_id is None:
         student_id = input("Enter student ID: ").strip()
 
+    start_date = input("Enter start date (DD-MM-YYYY) or press Enter to skip: ").strip()
+    end_date = input("Enter end date (DD-MM-YYYY) or press Enter to skip: ").strip()
+
     try:
         with open("marks.json", "r") as f:
             data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+    except:
         print("⚠️ No marks data found.")
         return
 
-    found = [m for m in data if str(m["student_id"]) == str(student_id)]
+    try:
+        start_dt = datetime.strptime(start_date, "%d-%m-%Y") if start_date else None
+        end_dt = datetime.strptime(end_date, "%d-%m-%Y") if end_date else None
+    except ValueError:
+        print("❌ Invalid date format.")
+        return
 
-    if not found:
-        print("❌ No marks found for this student.")
+    filtered = []
+    for m in data:
+        if str(m["student_id"]) != str(student_id):
+            continue
+        try:
+            mark_date = datetime.strptime(m["date"], "%d-%m-%Y")
+        except:
+            continue
+        if start_dt and mark_date < start_dt:
+            continue
+        if end_dt and mark_date > end_dt:
+            continue
+        filtered.append(m)
+
+    if not filtered:
+        print("❌ No marks found for this student in the given range.")
         return
 
     print(f"\n📊 Marks for Student ID {student_id}:")
-    for m in found:
-        print(f"Subject: {m['subject']}, Date: {m['date']}, Marks: {m['marks']}")
+    for m in filtered:
+        print(f"- Subject: {m['subject']}, Date: {m['date']}, Marks: {m['marks']}/{m.get('max_marks', 'N/A')}")
 
 def view_marks_by_subject():
     subject = input("Enter subject: ").strip()
+    test_date = input("Enter test date (DD-MM-YYYY): ").strip()
+
+    try:
+        datetime.strptime(test_date, "%d-%m-%Y")
+    except ValueError:
+        print("❌ Invalid date format.")
+        return
 
     try:
         with open("marks.json", "r") as f:
             data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+    except:
         print("⚠️ No marks data found.")
         return
 
-    found = [m for m in data if m["subject"].lower() == subject.lower()]
+    found = [m for m in data if m["subject"].lower() == subject.lower() and m["date"] == test_date]
 
     if not found:
-        print("❌ No marks found for this subject.")
+        print("❌ No marks found for this subject and date.")
         return
 
-    print(f"\n📊 Marks for Subject: {subject}")
+    print(f"\n📊 Marks for Subject: {subject} on {test_date}")
+    total = 0
+    highest = float("-inf")
+    lowest = float("inf")
+
     for m in found:
-        print(f"Student ID: {m['student_id']}, Name: {m['name']}, Date: {m['date']}, Marks: {m['marks']}")
+        marks = m["marks"]
+        print(f"Student ID: {m['student_id']}, Name: {m['name']}, Marks: {marks}/{m.get('max_marks', 'N/A')}")
+        total += marks
+        highest = max(highest, marks)
+        lowest = min(lowest, marks)
+
+    average = round(total / len(found), 2)
+    print(f"\n📈 Class Analytics:")
+    print(f"- Average Marks: {average}")
+    print(f"- Highest Marks: {highest}")
+    print(f"- Lowest Marks: {lowest}")
 
 def get_test_marks_by_name(name):
     name = name.strip().lower()
-
     try:
         with open("marks.json", "r") as f:
             marks_data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+    except:
         return []
 
-    return [
-        m for m in marks_data
-        if name in m.get("name", "").strip().lower()
-    ]
+    return [m for m in marks_data if name in m.get("name", "").strip().lower()]
+
+def get_tests_by_class(class_name):
+    try:
+        with open("tests.json", "r") as f:
+            tests = json.load(f)
+    except:
+        return []
+
+    return [t for t in tests if t.get("class", "").strip().lower() == class_name.strip().lower()]
 
 def view_all_tests():
     try:
         with open("tests.json", "r") as f:
             tests = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+    except:
         print("⚠️ No tests found.")
         return
 

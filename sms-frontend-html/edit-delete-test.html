@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit/Delete Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="content-wrapper">
+  <h2>✏️ Edit/Delete Scheduled Tests</h2>
+
+  <label for="classSelect">Select Class:</label>
+  <select id="classSelect">
+    <option value="">-- Choose Class --</option>
+    <option value="TYCS">TYCS</option>
+    <option value="SYCS">SYCS</option>
+    <option value="FYCS">FYCS</option>
+    <!-- Add more classes as needed -->
+  </select>
+
+  <div id="testList" style="margin-top: 20px;"></div>
+
+  <script>
+    document.getElementById("classSelect").addEventListener("change", async (e) => {
+      const className = e.target.value;
+      if (!className) return;
+
+      const res = await fetch(`/api/scheduled-tests?class=${className}`);
+      const result = await res.json();
+
+      const container = document.getElementById("testList");
+      container.innerHTML = "";
+
+      if (!result.success || result.tests.length === 0) {
+        container.innerHTML = "<p>⚠️ No tests found for this class.</p>";
+        return;
+      }
+
+      result.tests.forEach(test => {
+        const row = document.createElement("div");
+        row.classList.add("test-row");
+        row.innerHTML = `
+          <strong>${test.subject}</strong> | ${test.date} | Max Marks: 
+          <input type="number" value="${test.max_marks}" min="1" style="width: 60px;" />
+          <button onclick="updateTest('${test.subject}', '${test.date}', this.previousElementSibling.value)">Update</button>
+          <button onclick="deleteTest('${test.subject}', '${test.date}')">Delete</button>
+        `;
+        container.appendChild(row);
+      });
+    });
+
+    async function updateTest(subject, date, newMax) {
+      const res = await fetch("/api/edit-test", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, date, new_max_marks: newMax })
+      });
+
+      const result = await res.json();
+      alert(result.message);
+    }
+
+    async function deleteTest(subject, date) {
+      if (!confirm(`Are you sure you want to delete ${subject} on ${date}?`)) return;
+
+      const res = await fetch("/api/delete-test", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, date })
+      });
+
+      const result = await res.json();
+      alert(result.message);
+      document.getElementById("classSelect").dispatchEvent(new Event("change")); // Refresh list
+    }
+  </script>
+  </div>
+</body>
+</html>
