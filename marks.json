@@ -3,20 +3,20 @@
         "student_id": "501",
         "name": "Anmol Shukla",
         "subject": "Python",
-        "date": "18-09-2025",
+        "date": "20-09-2025",
         "marks": 12.0,
-        "max_marks": 20,
-        "class": "FY BSC CS",
+        "max_marks": 25,
+        "class": "fy bsc cs",
         "submitted": true
     },
     {
         "student_id": "502",
         "name": "Pritam Kavitkar",
         "subject": "Python",
-        "date": "18-09-2025",
+        "date": "20-09-2025",
         "marks": 15.0,
-        "max_marks": 20,
-        "class": "FY BSC CS",
+        "max_marks": 25,
+        "class": "fy bsc cs",
         "submitted": true
     },
     {

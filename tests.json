@@ -1,9 +1,9 @@
 [
     {
-        "class": "FY BSC CS",
+        "class": "fy bsc cs",
         "subject": "Python",
-        "date": "18-09-2025",
-        "max_marks": 20,
+        "date": "20-09-2025",
+        "max_marks": 25,
         "submitted": true
     },
     {
@@ -38,7 +38,7 @@
         "class": "TY BSC CS",
         "subject": "STQA",
         "date": "18-09-2025",
-        "max_marks": 20,
+        "max_marks": 25,
         "submitted": true
     },
     {
@@ -46,13 +46,6 @@
         "subject": "AI",
         "date": "19-09-2025",
         "max_marks": 25,
-        "submitted": true
-    },
-    {
-        "class": "TY BSC CS",
-        "subject": "INS",
-        "date": "20-09-2025",
-        "max_marks": 30,
         "submitted": true
     }
 ]

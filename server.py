@@ -872,20 +872,31 @@ def api_student_marks():
             "name": student.get("name")
         }
     }), 404
+
 @app.route('/api/edit-test', methods=['PATCH'])
 def edit_test_api():
     try:
         data = request.get_json()
-        subject = data.get("subject", "").strip()
-        date = data.get("date", "").strip()
+        print("📦 Incoming edit payload:", data)
+
+        # Original values for matching
+        original_subject = data.get("original_subject", "").strip().lower()
+        original_date = data.get("original_date", "").strip()
+        original_class = data.get("original_class", "").strip().lower()
+
+        # New values to update
+        new_subject = data.get("subject", "").strip()
+        new_date = data.get("date", "").strip()
+        new_class = data.get("class", "").strip().lower()
         new_max = data.get("new_max_marks")
 
-        if not subject or not date or new_max is None:
+        if not original_subject or not original_date or not original_class or \
+           not new_subject or not new_date or new_max is None or not new_class:
             return jsonify({"success": False, "message": "Missing fields"}), 400
 
         try:
-            parsed_date = datetime.strptime(date, "%Y-%m-%d")
-            date = parsed_date.strftime("%d-%m-%Y")
+            parsed_date = datetime.strptime(new_date, "%d-%m-%Y")
+            new_date = parsed_date.strftime("%d-%m-%Y")
         except ValueError:
             return jsonify({"success": False, "message": "Invalid date format"}), 400
 
@@ -896,6 +907,7 @@ def edit_test_api():
         except:
             return jsonify({"success": False, "message": "Invalid max marks"}), 400
 
+        # Load and update tests.json
         try:
             with open("tests.json", "r") as f:
                 tests = json.load(f)
@@ -904,33 +916,80 @@ def edit_test_api():
 
         updated = False
         for test in tests:
-            if test["subject"].lower() == subject.lower() and test["date"] == date:
+            test_subject = test.get("subject", "").strip().lower()
+            test_date = test.get("date", "").strip()
+            test_class = test.get("class", "").strip().lower()
+
+            print(f"🔍 Checking test: {test_subject} | {test_date} | {test_class}")
+
+            if test_subject == original_subject and test_date == original_date and test_class == original_class:
+                print("✅ Match found in tests.json. Updating...")
+                test["subject"] = new_subject
+                test["date"] = new_date
+                test["class"] = new_class
                 test["max_marks"] = new_max
                 updated = True
                 break
 
         if not updated:
+            print(f"❌ No matching test found for: {original_subject} | {original_date} | {original_class}")
             return jsonify({"success": False, "message": "Test not found"}), 404
 
+        print("💾 Writing updated tests.json...")
         with open("tests.json", "w") as f:
             json.dump(tests, f, indent=4)
 
-        return jsonify({"success": True, "message": "✅ Test updated successfully"})
+        # 🔄 Sync marks.json
+        try:
+            with open("marks.json", "r") as f:
+                marks_data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            marks_data = []
+
+        sync_count = 0
+        for entry in marks_data:
+            entry_subject = entry.get("subject", "").strip().lower()
+            entry_date = entry.get("date", "").strip()
+            entry_class = entry.get("class", "").strip().lower()
+
+            print(f"🔍 Checking mark entry: {entry_subject} | {entry_date} | {entry_class}")
+
+            if entry_subject == original_subject and entry_date == original_date and entry_class == original_class:
+                print("✅ Match found in marks.json. Syncing...")
+                entry["subject"] = new_subject
+                entry["date"] = new_date
+                entry["class"] = new_class
+                entry["max_marks"] = new_max
+                sync_count += 1
+
+        print("💾 Writing updated marks.json...")
+        with open("marks.json", "w") as f:
+            json.dump(marks_data, f, indent=4)
+
+        print(f"✅ Synced {sync_count} marks entries for test: {new_subject} on {new_date}")
+
+        return jsonify({
+            "success": True,
+            "message": f"✅ Test updated successfully. Synced {sync_count} mark entries."
+        })
+
     except Exception as e:
         print("🔥 Error in /api/edit-test:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
+    
 @app.route('/api/delete-test', methods=['DELETE'])
 def delete_test_api():
     try:
         data = request.get_json()
         subject = data.get("subject", "").strip()
         date = data.get("date", "").strip()
+        class_name = data.get("class", "").strip().lower()
 
-        if not subject or not date:
-            return jsonify({"success": False, "message": "Missing subject or date"}), 400
+        if not subject or not date or not class_name:
+            return jsonify({"success": False, "message": "Missing subject, date or class"}), 400
 
         try:
-            parsed_date = datetime.strptime(date, "%Y-%m-%d")
+            parsed_date = datetime.strptime(date, "%d-%m-%Y")
             date = parsed_date.strftime("%d-%m-%Y")
         except ValueError:
             return jsonify({"success": False, "message": "Invalid date format"}), 400
@@ -944,7 +1003,7 @@ def delete_test_api():
         original_len = len(tests)
         tests = [
             t for t in tests
-            if not (t["subject"].lower() == subject.lower() and t["date"] == date)
+            if not (t["subject"].lower() == subject.lower() and t["date"] == date and t["class"].strip().lower() == class_name)
         ]
 
         if len(tests) == original_len:
@@ -956,7 +1015,7 @@ def delete_test_api():
         return jsonify({"success": True, "message": "🗑️ Test deleted successfully"})
     except Exception as e:
         print("🔥 Error in /api/delete-test:", e)
-        return jsonify({"success": False, "message": "Server error"}), 500   
+        return jsonify({"success": False, "message": "Server error"}), 500
 @app.route('/api/edit-marks', methods=['PATCH'])
 def edit_marks_api():
     try:
