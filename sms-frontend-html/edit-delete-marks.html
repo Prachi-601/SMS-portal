@@ -2,92 +2,312 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Edit/Delete Marks</title>
+  <title>🛠️ Edit/Delete Marks</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .marks-form {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .marks-form label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .marks-form select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .test-row {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .test-info {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .test-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .test-actions input {
+      width: 60px;
+      padding: 6px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .test-actions button {
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      background-color: #b39ddb;
+      color: white;
+      border: none;
+    }
+
+    .test-actions button:hover {
+      background-color: #9575cd;
+    }
+
+    #status-message {
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    #analytics {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f3f3f3;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .highlight-empty {
+      background-color: #fff3cd;
+    }
+
+    h2 {
+      color: #4b0082;
+    }
+    .modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none; /* ✅ Hide by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+
+  .modal-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  .modal-box button {
+    margin: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .modal-confirm {
+    background-color: #b39ddb;
+    color: white;
+  }
+
+  .modal-cancel {
+    background-color: #ccc;
+  }
+  </style>
 </head>
 <body>
-    <div class="content-wrapper">
-  <h2>🛠️ Edit/Delete Student Marks</h2>
+  <div class="marks-form">
+    <h2>🛠️ Edit/Delete Student Marks</h2>
 
-  <label for="classSelect">Class:</label>
-  <select id="classSelect">
-    <option value="">-- Choose Class --</option>
-    <option value="TYCS">TYCS</option>
-    <option value="SYCS">SYCS</option>
-    <option value="FYCS">FYCS</option>
-  </select>
+    <label for="classSelect">Select Class:</label>
+    <select id="classSelect">
+      <option value="">-- Choose Class --</option>
+    </select>
 
-  <label for="subjectInput">Subject:</label>
-  <input type="text" id="subjectInput" placeholder="Enter subject" />
+    <label for="testSelect">Select Test:</label>
+    <select id="testSelect">
+      <option value="">-- Choose Test --</option>
+    </select>
 
-  <label for="dateInput">Date:</label>
-  <input type="date" id="dateInput" />
+    <button onclick="loadMarks()">🔍 Load Marks</button>
+    <p id="status-message"></p>
 
-  <button onclick="loadMarks()">🔍 Load Marks</button>
-
-  <div id="marksList" style="margin-top: 20px;"></div>
+    <div id="analytics"></div>
+    <div id="marksList" style="margin-top: 20px;"></div>
+  </div>
 
   <script>
-    async function loadMarks() {
-      const className = document.getElementById("classSelect").value.trim();
-      const subject = document.getElementById("subjectInput").value.trim();
-      const date = document.getElementById("dateInput").value.trim();
+    const BASE_URL = "http://localhost:5000";
 
-      if (!className || !subject || !date) {
-        alert("Please fill all fields.");
+    window.onload = () => {
+      fetch(`${BASE_URL}/api/classes`)
+        .then(res => res.json())
+        .then(data => {
+          const select = document.getElementById("classSelect");
+          if (data.success) {
+            data.classes.forEach(cls => {
+              const option = document.createElement("option");
+              option.value = cls;
+              option.textContent = cls;
+              select.appendChild(option);
+            });
+          }
+        });
+    };
+
+    document.getElementById("classSelect").addEventListener("change", () => {
+      const className = document.getElementById("classSelect").value;
+      const testSelect = document.getElementById("testSelect");
+      testSelect.innerHTML = '<option value="">-- Choose Test --</option>';
+
+      if (!className) return;
+
+      fetch(`${BASE_URL}/api/scheduled-tests?class=${className}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            data.tests.forEach(test => {
+              const option = document.createElement("option");
+              option.value = `${test.subject}|${test.date}`;
+              option.textContent = `${test.subject} — ${test.date}`;
+              testSelect.appendChild(option);
+            });
+          }
+        });
+    });
+
+    function toISODate(ddmmyyyy) {
+      const [d, m, y] = ddmmyyyy.split("-");
+      return `${y}-${m}-${d}`;
+    }
+
+    async function loadMarks() {
+      const rawClass = document.getElementById("classSelect").value;
+      const className = rawClass.trim().toLowerCase();
+      const testValue = document.getElementById("testSelect").value;
+      const status = document.getElementById("status-message");
+      const container = document.getElementById("marksList");
+      const analyticsBox = document.getElementById("analytics");
+
+      if (!className || !testValue) {
+        alert("Please select both class and test.");
         return;
       }
 
-      const res = await fetch(`/api/subject-marks?class=${className}&subject=${subject}&date=${date}`);
-      const result = await res.json();
+      const [subject, date] = testValue.split("|");
 
-      const container = document.getElementById("marksList");
+      status.textContent = "⏳ Loading marks...";
       container.innerHTML = "";
+      analyticsBox.innerHTML = "";
+
+      const res = await fetch(`${BASE_URL}/api/subject-marks?class=${className}&subject=${subject}&date=${date}`);
+      const result = await res.json();
 
       if (!result.success || result.marks.length === 0) {
         container.innerHTML = "<p>⚠️ No marks found for this test.</p>";
+        status.textContent = "";
         return;
       }
 
-      result.marks.forEach(m => {
+      const a = result.analytics;
+      analyticsBox.innerHTML = `
+        <strong>📊 Analytics:</strong><br>
+        Average: ${a.average} | Highest: ${a.highest} | Lowest: ${a.lowest}<br>
+        Top Scorer: ${a.top_scorer?.name ?? 'N/A'} (${a.top_scorer?.student_id ?? '—'})
+      `;
+
+      status.textContent = `✅ Showing ${result.marks.length} students`;
+
+      result.marks.forEach(s => {
         const row = document.createElement("div");
-        row.classList.add("mark-row");
+        row.classList.add("test-row");
+        if (s.marks === null || s.marks === undefined) row.classList.add("highlight-empty");
+
         row.innerHTML = `
-          ${m.name} (${m.student_id}) → 
-          <input type="number" value="${m.marks}" min="0" style="width: 60px;" />
-          / ${m.max_marks}
-          <button onclick="updateMarks('${m.student_id}', '${subject}', '${date}', this.previousElementSibling.value)">Update</button>
-          <button onclick="deleteMarks('${m.student_id}', '${subject}', '${date}')">Delete</button>
+          <div class="test-info">${s.name} (${s.student_id})</div>
+          <div class="test-actions">
+            <input type="number" value="${s.marks ?? ''}" min="0" />
+            / ${s.max_marks ?? 'N/A'}
+            <button onclick="updateMarks('${s.student_id}', '${subject}', '${date}', this.previousElementSibling.value)">Update</button>
+            <button onclick="prepareDelete('${s.student_id}', '${subject}', '${date}')">Delete</button>
+          </div>
         `;
+
         container.appendChild(row);
       });
     }
 
     async function updateMarks(studentId, subject, date, newMarks) {
-      const res = await fetch("/api/edit-marks", {
+      const status = document.getElementById("status-message");
+      const isoDate = toISODate(date);
+
+      const res = await fetch(`${BASE_URL}/api/edit-marks`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student_id: studentId, subject, date, new_marks: newMarks })
+        body: JSON.stringify({ student_id: studentId, subject, date: isoDate, new_marks: newMarks })
       });
 
       const result = await res.json();
-      alert(result.message);
+      status.textContent = result.message;
     }
 
-    async function deleteMarks(studentId, subject, date) {
-      if (!confirm(`Delete marks for ${studentId} in ${subject} on ${date}?`)) return;
+    let pendingDelete = null;
 
-      const res = await fetch("/api/delete-marks", {
-        method: "DELETE",
+    function prepareDelete(studentId, subject, date) {
+      pendingDelete = { studentId, subject, date };
+      document.getElementById("confirmModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("confirmModal").style.display = "none";
+      pendingDelete = null;
+    }
+
+    async function confirmDelete() {
+      if (!pendingDelete) return;
+
+      const { studentId, subject, date } = pendingDelete;
+      const isoDate = toISODate(date);
+      const status = document.getElementById("status-message");
+
+      const res = await fetch(`${BASE_URL}/api/delete-marks?_method=DELETE`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student_id: studentId, subject, date })
+        body: JSON.stringify({ student_id: studentId, subject, date: isoDate })
       });
 
       const result = await res.json();
-      alert(result.message);
-      loadMarks(); // Refresh list
+      status.textContent = result.message;
+      closeModal();
+      loadMarks();
     }
   </script>
+<!-- Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <p id="modalMessage">Are you sure you want to delete this mark?</p>
+    <button class="modal-confirm" onclick="confirmDelete()">Yes, Delete</button>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
   </div>
+</div>
 </body>
 </html>

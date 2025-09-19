@@ -1064,10 +1064,14 @@ def edit_marks_api():
     except Exception as e:
         print("🔥 Error in /api/edit-marks:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
-@app.route('/api/delete-marks', methods=['DELETE'])
+
+@app.route('/api/delete-marks', methods=['POST'])
 def delete_marks_api():
     try:
-        data = request.get_json()
+        # ✅ Ensure JSON body is parsed even for DELETE
+        data = request.get_json(force=True)
+        print("📦 Incoming DELETE payload:", data)  # Optional debug log
+
         student_id = str(data.get("student_id", "")).strip()
         subject = data.get("subject", "").strip()
         date = data.get("date", "").strip()
@@ -1075,34 +1079,44 @@ def delete_marks_api():
         if not student_id or not subject or not date:
             return jsonify({"success": False, "message": "Missing fields"}), 400
 
+        # ✅ Convert date format from YYYY-MM-DD to DD-MM-YYYY
         try:
             parsed_date = datetime.strptime(date, "%Y-%m-%d")
             date = parsed_date.strftime("%d-%m-%Y")
         except ValueError:
             return jsonify({"success": False, "message": "Invalid date format"}), 400
 
+        # ✅ Load marks.json
         try:
             with open("marks.json", "r") as f:
                 marks_data = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return jsonify({"success": False, "message": "No marks data found"}), 404
 
+        # ✅ Filter out the matching entry
         original_len = len(marks_data)
         marks_data = [
             m for m in marks_data
-            if not (str(m["student_id"]) == student_id and m["subject"].lower() == subject.lower() and m["date"] == date)
+            if not (
+                str(m.get("student_id", "")).strip() == student_id and
+                m.get("subject", "").strip().lower() == subject.lower() and
+                m.get("date", "").strip() == date
+            )
         ]
 
         if len(marks_data) == original_len:
             return jsonify({"success": False, "message": "Marks entry not found"}), 404
 
+        # ✅ Save updated marks.json
         with open("marks.json", "w") as f:
             json.dump(marks_data, f, indent=4)
 
         return jsonify({"success": True, "message": "🗑️ Marks deleted successfully"})
+
     except Exception as e:
         print("🔥 Error in /api/delete-marks:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
+
 @app.route('/api/class-students', methods=['GET'])
 def api_class_students():
     class_name = request.args.get("class", "").strip().lower()
