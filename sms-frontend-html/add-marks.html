@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <title>Add Marks</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .mark-row {
+      margin-bottom: 10px;
+    }
+    .status-message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
   <div class="content-wrapper">
@@ -67,90 +76,117 @@
 
         testSelect.onchange = () => loadStudents(className);
       });
-
-      async function loadStudents(className) {
+      async function loadStudents(classNameRaw) {
+        const className = classNameRaw.trim().toLowerCase(); // ✅ Normalize class name
         const testValue = document.getElementById("testSelect").value;
         if (!testValue) return;
 
-        const [subject, date, max_marks] = testValue.split("|");
+        const [rawSubject, rawDate, rawMax] = testValue.split("|");
+        const subject = rawSubject.trim();
+        const date = rawDate.trim();
+        const max_marks = parseInt(rawMax.trim());
 
-        const res = await fetch(`http://127.0.0.1:5000/api/class-students?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subject)}`);
-        const students = await res.json();
+        try {
+          const res = await fetch(`http://127.0.0.1:5000/api/class-students?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subject)}&date=${encodeURIComponent(date)}`);
+          const result = await res.json();
 
-        const container = document.getElementById("marksForm");
-        container.innerHTML = `<h3>Enter marks for ${subject} (${date})</h3>`;
+          const container = document.getElementById("marksForm");
+          container.innerHTML = `<h3>Enter marks for ${subject} (${date})</h3>`;
 
-        const form = document.createElement("form");
-        form.id = "marksEntryForm";
-
-        students.forEach(s => {
-          const row = document.createElement("div");
-          row.classList.add("mark-row");
-          row.innerHTML = `
-            ${s.name} (${s.id}) ${s.submitted ? "✅" : "❌"}:
-            <input type="number" name="${s.id}" data-name="${s.name}" min="0" max="${max_marks}" ${s.submitted ? "disabled" : "required"} />
-          `;
-          form.appendChild(row);
-        });
-
-        const allDisabled = [...form.querySelectorAll("input")].every(input => input.disabled);
-        if (allDisabled) {
-          const msg = document.createElement("p");
-          msg.textContent = "✅ All students have already submitted marks for this test.";
-          msg.style.color = "green";
-          form.appendChild(msg);
-        }
-
-        const submitBtn = document.createElement("button");
-        submitBtn.textContent = "✅ Submit Marks";
-        submitBtn.type = "submit";
-        form.appendChild(submitBtn);
-
-        form.onsubmit = async (e) => {
-          e.preventDefault();
-          const formData = new FormData(form);
-          const marks_data = [];
-
-          for (let [id, value] of formData.entries()) {
-            if (!id || value === "") continue;
-
-            const input = form.querySelector(`input[name="${id}"]`);
-            const name = input.dataset.name || "Unknown";
-
-            marks_data.push({
-              student_id: id,
-              name: name,
-              marks: parseFloat(value)
-            });
-          }
-
-          if (!subject || !date || !max_marks || marks_data.length === 0) {
-            alert("❌ Missing fields");
+          // ✅ Proper check for student array
+          if (!Array.isArray(result.students) || result.students.length === 0) {
+            container.innerHTML += `<p style="color: red;">⚠️ No students found for ${classNameRaw}. Please check your student records.</p>`;
             return;
           }
 
-          console.log("📤 Submitting marks:", marks_data);
+          const students = result.students;
+          const pendingStudents = students.filter(s => !s.submitted);
 
-          const res = await fetch("http://127.0.0.1:5000/api/save-marks", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              subject: subject.trim(),
-              date: date.trim(),
-              marks_data
-            })
+          if (pendingStudents.length === 0) {
+            container.innerHTML += `<p style="color: green;">✅ All marks for this test have been submitted.</p>`;
+            return;
+          }
+
+          const form = document.createElement("form");
+          form.id = "marksEntryForm";
+          form.method = "POST";
+
+          pendingStudents.forEach(s => {
+            const studentId = s.student_id || s.id;
+            const row = document.createElement("div");
+            row.classList.add("mark-row");
+
+            row.innerHTML = `
+              <label>${s.name} (${studentId}):</label>
+              <input type="number" name="${studentId}" data-name="${s.name}" min="0" max="${typeof s.max_marks === 'number' ? s.max_marks : max_marks}" required />
+            `;
+
+            form.appendChild(row);
           });
 
-          const result = await res.json();
-          alert(result.success
-            ? `✅ Marks saved!\nAdded: ${result.added}\nSkipped: ${result.skipped}${result.skipped_ids?.length ? "\nSkipped IDs: " + result.skipped_ids.join(", ") : ""}`
-            : result.message);
+          const submitBtn = document.createElement("button");
+          submitBtn.textContent = "✅ Submit Marks";
+          submitBtn.type = "submit";
+          form.appendChild(submitBtn);
 
-          if (result.success) form.reset();
-        };
+          const statusDiv = document.createElement("div");
+          statusDiv.id = "statusMessage";
+          statusDiv.className = "status-message";
+          form.appendChild(statusDiv);
 
-        container.appendChild(form);
+          form.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const marks_data = [];
+
+            for (let [id, value] of formData.entries()) {
+              if (!id || value === "") continue;
+
+              const input = form.querySelector(`input[name="${id}"]`);
+              const name = input.dataset.name || "Unknown";
+
+              marks_data.push({
+                student_id: id,
+                name: name,
+                marks: parseInt(value),
+                class: classNameRaw.trim(), // preserve original casing
+                subject: subject,
+                date: date,
+                submitted: true
+              });
+            }
+
+            if (marks_data.length === 0) {
+              statusDiv.textContent = "❌ Please enter at least one mark.";
+              statusDiv.style.color = "red";
+              return;
+            }
+
+            const res = await fetch("http://127.0.0.1:5000/api/save-marks", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ subject, date, marks_data })
+            });
+
+            const result = await res.json();
+            if (result.success) {
+              statusDiv.innerHTML = `✅ Marks saved!<br>Added: ${result.added}<br>Skipped: ${result.skipped}`;
+              statusDiv.style.color = "green";
+              form.reset();
+              await loadStudents(classNameRaw); // 🔄 Refresh with original casing
+            } else {
+              statusDiv.textContent = result.message;
+              statusDiv.style.color = "red";
+            }
+          };
+
+          container.appendChild(form);
+        } catch (err) {
+          console.error("❌ Failed to load students:", err);
+          alert("Could not load student data.");
+        }
       }
+      
 
       window.onload = loadClasses;
     </script>

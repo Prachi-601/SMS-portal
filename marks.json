@@ -1,65 +1,42 @@
 [
     {
-        "student_id": "201",
-        "name": "Prachi Kavitkar",
-        "subject": "PM",
-        "date": "20-09-2025",
-        "marks": 12,
-        "max_marks": 25,
-        "class": "TY BSC CS"
+        "student_id": "501",
+        "name": "Anmol Shukla",
+        "subject": "Python",
+        "date": "18-09-2025",
+        "marks": 12.0,
+        "max_marks": 20,
+        "class": "FY BSC CS",
+        "submitted": true
     },
     {
-        "student_id": "202",
-        "name": "Feezanoori Ansari",
-        "subject": "PM",
-        "date": "20-09-2025",
-        "marks": 12,
-        "max_marks": 25,
-        "class": "TY BSC CS"
-    },
-    {
-        "student_id": "203",
-        "name": "Sayali Patil",
-        "subject": "PM",
-        "date": "20-09-2025",
-        "marks": 11,
-        "max_marks": 25,
-        "class": "TY BSC CS"
+        "student_id": "502",
+        "name": "Pritam Kavitkar",
+        "subject": "Python",
+        "date": "18-09-2025",
+        "marks": 15.0,
+        "max_marks": 20,
+        "class": "FY BSC CS",
+        "submitted": true
     },
     {
         "student_id": "501",
         "name": "Anmol Shukla",
         "subject": "DSA",
-        "date": "20-09-2025",
-        "marks": 14.0,
-        "max_marks": 20,
-        "class": "FY BSC CS"
+        "date": "19-09-2025",
+        "marks": 16.0,
+        "max_marks": 25,
+        "class": "FY BSC CS",
+        "submitted": true
     },
     {
         "student_id": "502",
         "name": "Pritam Kavitkar",
         "subject": "DSA",
-        "date": "20-09-2025",
-        "marks": 15.0,
-        "max_marks": 20,
-        "class": "FY BSC CS"
-    },
-    {
-        "student_id": "301",
-        "name": "Payal Prajapati",
-        "subject": "Taxation",
-        "date": "18-09-2025",
-        "marks": 20.0,
-        "max_marks": 20,
-        "class": "TY BMS"
-    },
-    {
-        "student_id": "302",
-        "name": "Rimzim Singh",
-        "subject": "Taxation",
-        "date": "18-09-2025",
-        "marks": 20.0,
-        "max_marks": 20,
-        "class": "TY BMS"
+        "date": "19-09-2025",
+        "marks": 18.0,
+        "max_marks": 25,
+        "class": "FY BSC CS",
+        "submitted": true
     }
 ]

@@ -1,32 +1,58 @@
 [
     {
-        "class": "TY BSC CS",
-        "subject": "PM",
-        "date": "20-09-2025",
-        "max_marks": 25
+        "class": "FY BSC CS",
+        "subject": "Python",
+        "date": "18-09-2025",
+        "max_marks": 20,
+        "submitted": true
     },
     {
         "class": "FY BSC CS",
         "subject": "DSA",
-        "date": "20-09-2025",
-        "max_marks": 20
+        "date": "19-09-2025",
+        "max_marks": 25,
+        "submitted": true
+    },
+    {
+        "class": "TY BCom",
+        "subject": "Business Law",
+        "date": "18-09-2025",
+        "max_marks": 20,
+        "submitted": true
+    },
+    {
+        "class": "TY BMS",
+        "subject": "Ethics and Governance",
+        "date": "18-09-2025",
+        "max_marks": 20,
+        "submitted": true
     },
     {
         "class": "TY BMS",
         "subject": "Taxation",
         "date": "18-09-2025",
-        "max_marks": 20
+        "max_marks": 25,
+        "submitted": true
     },
     {
-        "class": "TY BCom",
-        "subject": "Taxation",
+        "class": "TY BSC CS",
+        "subject": "STQA",
         "date": "18-09-2025",
-        "max_marks": 20
+        "max_marks": 20,
+        "submitted": true
     },
     {
-        "class": "FY BSC CS",
-        "subject": "Linux",
-        "date": "27-09-2025",
-        "max_marks": 20
+        "class": "TY BSC CS",
+        "subject": "AI",
+        "date": "19-09-2025",
+        "max_marks": 25,
+        "submitted": true
+    },
+    {
+        "class": "TY BSC CS",
+        "subject": "INS",
+        "date": "20-09-2025",
+        "max_marks": 30,
+        "submitted": true
     }
 ]

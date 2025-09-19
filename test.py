@@ -8,7 +8,7 @@ def schedule_test():
     test_date = input("Enter test date (DD-MM-YYYY): ").strip()
 
     try:
-        datetime.strptime(test_date, "%d-%m-%Y")  # ✅ Validate DD-MM-YYYY
+        datetime.strptime(test_date, "%d-%m-%Y")
     except ValueError:
         print("❌ Invalid date format.")
         return
@@ -83,7 +83,12 @@ def add_marks():
         print("❌ No matching test found.")
         return
 
-    filtered_students = [s for s in students if s["class"] == test_class]
+    # ✅ Ensure student_id is present for frontend compatibility
+    filtered_students = []
+    for s in students:
+        if s.get("class") == test_class:
+            s["student_id"] = s.get("id")  # Add student_id field
+            filtered_students.append(s)
 
     try:
         with open("marks.json", "r") as f:
@@ -95,31 +100,46 @@ def add_marks():
     marks_data = []
 
     for student in filtered_students:
-        key = (student["id"], subject, test_date)
+        key = (student["student_id"], subject, test_date)
         if key in existing_keys:
-            print(f"⚠️ Marks already recorded for {student['name']} (ID: {student['id']}). Skipping.")
+            print(f"⚠️ Marks already recorded for {student['name']} (ID: {student['student_id']}). Skipping.")
             continue
 
-        print(f"\nStudent: {student['name']} (ID: {student['id']})")
+        print(f"\nStudent: {student['name']} (ID: {student['student_id']})")
         try:
-            marks = float(input("Enter marks: "))
+            marks = int(float(input("Enter marks: ").strip()))  # ✅ Store as integer
         except ValueError:
             print("❌ Invalid input. Skipping.")
             continue
 
         marks_data.append({
-            "student_id": student["id"],
+            "student_id": student["student_id"],
             "name": student["name"],
             "subject": subject,
             "date": test_date,
             "marks": marks,
-            "max_marks": max_marks
+            "max_marks": max_marks,
+            "class": test_class,
+            "submitted": True
         })
 
     existing.extend(marks_data)
 
     with open("marks.json", "w") as f:
         json.dump(existing, f, indent=4)
+
+    # ✅ Mark test as submitted
+    for test in tests:
+        if (
+            test["class"].strip().lower() == test_class.strip().lower() and
+            test["subject"].strip().lower() == subject.strip().lower() and
+            test["date"].strip() == test_date.strip()
+        ):
+            test["submitted"] = True
+            break
+
+    with open("tests.json", "w") as f:
+        json.dump(tests, f, indent=4)
 
     print("✅ Marks recorded successfully.")
 
@@ -241,14 +261,3 @@ def view_all_tests():
 # ✅ CLI block
 if __name__ == "__main__":
     print("📘 Test Module")
-    print("1. Schedule Test")
-    print("2. Add Marks")
-    print("3. View All Tests")
-    choice = input("Choose: ").strip()
-
-    if choice == "1":
-        schedule_test()
-    elif choice == "2":
-        add_marks()
-    elif choice == "3":
-        view_all_tests()
