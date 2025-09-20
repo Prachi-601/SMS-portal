@@ -30,65 +30,69 @@
   </div>
 
   <script>
-    async function loadClasses() {
-      try {
-        const res = await fetch("http://127.0.0.1:5000/api/classes");
-        const result = await res.json();
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-        const select = document.getElementById("classSelect");
-        select.innerHTML = '<option value="">-- Select Class --</option>';
+  async function loadClasses() {
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/classes?admin_id=${encodeURIComponent(admin_id)}`);
+      const result = await res.json();
 
-        result.classes.forEach(cls => {
-          const option = document.createElement("option");
-          option.value = cls;
-          option.textContent = cls;
-          select.appendChild(option);
-        });
-      } catch (err) {
-        console.error("Failed to load classes:", err);
-        alert("⚠️ Could not load class list.");
-      }
+      const select = document.getElementById("classSelect");
+      select.innerHTML = '<option value="">-- Select Class --</option>';
+
+      result.classes.forEach(cls => {
+        const option = document.createElement("option");
+        option.value = cls;
+        option.textContent = cls;
+        select.appendChild(option);
+      });
+    } catch (err) {
+      console.error("Failed to load classes:", err);
+      alert("⚠️ Could not load class list.");
+    }
+  }
+
+  document.getElementById("scheduleForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+
+    // ✅ Convert date to DD-MM-YYYY before sending
+    const rawDate = payload.date;
+    if (rawDate.includes("-")) {
+      const [year, month, day] = rawDate.split("-");
+      payload.date = `${day}-${month}-${year}`;
     }
 
-    document.getElementById("scheduleForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const payload = Object.fromEntries(formData.entries());
+    payload.admin_id = admin_id; // ✅ Include admin_id in payload
 
-      // ✅ Convert date to DD-MM-YYYY before sending
-      const rawDate = payload.date;
-      if (rawDate.includes("-")) {
-        const [year, month, day] = rawDate.split("-");
-        payload.date = `${day}-${month}-${year}`;
-      }
+    const msgBox = document.getElementById("test-message");
+    msgBox.textContent = "";
 
-      const msgBox = document.getElementById("test-message");
-      msgBox.textContent = "";
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/schedule-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-      try {
-        const res = await fetch("http://127.0.0.1:5000/api/schedule-test", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+      const result = await res.json();
+      msgBox.textContent = result.message || (result.success ? "✅ Test scheduled!" : "❌ Failed to schedule test.");
+      msgBox.style.color = result.success ? "green" : "red";
 
-        const result = await res.json();
-        msgBox.textContent = result.message || (result.success ? "✅ Test scheduled!" : "❌ Failed to schedule test.");
-        msgBox.style.color = result.success ? "green" : "red";
+      if (result.success) e.target.reset();
 
-        if (result.success) e.target.reset();
+      setTimeout(() => {
+        msgBox.textContent = "";
+      }, 4000);
+    } catch (err) {
+      console.error("Submission error:", err);
+      msgBox.textContent = "❌ Error submitting test schedule.";
+      msgBox.style.color = "red";
+    }
+  });
 
-        setTimeout(() => {
-          msgBox.textContent = "";
-        }, 4000);
-      } catch (err) {
-        console.error("Submission error:", err);
-        msgBox.textContent = "❌ Error submitting test schedule.";
-        msgBox.style.color = "red";
-      }
-    });
-
-    window.onload = loadClasses;
-  </script>
+  window.onload = loadClasses;
+</script>
 </body>
 </html>

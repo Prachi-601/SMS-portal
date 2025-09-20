@@ -66,7 +66,10 @@
   </div>
 
   <script>
+    const admin_id = localStorage.getItem("admin_id"); // ✅ Persist admin_id
+
     function logout() {
+      localStorage.removeItem("admin_id"); // Optional: clear session
       window.location.href = 'index.html';
     }
 
@@ -94,13 +97,13 @@
           <li onclick="loadContent('search-student.html')">🔍 Search Student</li>
           <li onclick="loadContent('edit-delete-student.html')">✏️ Edit/Delete Student</li>
         `;
-     } else if (section === "teacher") {
-      submenu.innerHTML = `
-        <li onclick="loadContent('add-teacher.html')">➕ Add Teacher</li>
-        <li onclick="loadContent('view-teachers.html')">📋 View Teachers</li>
-        <li onclick="loadContent('edit-delete-teacher.html')">✏️ Edit/Delete Teacher</li>
-  `   ;
-    } else if (section === "attendance") {
+      } else if (section === "teacher") {
+        submenu.innerHTML = `
+          <li onclick="loadContent('add-teacher.html')">➕ Add Teacher</li>
+          <li onclick="loadContent('view-teachers.html')">📋 View Teachers</li>
+          <li onclick="loadContent('edit-delete-teacher.html')">✏️ Edit/Delete Teacher</li>
+        `;
+      } else if (section === "attendance") {
         submenu.innerHTML = `
           <li onclick="loadContent('student-dashboard.html')">📂 Student Dashboard</li>
           <li onclick="loadContent('monthly-attendance.html')">📅 Monthly Attendance</li>
@@ -115,7 +118,8 @@
 
     function loadContent(page) {
       const content = document.getElementById("content-area");
-      content.innerHTML = `<iframe src="${page}" width="100%" height="100%" style="border:none;"></iframe>`;
+      const url = `${page}?admin_id=${encodeURIComponent(admin_id)}`; // ✅ Inject admin_id into iframe
+      content.innerHTML = `<iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe>`;
     }
   </script>
 </body>

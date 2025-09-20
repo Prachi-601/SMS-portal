@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from utils import get_student_by_id
 
-def schedule_test():
+def schedule_test(admin_id):
     class_name = input("Enter class name: ").strip()
     subject = input("Enter subject: ").strip()
     test_date = input("Enter test date (DD-MM-YYYY): ").strip()
@@ -26,17 +26,23 @@ def schedule_test():
         "class": class_name,
         "subject": subject,
         "date": test_date,
-        "max_marks": max_marks
+        "max_marks": max_marks,
+        "admin_id": admin_id
     }
 
     try:
         with open("tests.json", "r") as f:
             data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+    except:
         data = []
 
     for t in data:
-        if t["class"] == class_name and t["subject"] == subject and t["date"] == test_date:
+        if (
+            t["class"] == class_name and
+            t["subject"] == subject and
+            t["date"] == test_date and
+            t.get("admin_id") == admin_id
+        ):
             print("⚠️ Test already scheduled.")
             return
 
@@ -47,7 +53,7 @@ def schedule_test():
 
     print("✅ Test scheduled successfully.")
 
-def add_marks():
+def add_marks(admin_id):
     subject = input("Enter subject: ").strip()
     test_date = input("Enter test date (DD-MM-YYYY): ").strip()
 
@@ -74,7 +80,11 @@ def add_marks():
     test_class = None
     max_marks = None
     for test in tests:
-        if test["subject"] == subject and test["date"] == test_date:
+        if (
+            test["subject"] == subject and
+            test["date"] == test_date and
+            test.get("admin_id") == admin_id
+        ):
             test_class = test["class"]
             max_marks = test.get("max_marks")
             break
@@ -83,11 +93,10 @@ def add_marks():
         print("❌ No matching test found.")
         return
 
-    # ✅ Ensure student_id is present for frontend compatibility
     filtered_students = []
     for s in students:
-        if s.get("class") == test_class:
-            s["student_id"] = s.get("id")  # Add student_id field
+        if s.get("class") == test_class and s.get("admin_id") == admin_id:
+            s["student_id"] = s.get("id")
             filtered_students.append(s)
 
     try:
@@ -96,18 +105,18 @@ def add_marks():
     except:
         existing = []
 
-    existing_keys = {(m["student_id"], m["subject"], m["date"]) for m in existing}
+    existing_keys = {(m["student_id"], m["subject"], m["date"], m.get("admin_id")) for m in existing}
     marks_data = []
 
     for student in filtered_students:
-        key = (student["student_id"], subject, test_date)
+        key = (student["student_id"], subject, test_date, admin_id)
         if key in existing_keys:
             print(f"⚠️ Marks already recorded for {student['name']} (ID: {student['student_id']}). Skipping.")
             continue
 
         print(f"\nStudent: {student['name']} (ID: {student['student_id']})")
         try:
-            marks = int(float(input("Enter marks: ").strip()))  # ✅ Store as integer
+            marks = int(float(input("Enter marks: ").strip()))
         except ValueError:
             print("❌ Invalid input. Skipping.")
             continue
@@ -120,7 +129,8 @@ def add_marks():
             "marks": marks,
             "max_marks": max_marks,
             "class": test_class,
-            "submitted": True
+            "submitted": True,
+            "admin_id": admin_id
         })
 
     existing.extend(marks_data)
@@ -128,12 +138,12 @@ def add_marks():
     with open("marks.json", "w") as f:
         json.dump(existing, f, indent=4)
 
-    # ✅ Mark test as submitted
     for test in tests:
         if (
-            test["class"].strip().lower() == test_class.strip().lower() and
-            test["subject"].strip().lower() == subject.strip().lower() and
-            test["date"].strip() == test_date.strip()
+            test["class"] == test_class and
+            test["subject"] == subject and
+            test["date"] == test_date and
+            test.get("admin_id") == admin_id
         ):
             test["submitted"] = True
             break
@@ -143,7 +153,7 @@ def add_marks():
 
     print("✅ Marks recorded successfully.")
 
-def view_marks_by_student(student_id=None):
+def view_marks_by_student(admin_id, student_id=None):
     if student_id is None:
         student_id = input("Enter student ID: ").strip()
 
@@ -166,7 +176,7 @@ def view_marks_by_student(student_id=None):
 
     filtered = []
     for m in data:
-        if str(m["student_id"]) != str(student_id):
+        if str(m["student_id"]) != str(student_id) or m.get("admin_id") != admin_id:
             continue
         try:
             mark_date = datetime.strptime(m["date"], "%d-%m-%Y")
@@ -186,7 +196,7 @@ def view_marks_by_student(student_id=None):
     for m in filtered:
         print(f"- Subject: {m['subject']}, Date: {m['date']}, Marks: {m['marks']}/{m.get('max_marks', 'N/A')}")
 
-def view_marks_by_subject():
+def view_marks_by_subject(admin_id):
     subject = input("Enter subject: ").strip()
     test_date = input("Enter test date (DD-MM-YYYY): ").strip()
 
@@ -203,7 +213,7 @@ def view_marks_by_subject():
         print("⚠️ No marks data found.")
         return
 
-    found = [m for m in data if m["subject"].lower() == subject.lower() and m["date"] == test_date]
+    found = [m for m in data if m["subject"].lower() == subject.lower() and m["date"] == test_date and m.get("admin_id") == admin_id]
 
     if not found:
         print("❌ No marks found for this subject and date.")
@@ -227,7 +237,7 @@ def view_marks_by_subject():
     print(f"- Highest Marks: {highest}")
     print(f"- Lowest Marks: {lowest}")
 
-def get_test_marks_by_name(name):
+def get_test_marks_by_name(name, admin_id):
     name = name.strip().lower()
     try:
         with open("marks.json", "r") as f:
@@ -235,18 +245,18 @@ def get_test_marks_by_name(name):
     except:
         return []
 
-    return [m for m in marks_data if name in m.get("name", "").strip().lower()]
+    return [m for m in marks_data if name in m.get("name", "").strip().lower() and m.get("admin_id") == admin_id]
 
-def get_tests_by_class(class_name):
+def get_tests_by_class(class_name, admin_id):
     try:
         with open("tests.json", "r") as f:
             tests = json.load(f)
     except:
         return []
 
-    return [t for t in tests if t.get("class", "").strip().lower() == class_name.strip().lower()]
+    return [t for t in tests if t.get("class", "").strip().lower() == class_name.strip().lower() and t.get("admin_id") == admin_id]
 
-def view_all_tests():
+def view_all_tests(admin_id):
     try:
         with open("tests.json", "r") as f:
             tests = json.load(f)
@@ -254,8 +264,9 @@ def view_all_tests():
         print("⚠️ No tests found.")
         return
 
+    filtered = [t for t in tests if t.get("admin_id") == admin_id]
     print("\n🗓️ Scheduled Tests:")
-    for t in tests:
+    for t in filtered:
         print(f"- Class: {t['class']}, Subject: {t['subject']}, Date: {t['date']}")
 
 # ✅ CLI block

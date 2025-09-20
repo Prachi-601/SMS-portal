@@ -47,127 +47,128 @@
     <button onclick="loadSubjectMarks()">🔍 View Marks</button>
 
     <div id="marksDisplay" style="margin-top: 20px;"></div>
-
     <script>
-      async function loadClasses() {
-        try {
-          const res = await fetch("http://127.0.0.1:5000/api/classes");
-          const result = await res.json();
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-          const select = document.getElementById("classSelect");
-          select.innerHTML = '<option value="">-- Select Class --</option>';
+  async function loadClasses() {
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/classes?admin_id=${encodeURIComponent(admin_id)}`);
+      const result = await res.json();
 
-          result.classes.forEach(cls => {
-            const option = document.createElement("option");
-            option.value = cls;
-            option.textContent = cls;
-            select.appendChild(option);
-          });
-        } catch (err) {
-          console.error("Failed to load classes:", err);
-          alert("⚠️ Could not load class list.");
-        }
+      const select = document.getElementById("classSelect");
+      select.innerHTML = '<option value="">-- Select Class --</option>';
+
+      result.classes.forEach(cls => {
+        const option = document.createElement("option");
+        option.value = cls;
+        option.textContent = cls;
+        select.appendChild(option);
+      });
+    } catch (err) {
+      console.error("Failed to load classes:", err);
+      alert("⚠️ Could not load class list.");
+    }
+  }
+
+  async function loadSubjectMarks() {
+    const className = document.getElementById("classSelect").value.trim();
+    const testValue = document.getElementById("testSelect").value;
+    if (!testValue) {
+      alert("Please select a test.");
+      return;
+    }
+
+    const [subject, date, max_marks] = testValue.split("|");
+
+    if (!className || !subject || !date) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/subject-marks?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subject)}&date=${encodeURIComponent(date)}&admin_id=${encodeURIComponent(admin_id)}`);
+      const result = await res.json();
+
+      const container = document.getElementById("marksDisplay");
+      container.innerHTML = "";
+
+      if (!result.success || !Array.isArray(result.marks) || result.marks.length === 0) {
+        container.innerHTML = "<p>⚠️ No marks found for this test.</p>";
+        return;
       }
 
-      async function loadSubjectMarks() {
-        const className = document.getElementById("classSelect").value.trim();
-        const testValue = document.getElementById("testSelect").value;
-        if (!testValue) {
-          alert("Please select a test.");
-          return;
+      const topScorerId = result.analytics?.top_scorer?.student_id;
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Marks</th>
+          <th>Max Marks</th>
+        </tr>
+      `;
+
+      result.marks.forEach(m => {
+        const row = document.createElement("tr");
+        if (m.student_id === topScorerId) {
+          row.classList.add("top-scorer-row");
         }
+        row.innerHTML = `
+          <td>${m.student_id}</td>
+          <td>${m.name}</td>
+          <td>${m.marks}</td>
+          <td>${m.max_marks}</td>
+        `;
+        table.appendChild(row);
+      });
 
-        const [subject, date, max_marks] = testValue.split("|");
+      const analytics = result.analytics || {};
+      const summary = document.createElement("div");
+      summary.className = "analytics-box";
+      summary.innerHTML = `
+        <h3>📊 Class Analytics</h3>
+        <p>Average Marks: ${analytics.average ?? "N/A"}</p>
+        <p>Highest Marks: ${analytics.highest ?? "N/A"}${analytics.top_scorer?.name ? ` (${analytics.top_scorer.name})` : ""}</p>
+        <p>Lowest Marks: ${analytics.lowest ?? "N/A"}</p>
+      `;
 
-        if (!className || !subject || !date) {
-          alert("Please fill all fields.");
-          return;
-        }
+      container.appendChild(table);
+      container.appendChild(summary);
+    } catch (err) {
+      console.error("Error loading marks:", err);
+      alert("❌ Failed to fetch marks.");
+    }
+  }
 
-        try {
-          const res = await fetch(`http://127.0.0.1:5000/api/subject-marks?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subject)}&date=${encodeURIComponent(date)}`);
-          const result = await res.json();
+  window.onload = () => {
+    loadClasses();
 
-          const container = document.getElementById("marksDisplay");
-          container.innerHTML = "";
+    document.getElementById("classSelect").addEventListener("change", async (e) => {
+      const className = e.target.value;
+      if (!className) return;
 
-          if (!result.success || !Array.isArray(result.marks) || result.marks.length === 0) {
-            container.innerHTML = "<p>⚠️ No marks found for this test.</p>";
-            return;
-          }
+      const res = await fetch(`http://127.0.0.1:5000/api/scheduled-tests?class=${encodeURIComponent(className)}&admin_id=${encodeURIComponent(admin_id)}`);
+      const result = await res.json();
 
-          const topScorerId = result.analytics?.top_scorer?.student_id;
+      const testSelect = document.getElementById("testSelect");
+      testSelect.innerHTML = "";
 
-          const table = document.createElement("table");
-          table.innerHTML = `
-            <tr>
-              <th>Student ID</th>
-              <th>Name</th>
-              <th>Marks</th>
-              <th>Max Marks</th>
-            </tr>
-          `;
-
-          result.marks.forEach(m => {
-            const row = document.createElement("tr");
-            if (m.student_id === topScorerId) {
-              row.classList.add("top-scorer-row");
-            }
-            row.innerHTML = `
-              <td>${m.student_id}</td>
-              <td>${m.name}</td>
-              <td>${m.marks}</td>
-              <td>${m.max_marks}</td>
-            `;
-            table.appendChild(row);
-          });
-
-          const analytics = result.analytics || {};
-          const summary = document.createElement("div");
-          summary.className = "analytics-box";
-          summary.innerHTML = `
-            <h3>📊 Class Analytics</h3>
-            <p>Average Marks: ${analytics.average ?? "N/A"}</p>
-            <p>Highest Marks: ${analytics.highest ?? "N/A"}${analytics.top_scorer?.name ? ` (${analytics.top_scorer.name})` : ""}</p>
-            <p>Lowest Marks: ${analytics.lowest ?? "N/A"}</p>
-          `;
-
-          container.appendChild(table);
-          container.appendChild(summary);
-        } catch (err) {
-          console.error("Error loading marks:", err);
-          alert("❌ Failed to fetch marks.");
-        }
+      if (!result.success || result.tests.length === 0) {
+        testSelect.innerHTML = "<option>No tests found</option>";
+        return;
       }
 
-      window.onload = () => {
-        loadClasses();
-
-        document.getElementById("classSelect").addEventListener("change", async (e) => {
-          const className = e.target.value;
-          if (!className) return;
-
-          const res = await fetch(`http://127.0.0.1:5000/api/scheduled-tests?class=${encodeURIComponent(className)}`);
-          const result = await res.json();
-
-          const testSelect = document.getElementById("testSelect");
-          testSelect.innerHTML = "";
-
-          if (!result.success || result.tests.length === 0) {
-            testSelect.innerHTML = "<option>No tests found</option>";
-            return;
-          }
-
-          testSelect.innerHTML = '<option value="">-- Select Test --</option>';
-          result.tests.forEach(t => {
-            const option = document.createElement("option");
-            option.value = `${t.subject}|${t.date}|${t.max_marks}`;
-            option.textContent = `${t.subject} on ${t.date} (Max: ${t.max_marks})`;
-            testSelect.appendChild(option);
-          });
-        });
-      };
-    </script>
+      testSelect.innerHTML = '<option value="">-- Select Test --</option>';
+      result.tests.forEach(t => {
+        const option = document.createElement("option");
+        option.value = `${t.subject}|${t.date}|${t.max_marks}`;
+        option.textContent = `${t.subject} on ${t.date} (Max: ${t.max_marks})`;
+        testSelect.appendChild(option);
+      });
+    });
+  };
+</script>
   </div>
 </body>
 </html>

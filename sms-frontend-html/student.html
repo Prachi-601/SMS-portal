@@ -54,55 +54,57 @@
       <h2>Select an option from the menu</h2>
     </div>
   </div>
+<script>
+  function logout() {
+    localStorage.removeItem('username');
+    localStorage.removeItem('admin_id'); // ✅ Clear admin session
+    window.location.href = 'index.html';
+  }
 
-  <script>
-    function logout() {
-      localStorage.removeItem('username');
-      window.location.href = 'index.html';
+  const username = localStorage.getItem('username');
+  const admin_id = localStorage.getItem('admin_id'); // ✅ Inject admin_id
+
+  if (!username || username === "undefined") {
+    alert("Session expired or invalid. Please log in again.");
+    window.location.href = 'index.html';
+  }
+
+  function openDashboard(section) {
+    document.getElementById("menu-center").style.display = "none";
+    document.getElementById("dashboard").style.display = "flex";
+    loadContent(section);
+  }
+
+  function backToMain() {
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("menu-center").style.display = "flex";
+  }
+
+  function loadContent(section) {
+    const content = document.getElementById("content-area");
+
+    if (section === 'attendance') {
+      content.innerHTML = `
+        <h2>📊 Attendance</h2>
+        <p>Calendar or table view of attendance will appear here.</p>
+      `;
+    } else if (section === 'timetable') {
+      content.innerHTML = `
+        <h2>🗓️ Timetable</h2>
+        <p>Click a date to view your class schedule.</p>
+      `;
+    } else if (section === 'assignments') {
+      content.innerHTML = `
+        <h2>📚 Assignments</h2>
+        <p>Pending and submitted assignments will appear here.</p>
+      `;
+    } else if (section === 'marks') {
+      content.innerHTML = `
+        <h2>🧮 Test Marks</h2>
+        <p>Select a subject to view your marks.</p>
+      `;
     }
-
-    const username = localStorage.getItem('username');
-    if (!username || username === "undefined") {
-      alert("Session expired or invalid. Please log in again.");
-      window.location.href = 'index.html';
-    }
-
-    function openDashboard(section) {
-      document.getElementById("menu-center").style.display = "none";
-      document.getElementById("dashboard").style.display = "flex";
-      loadContent(section);
-    }
-
-    function backToMain() {
-      document.getElementById("dashboard").style.display = "none";
-      document.getElementById("menu-center").style.display = "flex";
-    }
-
-    function loadContent(section) {
-      const content = document.getElementById("content-area");
-
-      if (section === 'attendance') {
-        content.innerHTML = `
-          <h2>📊 Attendance</h2>
-          <p>Calendar or table view of attendance will appear here.</p>
-        `;
-      } else if (section === 'timetable') {
-        content.innerHTML = `
-          <h2>🗓️ Timetable</h2>
-          <p>Click a date to view your class schedule.</p>
-        `;
-      } else if (section === 'assignments') {
-        content.innerHTML = `
-          <h2>📚 Assignments</h2>
-          <p>Pending and submitted assignments will appear here.</p>
-        `;
-      } else if (section === 'marks') {
-        content.innerHTML = `
-          <h2>🧮 Test Marks</h2>
-          <p>Select a subject to view your marks.</p>
-        `;
-      }
-    }
-  </script>
+  }
+</script>
 </body>
 </html>

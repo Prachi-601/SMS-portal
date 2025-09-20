@@ -1,76 +1,85 @@
 {
-    "students": [
-        {
-            "id": 201,
-            "name": "Prachi Kavitkar",
-            "class": "TY BSC CS",
-            "username": "Prachi201",
-            "password": "Prachi222",
-            "email": "prachikavitkar466@gmail.com"
-        },
-        {
-            "id": 202,
-            "name": "Feezanoori Ansari",
-            "class": "TY BSC CS",
-            "username": "Feeza202",
-            "password": "202202",
-            "email": "feeza@gmail.com"
-        },
-        {
-            "id": 301,
-            "name": "Payal Prajapati",
-            "class": "TY BCom",
-            "username": "Payal301",
-            "password": "301301",
-            "email": "payal@gmail.com"
-        },
-        {
-            "id": 302,
-            "name": "Rimzim Singh",
-            "class": "TY BCom",
-            "username": "Rimzim302",
-            "password": "302302",
-            "email": "rimzim@gmail.com"
-        },
-        {
-            "id": 203,
-            "name": "Sayali Patil",
-            "class": "TY BSC CS",
-            "username": "Sayali203",
-            "password": "203203",
-            "email": "sayalipatil@gmail.com"
-        },
-        {
-            "id": 401,
-            "name": "Rohit Kavitkar",
-            "class": "TY BMS",
-            "username": "rohit401",
-            "password": "401401",
-            "email": "rohitkavitkar@gmail.com"
-        },
-        {
-            "id": 402,
-            "name": "Vishal Mane",
-            "class": "TY BMS",
-            "username": "vishalemane402",
-            "password": "vishalmane402",
-            "email": "vishalemane@gmail.com"
-        },
-        {
-            "id": 501,
-            "name": "Anmol Shukla",
-            "class": "FY BSC CS",
-            "username": "anmol501",
-            "password": "501501",
-            "email": "anmolshukla@gmail.com"
-        },
-        {
-            "id": 502,
-            "name": "Pritam Kavitkar",
-            "class": "FY BSC CS",
-            "username": "pritam502",
-            "password": "pritam7474",
-            "email": "pritam502@gmail.com"
-        }
-    ]
+  "students": [
+    {
+      "id": 201,
+      "name": "Prachi Kavitkar",
+      "class": "TY BSC CS",
+      "username": "Prachi201",
+      "password": "Prachi222",
+      "email": "prachikavitkar466@gmail.com",
+      "admin_id": "admin001"
+    },
+    {
+      "id": 202,
+      "name": "Feezanoori Ansari",
+      "class": "TY BSC CS",
+      "username": "Feeza202",
+      "password": "202202",
+      "email": "feeza@gmail.com",
+      "admin_id": "admin001"
+    },
+    {
+      "id": 301,
+      "name": "Payal Prajapati",
+      "class": "TY BCom",
+      "username": "Payal301",
+      "password": "301301",
+      "email": "payal@gmail.com",
+      "admin_id": "admin001"
+    },
+    {
+      "id": 302,
+      "name": "Rimzim Singh",
+      "class": "TY BCom",
+      "username": "Rimzim302",
+      "password": "302302",
+      "email": "rimzim@gmail.com",
+      "admin_id": "admin001"
+    },
+    {
+      "id": 203,
+      "name": "Sayali Patil",
+      "class": "TY BSC CS",
+      "username": "Sayali203",
+      "password": "203203",
+      "email": "sayalipatil@gmail.com",
+      "admin_id": "admin001"
+    },
+    {
+      "id": 401,
+      "name": "Rohit Kavitkar",
+      "class": "TY BMS",
+      "username": "rohit401",
+      "password": "401401",
+      "email": "rohitkavitkar@gmail.com",
+      "admin_id": "admin001"
+    },
+    {
+      "id": 402,
+      "name": "Vishal Mane",
+      "class": "TY BMS",
+      "username": "vishalemane402",
+      "password": "vishalmane402",
+      "email": "vishalemane@gmail.com",
+      "admin_id": "admin001"
+    },
+    {
+      "id": 501,
+      "name": "Anmol Shukla",
+      "class": "FY BSC CS",
+      "username": "anmol501",
+      "password": "501501",
+      "email": "anmolshukla@gmail.com",
+      "admin_id": "admin001"
+    },
+    {
+      "id": 502,
+      "name": "Pritam Kavitkar",
+      "class": "FY BSC CS",
+      "username": "pritam502",
+      "password": "pritam7474",
+      "email": "pritam502@gmail.com",
+      "admin_id": "admin001"
+    }
+  ]
 }

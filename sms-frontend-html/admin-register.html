@@ -28,16 +28,22 @@
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      const res = await fetch("http://127.0.0.1:5000/api/admin-signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password })
-      });
+      try {
+        const res = await fetch("http://127.0.0.1:5000/api/admin-signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password })
+        });
 
-      const result = await res.json();
-      document.getElementById("message").textContent = result.message;
-      if (result.success) {
-        document.getElementById("adminSignupForm").reset();
+        const result = await res.json();
+        document.getElementById("message").textContent = result.message;
+
+        if (result.success && result.admin_id) {
+          localStorage.setItem("admin_id", result.admin_id); // ✅ Store admin_id
+          document.getElementById("adminSignupForm").reset();
+        }
+      } catch (err) {
+        document.getElementById("message").textContent = "❌ Server error.";
       }
     });
   </script>

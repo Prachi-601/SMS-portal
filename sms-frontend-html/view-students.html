@@ -31,45 +31,46 @@
       <a href="search-student.html">🔍 Search Student by ID or Name</a><br>
     </div>
   </div>
-
   <script>
-    async function loadClasses() {
-      const res = await fetch("http://localhost:5000/api/classes");
-      const data = await res.json();
-      const classSelect = document.getElementById("classSelect");
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-      data.classes.forEach(cls => {
-        const option = document.createElement("option");
-        option.value = cls;
-        option.textContent = cls;
-        classSelect.appendChild(option);
-      });
+  async function loadClasses() {
+    const res = await fetch(`http://localhost:5000/api/classes?admin_id=${encodeURIComponent(admin_id)}`);
+    const data = await res.json();
+    const classSelect = document.getElementById("classSelect");
+
+    data.classes.forEach(cls => {
+      const option = document.createElement("option");
+      option.value = cls;
+      option.textContent = cls;
+      classSelect.appendChild(option);
+    });
+  }
+
+  async function fetchStudents() {
+    const selectedClass = document.getElementById("classSelect").value;
+    if (!selectedClass) return;
+
+    const res = await fetch(`http://localhost:5000/api/students/${encodeURIComponent(selectedClass)}?admin_id=${encodeURIComponent(admin_id)}`);
+    const data = await res.json();
+
+    const list = document.getElementById("studentList");
+    list.innerHTML = "";
+
+    if (!data.students || data.students.length === 0) {
+      list.innerHTML = "<p>ℹ️ No students found for this class.</p>";
+      return;
     }
 
-    async function fetchStudents() {
-      const selectedClass = document.getElementById("classSelect").value;
-      if (!selectedClass) return;
+    data.students.forEach(student => {
+      const item = document.createElement("div");
+      item.className = "student-item";
+      item.textContent = `ID: ${student.id} | Name: ${student.name}`;
+      list.appendChild(item);
+    });
+  }
 
-      const res = await fetch(`http://localhost:5000/api/students/${encodeURIComponent(selectedClass)}`);
-      const data = await res.json();
-
-      const list = document.getElementById("studentList");
-      list.innerHTML = "";
-
-      if (data.students.length === 0) {
-        list.innerHTML = "<p>ℹ️ No students found for this class.</p>";
-        return;
-      }
-
-      data.students.forEach(student => {
-        const item = document.createElement("div");
-        item.className = "student-item";
-        item.textContent = `ID: ${student.id} | Name: ${student.name}`;
-        list.appendChild(item);
-      });
-    }
-
-    window.onload = loadClasses;
-  </script>
+  window.onload = loadClasses;
+</script>
 </body>
 </html>

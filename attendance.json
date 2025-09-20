@@ -1,33 +1,35 @@
 [
-    {
-        "date": "2025-09-05",
-        "subject": "Business Law",
-        "teacher": "Prachi",
-        "class": "TYBCOM",
-        "records": [
-            {
-                "id": 301,
-                "name": "Payal Prajapati",
-                "status": "P"
-            }
-        ]
-    },
-    {
-        "date": "2025-09-10",
-        "subject": "STQA",
-        "teacher": "Sneha",
-        "class": "TY BSC CS",
-        "records": [
-            {
-                "id": 201,
-                "name": "Prachi Kavitkar",
-                "status": "P"
-            },
-            {
-                "id": 202,
-                "name": "Feezanoori Ansari",
-                "status": "A"
-            }
-        ]
-    }
+  {
+    "date": "2025-09-05",
+    "subject": "Business Law",
+    "teacher": "Prachi",
+    "class": "TYBCOM",
+    "admin_id": "admin001",
+    "records": [
+      {
+        "id": 301,
+        "name": "Payal Prajapati",
+        "status": "P"
+      }
+    ]
+  },
+  {
+    "date": "2025-09-10",
+    "subject": "STQA",
+    "teacher": "Sneha",
+    "class": "TY BSC CS",
+    "admin_id": "admin001",
+    "records": [
+      {
+        "id": 201,
+        "name": "Prachi Kavitkar",
+        "status": "P"
+      },
+      {
+        "id": 202,
+        "name": "Feezanoori Ansari",
+        "status": "A"
+      }
+    ]
+  }
 ]

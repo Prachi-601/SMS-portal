@@ -79,10 +79,12 @@
       const deadline = document.getElementById("deadline").value;
       const status = document.getElementById("status-message");
 
+      const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
+
       fetch("http://localhost:5000/api/add-assignment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ class: className, subject, deadline })
+        body: JSON.stringify({ class: className, subject, deadline, admin_id })
       })
       .then(res => res.json())
       .then(data => {

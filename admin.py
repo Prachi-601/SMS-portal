@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from student import (
     add_student, view_students, search_student, search_student_by_name,
     edit_student, edit_student_by_name, delete_specific_student_by_name,
@@ -41,7 +42,7 @@ def admin_login():
 
     for admin in admins:
         if admin["username"] == username and admin["password"] == password:
-            print("✅ Welcome, Admin!")
+            print(f"✅ Welcome, {admin['username']}!")
             admin_menu(admin)
             return
 
@@ -69,10 +70,13 @@ def admin_signup():
             print("⚠️ Admin already exists!")
             return
 
+    admin_id = str(uuid.uuid4())  # ✅ Unique ID for each admin
+
     admins.append({
         "username": username,
         "password": password,
-        "email": email
+        "email": email,
+        "admin_id": admin_id
     })
 
     with open("admins.json", "w") as f:
@@ -81,6 +85,7 @@ def admin_signup():
     print("✅ Admin signup successful!")
 
 def admin_menu(admin):
+    admin_id = admin["admin_id"]
     while True:
         print(f"\n📋 Admin Menu ({admin['username']}):")
         print("1. Add Student")
@@ -99,26 +104,26 @@ def admin_menu(admin):
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
-            add_student()
+            add_student(admin_id)
         elif choice == "2":
-            view_students()
+            view_students(admin_id)
         elif choice == "3":
-            search_student()
+            search_student(admin_id)
         elif choice == "4":
-            search_student_by_name()
+            search_student_by_name(admin_id)
         elif choice == "5":
-            edit_student()
+            edit_student(admin_id)
         elif choice == "6":
-            edit_student_by_name()
+            edit_student_by_name(admin_id)
         elif choice == "7":
-            delete_specific_student_by_name()
+            delete_specific_student_by_name(admin_id)
         elif choice == "8":
             try:
                 student_id = int(input("Enter student ID to view dashboard: "))
             except ValueError:
                 print("❌ Invalid ID format.")
                 continue
-            student = get_student_by_id(student_id)
+            student = get_student_by_id(student_id, admin_id)
             if student:
                 student_dashboard(student["name"], student_id)
             else:
@@ -131,9 +136,9 @@ def admin_menu(admin):
             except ValueError:
                 print("❌ Invalid input.")
                 continue
-            student = get_student_by_id(student_id)
+            student = get_student_by_id(student_id, admin_id)
             if student:
-                present, total = get_monthly_attendance(student_id, month, year)
+                present, total = get_monthly_attendance(student_id, month, year, admin_id)
                 print(f"\n📅 Attendance Summary for {student['name']} ({month}/{year})")
                 print(f"✅ Present: {present}")
                 print(f"📌 Total Days: {total}")
@@ -141,9 +146,9 @@ def admin_menu(admin):
             else:
                 print("❌ Student not found.")
         elif choice == "10":
-            add_teacher()
+            add_teacher(admin_id)
         elif choice == "11":
-            view_teachers()
+            view_teachers(admin_id)
         elif choice == "12":
             print("👋 Logging out...")
             break

@@ -1,23 +1,11 @@
 {
-    "TYCS": [
-        "STQA",
-        "INS",
-        "AI",
-        "PM",
-        "CF"
-    ],
-    "FYCS": [
-        "PYTHON",
-        "JAVA",
-        "LINUX",
-        "COMPUTER NETWORKS",
-        "DSA"
-    ],
-    "TYBCOM": [
-        "Business Law",
-        "Tax",
-        "Computer",
-        "Excel",
-        "Tally"
-    ]
+  "admin001": {
+    "TYCS": ["STQA", "INS", "AI", "PM", "CF"],
+    "FYCS": ["PYTHON", "JAVA", "LINUX", "COMPUTER NETWORKS", "DSA"],
+    "TYBCOM": ["Business Law", "Tax", "Computer", "Excel", "Tally"]
+  },
+  "admin002": {
+    "TYBMS": ["Ethics", "Finance", "Marketing"],
+    "FYBMS": ["Communication", "Accounting"]
+  }
 }

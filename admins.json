@@ -3,12 +3,20 @@
     {
       "username": "ram123",
       "password": "123456",
-      "email": "ram@gmail.com"
+      "email": "ram@gmail.com",
+      "admin_id": "admin001"
     },
     {
       "username": "priti12",
       "password": "priti1234",
-      "email": "prachikavitkar@gmail.com"
+      "email": "prachikavitkar@gmail.com",
+      "admin_id": "admin002"
+    },
+    {
+      "username": "ganesh23",
+      "password": "ganesh23",
+      "email": "ganesh23@gmail.com",
+      "admin_id": "admin003"
     }
   ]
 }

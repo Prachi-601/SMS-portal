@@ -1,22 +1,24 @@
 [
-    {
-        "student_id": "502",
-        "name": "Pritam Kavitkar",
-        "subject": "Python",
-        "date": "20-09-2025",
-        "marks": 20.0,
-        "max_marks": 25,
-        "class": "fy bsc cs",
-        "submitted": true
-    },
-    {
-        "student_id": "502",
-        "name": "Pritam Kavitkar",
-        "subject": "DSA",
-        "date": "19-09-2025",
-        "marks": 25.0,
-        "max_marks": 25,
-        "class": "FY BSC CS",
-        "submitted": true
-    }
+  {
+    "student_id": "502",
+    "name": "Pritam Kavitkar",
+    "subject": "Python",
+    "date": "20-09-2025",
+    "marks": 20.0,
+    "max_marks": 25,
+    "class": "fy bsc cs",
+    "submitted": true,
+    "admin_id": "admin001"
+  },
+  {
+    "student_id": "502",
+    "name": "Pritam Kavitkar",
+    "subject": "DSA",
+    "date": "19-09-2025",
+    "marks": 25.0,
+    "max_marks": 25,
+    "class": "FY BSC CS",
+    "submitted": true,
+    "admin_id": "admin001"
+  }
 ]

@@ -45,105 +45,107 @@
   </div>
 
   <script>
-    let currentTeacher = null;
+  let currentTeacher = null;
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-    async function searchTeacher() {
-      const query = document.getElementById("searchName").value.trim().toLowerCase();
-      if (!query) return;
+  async function searchTeacher() {
+    const query = document.getElementById("searchName").value.trim().toLowerCase();
+    if (!query) return;
 
-      try {
-        const res = await fetch("http://localhost:5000/api/search-teacher", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query })
-        });
+    try {
+      const res = await fetch("http://localhost:5000/api/search-teacher", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, admin_id }) // ✅ Include admin_id
+      });
 
-        const result = await res.json();
-        const section = document.getElementById("resultSection");
-        section.innerHTML = "";
+      const result = await res.json();
+      const section = document.getElementById("resultSection");
+      section.innerHTML = "";
+      document.getElementById("editFormSection").style.display = "none";
+      document.getElementById("message").textContent = "";
+
+      if (result.success) {
+        currentTeacher = result.teacher;
+        section.innerHTML = `
+          <strong>Teacher Found:</strong><br>
+          <p><strong>Username:</strong> ${currentTeacher.username}</p>
+          <p><strong>Name:</strong> ${currentTeacher.name}</p>
+          <p><strong>Email:</strong> ${currentTeacher.email}</p>
+          <p><strong>Department:</strong> ${currentTeacher.department}</p>
+          <p><strong>Post:</strong> ${currentTeacher.post}</p>
+          <p><strong>Subject:</strong> ${currentTeacher.subject}</p>
+          <p><strong>Classes:</strong> ${currentTeacher.class_list.join(", ")}</p>
+          <button onclick="showEditForm()">✏️ Edit</button>
+          <button onclick="deleteTeacher()">🗑️ Delete</button>
+        `;
+      } else {
+        section.innerHTML = "<p>❌ Teacher not found.</p>";
+      }
+    } catch {
+      document.getElementById("message").textContent = "❌ Server error.";
+    }
+  }
+
+  function showEditForm() {
+    document.getElementById("editFormSection").style.display = "block";
+    document.getElementById("username").value = currentTeacher.username;
+    document.getElementById("name").value = currentTeacher.name;
+    document.getElementById("email").value = currentTeacher.email;
+    document.getElementById("department").value = currentTeacher.department;
+    document.getElementById("post").value = currentTeacher.post;
+    document.getElementById("subject").value = currentTeacher.subject;
+    document.getElementById("classList").value = currentTeacher.class_list.join(", ");
+  }
+
+  document.getElementById("editTeacherForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const updated = {
+      username: currentTeacher.username,
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim().toLowerCase(),
+      department: document.getElementById("department").value.trim(),
+      post: document.getElementById("post").value.trim(),
+      subject: document.getElementById("subject").value.trim(),
+      class_list: document.getElementById("classList").value.split(",").map(cls => cls.trim()).filter(cls => cls),
+      admin_id: admin_id // ✅ Include admin_id
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/api/edit-teacher", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated)
+      });
+
+      const result = await res.json();
+      document.getElementById("message").textContent = result.message;
+    } catch {
+      document.getElementById("message").textContent = "❌ Update failed.";
+    }
+  });
+
+  async function deleteTeacher() {
+    if (!confirm("Are you sure you want to delete this teacher?")) return;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/delete-teacher", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: currentTeacher.username, admin_id }) // ✅ Include admin_id
+      });
+
+      const result = await res.json();
+      document.getElementById("message").textContent = result.message;
+      if (result.success) {
+        document.getElementById("resultSection").innerHTML = "";
         document.getElementById("editFormSection").style.display = "none";
-        document.getElementById("message").textContent = "";
-
-        if (result.success) {
-          currentTeacher = result.teacher;
-          section.innerHTML = `
-            <strong>Teacher Found:</strong><br>
-            <p><strong>Username:</strong> ${currentTeacher.username}</p>
-            <p><strong>Name:</strong> ${currentTeacher.name}</p>
-            <p><strong>Email:</strong> ${currentTeacher.email}</p>
-            <p><strong>Department:</strong> ${currentTeacher.department}</p>
-            <p><strong>Post:</strong> ${currentTeacher.post}</p>
-            <p><strong>Subject:</strong> ${currentTeacher.subject}</p>
-            <p><strong>Classes:</strong> ${currentTeacher.class_list.join(", ")}</p>
-            <button onclick="showEditForm()">✏️ Edit</button>
-            <button onclick="deleteTeacher()">🗑️ Delete</button>
-          `;
-        } else {
-          section.innerHTML = "<p>❌ Teacher not found.</p>";
-        }
-      } catch {
-        document.getElementById("message").textContent = "❌ Server error.";
+        document.getElementById("searchName").value = "";
       }
+    } catch {
+      document.getElementById("message").textContent = "❌ Deletion failed.";
     }
-
-    function showEditForm() {
-      document.getElementById("editFormSection").style.display = "block";
-      document.getElementById("username").value = currentTeacher.username;
-      document.getElementById("name").value = currentTeacher.name;
-      document.getElementById("email").value = currentTeacher.email;
-      document.getElementById("department").value = currentTeacher.department;
-      document.getElementById("post").value = currentTeacher.post;
-      document.getElementById("subject").value = currentTeacher.subject;
-      document.getElementById("classList").value = currentTeacher.class_list.join(", ");
-    }
-
-    document.getElementById("editTeacherForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const updated = {
-        username: currentTeacher.username,
-        name: document.getElementById("name").value.trim(),
-        email: document.getElementById("email").value.trim().toLowerCase(),
-        department: document.getElementById("department").value.trim(),
-        post: document.getElementById("post").value.trim(),
-        subject: document.getElementById("subject").value.trim(),
-        class_list: document.getElementById("classList").value.split(",").map(cls => cls.trim()).filter(cls => cls)
-      };
-
-      try {
-        const res = await fetch("http://localhost:5000/api/edit-teacher", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updated)
-        });
-
-        const result = await res.json();
-        document.getElementById("message").textContent = result.message;
-      } catch {
-        document.getElementById("message").textContent = "❌ Update failed.";
-      }
-    });
-
-    async function deleteTeacher() {
-      if (!confirm("Are you sure you want to delete this teacher?")) return;
-
-      try {
-        const res = await fetch("http://localhost:5000/api/delete-teacher", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: currentTeacher.username })
-        });
-
-        const result = await res.json();
-        document.getElementById("message").textContent = result.message;
-        if (result.success) {
-          document.getElementById("resultSection").innerHTML = "";
-          document.getElementById("editFormSection").style.display = "none";
-          document.getElementById("searchName").value = "";
-        }
-      } catch {
-        document.getElementById("message").textContent = "❌ Deletion failed.";
-      }
-    }
-  </script>
+  }
+</script>
 </body>
 </html>

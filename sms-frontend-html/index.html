@@ -43,44 +43,51 @@
     </div>
   </div>
 
-<script>
-  async function login() {
-    const role = document.getElementById("role").value;
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const errorDiv = document.getElementById("error-message");
-    errorDiv.textContent = ""; // Clear previous errors
+  <script>
+    async function login() {
+      const role = document.getElementById("role").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const errorDiv = document.getElementById("error-message");
+      errorDiv.textContent = "";
 
-    if (!username || !password) {
-      errorDiv.textContent = "Please enter both username and password.";
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role, username, password })
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        localStorage.setItem("username", username);
-        if (role === "student") {
-          window.location.href = "student.html";
-        } else if (role === "teacher") {
-          window.location.href = "teacher.html";
-        } else if (role === "admin") {
-          window.location.href = "admin.html";
-        }
-      } else {
-        errorDiv.textContent = result.message || "Invalid username or password.";
+      if (!username || !password) {
+        errorDiv.textContent = "Please enter both username and password.";
+        return;
       }
-    } catch (error) {
-      errorDiv.textContent = "Server error. Please try again later.";
-      console.error("Login error:", error);
+
+      try {
+        const response = await fetch("http://localhost:5000/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role, username, password }) // ✅ No admin_id needed
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          localStorage.setItem("username", username);
+
+          // ✅ Store admin_id if returned (for teacher/student/admin)
+          if (result.admin_id) {
+            localStorage.setItem("admin_id", result.admin_id);
+          }
+
+          // ✅ Redirect based on role
+          if (role === "student") {
+            window.location.href = "student.html";
+          } else if (role === "teacher") {
+            window.location.href = "teacher.html";
+          } else if (role === "admin") {
+            window.location.href = "admin.html";
+          }
+        } else {
+          errorDiv.textContent = result.message || "Invalid username or password.";
+        }
+      } catch (error) {
+        errorDiv.textContent = "Server error. Please try again later.";
+        console.error("Login error:", error);
+      }
     }
-  }
-</script>
+  </script>
 </body>
 </html>

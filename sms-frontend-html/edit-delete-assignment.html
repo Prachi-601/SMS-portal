@@ -102,8 +102,10 @@
     <p id="status-message"></p>
   </div>
 <script>
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
+
   window.onload = () => {
-    fetch("http://localhost:5000/api/classes")
+    fetch(`http://localhost:5000/api/classes?admin_id=${encodeURIComponent(admin_id)}`)
       .then(res => res.json())
       .then(data => {
         const dropdown = document.getElementById("class");
@@ -118,7 +120,7 @@
 
     document.getElementById("class").onchange = () => {
       const className = document.getElementById("class").value;
-      fetch(`http://localhost:5000/api/class-assignments?class=${className}`)
+      fetch(`http://localhost:5000/api/class-assignments?class=${encodeURIComponent(className)}&admin_id=${encodeURIComponent(admin_id)}`)
         .then(res => res.json())
         .then(assignments => {
           const container = document.getElementById("assignment-list");
@@ -171,7 +173,7 @@
       <input type="date" id="edit-deadline" value="${assignment.deadline}">
       <label>Edit Class:</label>
       <input type="text" id="edit-class" value="${assignment.class}">
-      <button onclick="submitEdit('${assignment.class}', '${assignment.subject}', '${assignment.deadline}')">Save Changes</button>
+      <button type="button" onclick="submitEdit('${assignment.class}', '${assignment.subject}', '${assignment.deadline}')">Save Changes</button>
     `;
 
     container.appendChild(form);
@@ -191,7 +193,8 @@
         deadline: originalDeadline,
         new_class: newClass,
         new_subject: newSubject,
-        new_deadline: newDeadline
+        new_deadline: newDeadline,
+        admin_id: admin_id // ✅ Inject admin_id
       })
     })
     .then(res => res.json())
@@ -209,7 +212,12 @@
     fetch("http://localhost:5000/api/delete-assignment", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ class: className, subject: subject, deadline: deadline })
+      body: JSON.stringify({
+        class: className,
+        subject: subject,
+        deadline: deadline,
+        admin_id: admin_id // ✅ Inject admin_id
+      })
     })
     .then(res => res.json())
     .then(data => {

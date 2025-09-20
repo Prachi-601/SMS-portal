@@ -13,17 +13,27 @@ def show_menu():
         print("❌ Invalid choice. Please select 1, 2, or 3.")
         return
 
-    user = login(role)
-    if not user:
-        print("❌ Login failed.")
-        return
-
     if role == "admin":
-        admin_menu(user)
-    elif role == "teacher":
-        teacher_menu(user)
-    elif role == "student":
-        student_menu(user)
+        username = input("Username: ").strip()
+        password = input("Password: ").strip()
+        user = login(role, username, password, None)
+        if user:
+            admin_menu(user)
+        else:
+            print("❌ Login failed.")
+    else:
+        admin_id = input("Enter your admin ID: ").strip()
+        username = input("Username: ").strip()
+        password = input("Password: ").strip()
+        user = login(role, username, password, admin_id)
+        if not user:
+            print("❌ Login failed.")
+            return
+
+        if role == "teacher":
+            teacher_menu(user, admin_id)
+        elif role == "student":
+            student_menu(user, admin_id)
 
 # ✅ CLI block
 if __name__ == "__main__":

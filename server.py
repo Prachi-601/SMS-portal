@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from auth import login  
+from auth import login
 from flask_cors import CORS
 import json
 import random
@@ -9,8 +9,8 @@ import os
 from dotenv import load_dotenv
 import time
 from datetime import datetime
-from student import add_student  
-from assignment import add_assignment,submit_assignment,edit_assignment_by_fields,delete_assignment_by_fields
+from student import add_student
+from assignment import add_assignment, submit_assignment, edit_assignment_by_fields, delete_assignment_by_fields
 from assignment_views import view_submissions_by_id
 from utils import get_student_by_class
 
@@ -29,7 +29,13 @@ def api_login():
 
         user = login(role, username, password)
         if user:
-            return jsonify({'success': True, 'message': 'Login successful'})
+            return jsonify({
+                'success': True,
+                'message': 'Login successful',
+                'admin_id': user.get('admin_id'),
+                'name': user.get('name'),
+                'role': role
+            })
         else:
             return jsonify({'success': False, 'message': 'Invalid credentials'})
     except Exception as e:
@@ -39,31 +45,33 @@ def api_login():
 # 📘 Get Student Info
 @app.route('/api/student/<username>', methods=['GET'])
 def get_student(username):
+    admin_id = request.args.get("admin_id")
     try:
         with open("students.json", "r") as file:
             students = json.load(file)
             for student in students.get("students", []):
-                if student["username"] == username:
+                if student["username"] == username and student.get("admin_id") == admin_id:
                     return jsonify(student)
         return jsonify({"error": "Student not found"}), 404
     except Exception as e:
         print("🔥 Error in /api/student:", e)
         return jsonify({"error": "Server error"}), 500
 
-# 🔄 Update Password (Direct)
+# 🔄 Update Password
 @app.route('/api/update-password', methods=['POST'])
 def update_password():
     try:
         data = request.get_json()
         username = data.get("username")
         new_password = data.get("new_password")
+        admin_id = data.get("admin_id")
 
         with open("students.json", "r") as f:
             students = json.load(f)
 
         updated = False
         for student in students["students"]:
-            if student["username"] == username:
+            if student["username"] == username and student.get("admin_id") == admin_id:
                 student["password"] = new_password
                 updated = True
                 break
@@ -79,7 +87,7 @@ def update_password():
         return jsonify({"success": False, "message": "Server error"}), 500
 
 # 🔐 OTP Store
-otp_store = {}  # Format: { "username": { "otp": "123456", "timestamp": 1694350000 } }
+otp_store = {}
 
 # 📧 Email Sender
 def send_email(to_email, otp):
@@ -127,7 +135,7 @@ def request_otp():
         otp = str(random.randint(100000, 999999))
         otp_store[username] = {
             "otp": otp,
-            "timestamp": time.time()  # current time in seconds
+            "timestamp": time.time()
         }
 
         send_email(email, otp)
@@ -151,16 +159,13 @@ def reset_password():
         if not otp_entry:
             return jsonify({"success": False, "message": "OTP not found"}), 404
 
-        # ⏳ Check if OTP is expired (1 minute = 60 seconds)
         if time.time() - otp_entry["timestamp"] > 60:
-            otp_store.pop(username, None)  # Clean up expired OTP
+            otp_store.pop(username, None)
             return jsonify({"success": False, "message": "OTP expired"}), 401
 
-        # 🔐 Check if OTP matches
         if otp_entry["otp"] != otp:
             return jsonify({"success": False, "message": "Invalid OTP"}), 401
 
-        # ✅ Proceed with password update
         filename = f"{role}s.json"
         with open(filename, "r") as f:
             users = json.load(f)
@@ -175,7 +180,7 @@ def reset_password():
         if updated:
             with open(filename, "w") as f:
                 json.dump(users, f, indent=4)
-            otp_store.pop(username, None)  # Clean up after success
+            otp_store.pop(username, None)
             print(f"✅ Password updated for {username}")
             return jsonify({"success": True, "message": "Password updated successfully"})
         else:
@@ -183,7 +188,6 @@ def reset_password():
     except Exception as e:
         print("🔥 Error in /api/reset-password:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
-
 @app.route('/api/admin-signup', methods=['POST'])
 def admin_signup_api():
     try:
@@ -198,7 +202,6 @@ def admin_signup_api():
         if "@" not in email or "." not in email:
             return jsonify({"success": False, "message": "Invalid email format"}), 400
 
-        # Load or initialize admins.json
         try:
             with open("admins.json", "r") as f:
                 data = json.load(f)
@@ -206,7 +209,6 @@ def admin_signup_api():
             data = {"admins": []}
 
         admins = data.get("admins", [])
-
         for admin in admins:
             if admin["username"] == username:
                 return jsonify({"success": False, "message": "Admin already exists"}), 409
@@ -214,30 +216,32 @@ def admin_signup_api():
         admins.append({
             "username": username,
             "password": password,
-            "email": email
+            "email": email,
+            "admin_id": username  # using username as admin_id
         })
 
         with open("admins.json", "w") as f:
             json.dump({"admins": admins}, f, indent=2)
 
         print(f"✅ New admin registered: {username}")
-        return jsonify({"success": True, "message": "Admin signup successful"})
+        return jsonify({"success": True, "message": "Admin signup successful", "admin_id": username})
     except Exception as e:
         print("🔥 Error in /api/admin-signup:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
-    
+
 @app.route("/api/add-student", methods=["POST"])
 def api_add_student():
     try:
         data = request.get_json()
+        admin_id = data.get("admin_id")
         with open("students.json", "r") as f:
             students = json.load(f).get("students", [])
 
-        # Check for duplicate ID or username
         for s in students:
             if s["id"] == data["id"] or s["username"].lower() == data["username"].lower():
                 return jsonify({"success": False, "message": "❌ Student already exists."})
 
+        data["admin_id"] = admin_id
         students.append(data)
         with open("students.json", "w") as f:
             json.dump({"students": students}, f, indent=4)
@@ -249,10 +253,11 @@ def api_add_student():
 
 @app.route("/api/students/<class_name>", methods=["GET"])
 def get_students_by_class(class_name):
+    admin_id = request.args.get("admin_id")
     try:
         with open("students.json", "r") as f:
             students = json.load(f).get("students", [])
-        filtered = [s for s in students if s["class"].lower() == class_name.lower()]
+        filtered = [s for s in students if s["class"].lower() == class_name.lower() and s.get("admin_id") == admin_id]
         return jsonify({"students": filtered})
     except:
         return jsonify({"students": []})
@@ -262,6 +267,7 @@ def search_student_api():
     data = request.get_json()
     query = data.get("query", "").strip().lower()
     search_type = data.get("type")
+    admin_id = data.get("admin_id")
 
     try:
         with open("students.json", "r") as f:
@@ -273,25 +279,27 @@ def search_student_api():
         try:
             query_id = int(query)
             for s in students:
-                if s["id"] == query_id:
+                if s["id"] == query_id and s.get("admin_id") == admin_id:
                     return jsonify({"success": True, "student": s})
         except:
             return jsonify({"success": False})
     elif search_type == "name":
         for s in students:
-            if query in s["name"].lower():
+            if query in s["name"].lower() and s.get("admin_id") == admin_id:
                 return jsonify({"success": True, "student": s})
 
     return jsonify({"success": False})
+
 @app.route("/api/edit-student", methods=["PUT"])
 def edit_student_api():
     data = request.get_json()
     student_id = data.get("id")
+    admin_id = data.get("admin_id")
     try:
         with open("students.json", "r") as f:
             students = json.load(f).get("students", [])
         for s in students:
-            if s["id"] == student_id:
+            if s["id"] == student_id and s.get("admin_id") == admin_id:
                 s["name"] = data.get("name", s["name"])
                 s["class"] = data.get("class", s["class"])
                 s["email"] = data.get("email", s["email"])
@@ -301,15 +309,15 @@ def edit_student_api():
     except:
         pass
     return jsonify({"success": False, "message": "❌ Update failed."})
-
 @app.route("/api/delete-student", methods=["DELETE"])
 def delete_student_api():
     data = request.get_json()
     student_id = data.get("id")
+    admin_id = data.get("admin_id")
     try:
         with open("students.json", "r") as f:
             students = json.load(f).get("students", [])
-        students = [s for s in students if s["id"] != student_id]
+        students = [s for s in students if not (s["id"] == student_id and s.get("admin_id") == admin_id)]
         with open("students.json", "w") as f:
             json.dump({"students": students}, f, indent=4)
         return jsonify({"success": True, "message": "✅ Student deleted."})
@@ -320,13 +328,15 @@ def delete_student_api():
 def add_teacher_api():
     try:
         data = request.get_json()
+        admin_id = data.get("admin_id")
         with open("teachers.json", "r") as f:
             teachers = json.load(f).get("teachers", [])
 
         for t in teachers:
-            if t["username"].lower() == data["username"].lower():
+            if t["username"].lower() == data["username"].lower() and t.get("admin_id") == admin_id:
                 return jsonify({"success": False, "message": "❌ Teacher already exists."})
 
+        data["admin_id"] = admin_id
         teachers.append(data)
         with open("teachers.json", "w") as f:
             json.dump({"teachers": teachers}, f, indent=4)
@@ -335,18 +345,23 @@ def add_teacher_api():
     except Exception as e:
         print("🔥 Error in /api/add-teacher:", e)
         return jsonify({"success": False, "message": "❌ Failed to add teacher."})
+
 @app.route("/api/teachers", methods=["GET"])
 def get_all_teachers():
+    admin_id = request.args.get("admin_id")
     try:
         with open("teachers.json", "r") as f:
             teachers = json.load(f).get("teachers", [])
-        return jsonify({"teachers": teachers})
+        filtered = [t for t in teachers if t.get("admin_id") == admin_id]
+        return jsonify({"teachers": filtered})
     except:
         return jsonify({"teachers": []})
+
 @app.route("/api/search-teacher", methods=["POST"])
 def search_teacher_api():
     data = request.get_json()
     query = data.get("query", "").strip().lower()
+    admin_id = data.get("admin_id")
 
     try:
         with open("teachers.json", "r") as f:
@@ -355,21 +370,23 @@ def search_teacher_api():
         return jsonify({"success": False})
 
     for t in teachers:
-        if query in t["name"].lower() or query == t["username"].lower():
+        if (query in t["name"].lower() or query == t["username"].lower()) and t.get("admin_id") == admin_id:
             return jsonify({"success": True, "teacher": t})
 
     return jsonify({"success": False})
+
 @app.route("/api/edit-teacher", methods=["PUT"])
 def edit_teacher_api():
     data = request.get_json()
     username = data.get("username", "").strip().lower()
+    admin_id = data.get("admin_id")
 
     try:
         with open("teachers.json", "r") as f:
             teachers = json.load(f).get("teachers", [])
 
         for t in teachers:
-            if t["username"].lower() == username:
+            if t["username"].lower() == username and t.get("admin_id") == admin_id:
                 t["name"] = data.get("name", t["name"])
                 t["email"] = data.get("email", t["email"])
                 t["department"] = data.get("department", t["department"])
@@ -386,16 +403,18 @@ def edit_teacher_api():
         return jsonify({"success": True, "message": "✅ Teacher updated."})
     except:
         return jsonify({"success": False, "message": "❌ Update failed."})
+
 @app.route("/api/delete-teacher", methods=["DELETE"])
 def delete_teacher_api():
     data = request.get_json()
     username = data.get("username", "").strip().lower()
+    admin_id = data.get("admin_id")
 
     try:
         with open("teachers.json", "r") as f:
             teachers = json.load(f).get("teachers", [])
 
-        updated_teachers = [t for t in teachers if t["username"].lower() != username]
+        updated_teachers = [t for t in teachers if not (t["username"].lower() == username and t.get("admin_id") == admin_id)]
 
         if len(updated_teachers) == len(teachers):
             return jsonify({"success": False, "message": "❌ Teacher not found."})
@@ -410,20 +429,21 @@ def delete_teacher_api():
 @app.route('/api/add-assignment', methods=['POST'])
 def api_add_assignment():
     data = request.get_json()
-    add_assignment(data["class"], data["subject"], data["deadline"])
+    add_assignment(data["class"], data["subject"], data["deadline"], data["admin_id"])
     return jsonify({"success": True})
 
 @app.route('/api/submit-assignment', methods=['POST'])
 def api_submit_assignment():
     data = request.get_json()
     subject = data["subject"]
+    admin_id = data.get("admin_id")
     submitted_ids = []
     skipped_ids = []
 
     for student_id in data["student_ids"]:
-        existing = view_submissions_by_id(student_id, subject_filter=subject)
+        existing = view_submissions_by_id(student_id, subject_filter=subject, admin_id=admin_id)
         if not existing:
-            submit_assignment(student_id, subject)
+            submit_assignment(student_id, subject, admin_id)
             submitted_ids.append(student_id)
         else:
             skipped_ids.append(student_id)
@@ -437,9 +457,10 @@ def api_submit_assignment():
 @app.route('/api/class-assignments', methods=['GET'])
 def get_class_assignments():
     class_name = request.args.get("class")
+    admin_id = request.args.get("admin_id")
     with open("assignments.json", "r") as f:
         data = json.load(f)
-    filtered = [a for a in data if a["class"] == class_name]
+    filtered = [a for a in data if a["class"] == class_name and a.get("admin_id") == admin_id]
     return jsonify(filtered)
 
 @app.route('/api/class-students', methods=['GET'])
@@ -594,12 +615,14 @@ def schedule_test_api():
     except Exception as e:
         print("🔥 Error in /api/schedule-test:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
-    
+      
 @app.route('/api/scheduled-tests', methods=['GET'])
 def get_scheduled_tests():
     class_name = request.args.get("class", "").strip()
-    if not class_name:
-        return jsonify({"success": False, "message": "Missing class name"}), 400
+    admin_id = request.args.get("admin_id")
+
+    if not class_name or not admin_id:
+        return jsonify({"success": False, "message": "Missing class name or admin ID"}), 400
 
     try:
         with open("tests.json", "r", encoding="utf-8") as f:
@@ -607,8 +630,11 @@ def get_scheduled_tests():
     except (FileNotFoundError, json.JSONDecodeError):
         return jsonify({"success": False, "message": "Could not load test data"}), 500
 
-    # ✅ Normalize class name for matching
-    filtered = [t for t in tests if t.get("class", "").strip().lower() == class_name.lower()]
+    filtered = [
+        t for t in tests
+        if t.get("class", "").strip().lower() == class_name.lower()
+        and t.get("admin_id") == admin_id
+    ]
     filtered.sort(key=lambda t: datetime.strptime(t["date"], "%d-%m-%Y"))
 
     return jsonify({"success": True, "tests": filtered})
@@ -620,8 +646,9 @@ def api_save_marks():
         subject = data.get("subject", "").strip()
         test_date = data.get("date", "").strip()
         marks_data = data.get("marks_data", [])
+        admin_id = data.get("admin_id")
 
-        if not subject or not test_date or not marks_data:
+        if not subject or not test_date or not marks_data or not admin_id:
             return jsonify({"success": False, "message": "Missing fields"}), 400
 
         try:
@@ -629,7 +656,6 @@ def api_save_marks():
         except ValueError:
             return jsonify({"success": False, "message": "Invalid date format"}), 400
 
-        # Load tests
         try:
             with open("tests.json", "r", encoding="utf-8") as f:
                 tests = json.load(f)
@@ -637,7 +663,9 @@ def api_save_marks():
             tests = []
 
         test_info = next(
-            (t for t in tests if t["subject"].strip().lower() == subject.lower() and t["date"].strip() == test_date),
+            (t for t in tests if t["subject"].strip().lower() == subject.lower()
+             and t["date"].strip() == test_date
+             and t.get("admin_id") == admin_id),
             None
         )
 
@@ -647,18 +675,17 @@ def api_save_marks():
         test_class = test_info["class"]
         max_marks = test_info.get("max_marks")
 
-        # Load existing marks
         try:
             with open("marks.json", "r", encoding="utf-8") as f:
                 existing = json.load(f)
         except:
             existing = []
 
-        existing_keys = {(m["student_id"], m["subject"], m["date"]) for m in existing}
+        existing_keys = {(m["student_id"], m["subject"], m["date"], m.get("admin_id")) for m in existing}
         new_entries = []
 
         for entry in marks_data:
-            key = (entry["student_id"], subject, test_date)
+            key = (entry["student_id"], subject, test_date, admin_id)
             if key in existing_keys:
                 continue
             try:
@@ -679,7 +706,8 @@ def api_save_marks():
                 "marks": marks,
                 "max_marks": max_marks,
                 "class": test_class,
-                "submitted": True  # ✅ Add this flag
+                "submitted": True,
+                "admin_id": admin_id
             })
 
         existing.extend(new_entries)
@@ -687,12 +715,12 @@ def api_save_marks():
         with open("marks.json", "w", encoding="utf-8") as f:
             json.dump(existing, f, indent=4)
 
-        # ✅ Update test as submitted
         for test in tests:
             if (
                 test["class"].strip().lower() == test_class.strip().lower() and
                 test["subject"].strip().lower() == subject.strip().lower() and
-                test["date"].strip() == test_date.strip()
+                test["date"].strip() == test_date.strip() and
+                test.get("admin_id") == admin_id
             ):
                 test["submitted"] = True
                 break
@@ -708,13 +736,15 @@ def api_save_marks():
     except Exception as e:
         print("🔥 Error in /api/save-marks:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
+
 @app.route('/api/subject-marks', methods=['GET'])
 def api_subject_marks():
     class_name = request.args.get("class", "").strip().lower()
     subject = request.args.get("subject", "").strip().lower()
     test_date = request.args.get("date", "").strip()
+    admin_id = request.args.get("admin_id")
 
-    if not class_name or not subject or not test_date:
+    if not class_name or not subject or not test_date or not admin_id:
         return jsonify({"success": False, "message": "Missing fields"}), 400
 
     try:
@@ -733,17 +763,21 @@ def api_subject_marks():
         m for m in data
         if m.get("class", "").strip().lower() == class_name and
            m.get("subject", "").strip().lower() == subject and
-           m.get("date", "").strip() == test_date
+           m.get("date", "").strip() == test_date and
+           m.get("admin_id") == admin_id
     ]
 
     if not found:
         return jsonify({"success": True, "marks": [], "analytics": {}})
 
-    # Load student names from students.json
     try:
         with open("students.json", "r") as f:
             student_data = json.load(f).get("students", [])
-            student_lookup = {int(s["id"]): s["name"] for s in student_data}
+            student_lookup = {
+                int(s["id"]): s["name"]
+                for s in student_data
+                if s.get("admin_id") == admin_id
+            }
     except Exception as e:
         print("⚠️ Failed to load student names:", e)
         student_lookup = {}
@@ -776,13 +810,15 @@ def api_subject_marks():
             "lowest": lowest
         }
     })
+
 @app.route('/api/student-marks', methods=['GET'])
 def api_student_marks():
     query = request.args.get("query", "").strip().lower()
     subject_filter = request.args.get("subject", "").strip().lower()
+    admin_id = request.args.get("admin_id")
 
-    if not query:
-        return jsonify({"success": False, "message": "Missing student query"}), 400
+    if not query or not admin_id:
+        return jsonify({"success": False, "message": "Missing student query or admin ID"}), 400
 
     # Load students
     try:
@@ -805,9 +841,11 @@ def api_student_marks():
     except:
         tests_data = []
 
-    # Find student
+    # Find student (match by ID or name, scoped by admin)
     student = None
     for s in students_data:
+        if s.get("admin_id") != admin_id:
+            continue
         sid = str(s.get("id", "")).strip().lower()
         name = s.get("name", "").strip().lower()
         if query == sid or query == name:
@@ -824,6 +862,8 @@ def api_student_marks():
     student_marks = []
     for m in marks_data:
         if str(m.get("student_id", "")).strip().lower() != student_id:
+            continue
+        if m.get("admin_id") != admin_id:
             continue
         if subject_filter and m.get("subject", "").strip().lower() != subject_filter:
             continue
@@ -848,6 +888,8 @@ def api_student_marks():
     # Check if test was scheduled for this student’s class
     test_found = False
     for t in tests_data:
+        if t.get("admin_id") != admin_id:
+            continue
         t_class = t.get("class", "").strip().lower()
         t_subject = t.get("subject", "").strip().lower()
         if t_class == student_class and (not subject_filter or t_subject == subject_filter):
@@ -878,6 +920,10 @@ def edit_test_api():
     try:
         data = request.get_json()
         print("📦 Incoming edit payload:", data)
+
+        admin_id = data.get("admin_id")
+        if not admin_id:
+            return jsonify({"success": False, "message": "Missing admin ID"}), 400
 
         # Original values for matching
         original_subject = data.get("original_subject", "").strip().lower()
@@ -920,9 +966,8 @@ def edit_test_api():
             test_date = test.get("date", "").strip()
             test_class = test.get("class", "").strip().lower()
 
-            print(f"🔍 Checking test: {test_subject} | {test_date} | {test_class}")
-
-            if test_subject == original_subject and test_date == original_date and test_class == original_class:
+            if test_subject == original_subject and test_date == original_date and \
+               test_class == original_class and test.get("admin_id") == admin_id:
                 print("✅ Match found in tests.json. Updating...")
                 test["subject"] = new_subject
                 test["date"] = new_date
@@ -935,7 +980,6 @@ def edit_test_api():
             print(f"❌ No matching test found for: {original_subject} | {original_date} | {original_class}")
             return jsonify({"success": False, "message": "Test not found"}), 404
 
-        print("💾 Writing updated tests.json...")
         with open("tests.json", "w") as f:
             json.dump(tests, f, indent=4)
 
@@ -952,17 +996,14 @@ def edit_test_api():
             entry_date = entry.get("date", "").strip()
             entry_class = entry.get("class", "").strip().lower()
 
-            print(f"🔍 Checking mark entry: {entry_subject} | {entry_date} | {entry_class}")
-
-            if entry_subject == original_subject and entry_date == original_date and entry_class == original_class:
-                print("✅ Match found in marks.json. Syncing...")
+            if entry_subject == original_subject and entry_date == original_date and \
+               entry_class == original_class and entry.get("admin_id") == admin_id:
                 entry["subject"] = new_subject
                 entry["date"] = new_date
                 entry["class"] = new_class
                 entry["max_marks"] = new_max
                 sync_count += 1
 
-        print("💾 Writing updated marks.json...")
         with open("marks.json", "w") as f:
             json.dump(marks_data, f, indent=4)
 
@@ -976,7 +1017,7 @@ def edit_test_api():
     except Exception as e:
         print("🔥 Error in /api/edit-test:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
-    
+        
 @app.route('/api/delete-test', methods=['DELETE'])
 def delete_test_api():
     try:
@@ -984,9 +1025,10 @@ def delete_test_api():
         subject = data.get("subject", "").strip()
         date = data.get("date", "").strip()
         class_name = data.get("class", "").strip().lower()
+        admin_id = data.get("admin_id")
 
-        if not subject or not date or not class_name:
-            return jsonify({"success": False, "message": "Missing subject, date or class"}), 400
+        if not subject or not date or not class_name or not admin_id:
+            return jsonify({"success": False, "message": "Missing subject, date, class or admin ID"}), 400
 
         try:
             parsed_date = datetime.strptime(date, "%d-%m-%Y")
@@ -1003,7 +1045,12 @@ def delete_test_api():
         original_len = len(tests)
         tests = [
             t for t in tests
-            if not (t["subject"].lower() == subject.lower() and t["date"] == date and t["class"].strip().lower() == class_name)
+            if not (
+                t["subject"].lower() == subject.lower() and
+                t["date"] == date and
+                t["class"].strip().lower() == class_name and
+                t.get("admin_id") == admin_id
+            )
         ]
 
         if len(tests) == original_len:
@@ -1024,8 +1071,9 @@ def edit_marks_api():
         subject = data.get("subject", "").strip()
         date = data.get("date", "").strip()
         new_marks = data.get("new_marks")
+        admin_id = data.get("admin_id")
 
-        if not student_id or not subject or not date or new_marks is None:
+        if not student_id or not subject or not date or new_marks is None or not admin_id:
             return jsonify({"success": False, "message": "Missing fields"}), 400
 
         try:
@@ -1049,7 +1097,10 @@ def edit_marks_api():
 
         updated = False
         for m in marks_data:
-            if str(m["student_id"]) == student_id and m["subject"].lower() == subject.lower() and m["date"] == date:
+            if str(m["student_id"]) == student_id and \
+               m["subject"].lower() == subject.lower() and \
+               m["date"] == date and \
+               m.get("admin_id") == admin_id:
                 m["marks"] = new_marks
                 updated = True
                 break
@@ -1068,46 +1119,43 @@ def edit_marks_api():
 @app.route('/api/delete-marks', methods=['POST'])
 def delete_marks_api():
     try:
-        # ✅ Ensure JSON body is parsed even for DELETE
         data = request.get_json(force=True)
-        print("📦 Incoming DELETE payload:", data)  # Optional debug log
+        print("📦 Incoming DELETE payload:", data)
 
         student_id = str(data.get("student_id", "")).strip()
         subject = data.get("subject", "").strip()
         date = data.get("date", "").strip()
+        admin_id = data.get("admin_id")
 
-        if not student_id or not subject or not date:
+        if not student_id or not subject or not date or not admin_id:
             return jsonify({"success": False, "message": "Missing fields"}), 400
 
-        # ✅ Convert date format from YYYY-MM-DD to DD-MM-YYYY
         try:
             parsed_date = datetime.strptime(date, "%Y-%m-%d")
             date = parsed_date.strftime("%d-%m-%Y")
         except ValueError:
             return jsonify({"success": False, "message": "Invalid date format"}), 400
 
-        # ✅ Load marks.json
         try:
             with open("marks.json", "r") as f:
                 marks_data = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return jsonify({"success": False, "message": "No marks data found"}), 404
 
-        # ✅ Filter out the matching entry
         original_len = len(marks_data)
         marks_data = [
             m for m in marks_data
             if not (
                 str(m.get("student_id", "")).strip() == student_id and
                 m.get("subject", "").strip().lower() == subject.lower() and
-                m.get("date", "").strip() == date
+                m.get("date", "").strip() == date and
+                m.get("admin_id") == admin_id
             )
         ]
 
         if len(marks_data) == original_len:
             return jsonify({"success": False, "message": "Marks entry not found"}), 404
 
-        # ✅ Save updated marks.json
         with open("marks.json", "w") as f:
             json.dump(marks_data, f, indent=4)
 
@@ -1116,14 +1164,14 @@ def delete_marks_api():
     except Exception as e:
         print("🔥 Error in /api/delete-marks:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
-
 @app.route('/api/class-students', methods=['GET'])
 def api_class_students():
     class_name = request.args.get("class", "").strip().lower()
     subject = request.args.get("subject", "").strip().lower()
     test_date = request.args.get("date", "").strip()
+    admin_id = request.args.get("admin_id")
 
-    if not class_name or not subject or not test_date:
+    if not class_name or not subject or not test_date or not admin_id:
         return jsonify({"success": False, "message": "Missing parameters"}), 400
 
     try:
@@ -1131,24 +1179,23 @@ def api_class_students():
     except ValueError:
         return jsonify({"success": False, "message": "Invalid date format"}), 400
 
-    # Load students
     try:
         with open("students.json", "r") as f:
             students_data = json.load(f)["students"]
     except:
         return jsonify({"success": False, "message": "Student data not found"}), 500
 
-    # Load marks
     try:
         with open("marks.json", "r") as f:
             marks_data = json.load(f)
     except:
         marks_data = []
 
-    # Filter students by class
-    filtered_students = [s for s in students_data if s.get("class", "").strip().lower() == class_name]
+    filtered_students = [
+        s for s in students_data
+        if s.get("class", "").strip().lower() == class_name and s.get("admin_id") == admin_id
+    ]
 
-    # Build response
     response = []
     for s in filtered_students:
         sid = str(s.get("id")).strip()
@@ -1168,7 +1215,8 @@ def api_class_students():
                 str(m.get("student_id")) == sid and
                 m.get("subject", "").strip().lower() == subject and
                 m.get("date", "").strip() == test_date and
-                m.get("class", "").strip().lower() == s.get("class", "").strip().lower()
+                m.get("class", "").strip().lower() == class_name and
+                m.get("admin_id") == admin_id
             ):
                 student_entry["submitted"] = m.get("submitted", True)
                 try:
@@ -1178,19 +1226,28 @@ def api_class_students():
                 student_entry["max_marks"] = m.get("max_marks")
                 break
 
-        response.append(student_entry)  # ✅ This must be inside the loop
+        response.append(student_entry)
 
     return jsonify({"success": True, "students": response})
 
 @app.route('/api/classes', methods=['GET'])
 def get_classes():
+    admin_id = request.args.get("admin_id")
+    if not admin_id:
+        return jsonify({"success": False, "message": "Missing admin ID"}), 400
+
     try:
         with open("students.json", "r") as f:
             students_data = json.load(f)["students"]
     except (FileNotFoundError, json.JSONDecodeError):
         return jsonify({"success": False, "message": "Student data not found"}), 500
 
-    classes = sorted(set(s.get("class", "").strip() for s in students_data if s.get("class")))
+    classes = sorted(set(
+        s.get("class", "").strip()
+        for s in students_data
+        if s.get("class") and s.get("admin_id") == admin_id
+    ))
+
     return jsonify({"success": True, "classes": classes})
 
 # 🚀 Run Server

@@ -8,26 +8,28 @@ def main():
     choice = input("Enter choice (1/2/3): ").strip()
 
     if choice == "1":
-        user = login("admin")
+        user = login("admin", input("Username: "), input("Password: "), None)
         if user:
             print("🔓 Access granted to admin panel.")
-            admin_menu(user)
+            admin_menu(user)  # admin_id is inside user
         else:
             print("❌ Login failed.")
 
     elif choice == "2":
-        user = login("teacher")
+        admin_id = input("Enter your admin ID: ").strip()
+        user = login("teacher", input("Username: "), input("Password: "), admin_id)
         if user:
             print("👨‍🏫 Welcome to the teacher panel.")
-            teacher_menu(user)
+            teacher_menu(user, admin_id)
         else:
             print("❌ Login failed.")
 
     elif choice == "3":
-        user = login("student")
+        admin_id = input("Enter your admin ID: ").strip()
+        user = login("student", input("Username: "), input("Password: "), admin_id)
         if user:
             print("🎓 Welcome to your dashboard.")
-            student_menu(user)
+            student_menu(user, admin_id)
         else:
             print("❌ Login failed.")
 

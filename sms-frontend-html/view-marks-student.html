@@ -43,74 +43,72 @@
     <button onclick="loadStudentMarks()">🔍 View Marks</button>
 
     <div id="marksDisplay"></div>
-
     <script>
-      async function loadStudentMarks() {
-        const query = document.getElementById("studentQuery").value.trim();
-        const subject = document.getElementById("subjectFilter").value.trim();
-        const container = document.getElementById("marksDisplay");
-        container.innerHTML = "";
+  async function loadStudentMarks() {
+    const query = document.getElementById("studentQuery").value.trim();
+    const subject = document.getElementById("subjectFilter").value.trim();
+    const container = document.getElementById("marksDisplay");
+    const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-        if (!query) {
-          alert("Please enter a student ID or name.");
-          return;
-        }
+    container.innerHTML = "";
 
-        let url = `http://127.0.0.1:5000/api/student-marks?query=${encodeURIComponent(query)}`;
-        if (subject) url += `&subject=${encodeURIComponent(subject)}`;
+    if (!query) {
+      alert("Please enter a student ID or name.");
+      return;
+    }
 
-        console.log("📡 Fetching from:", url);
+    let url = `http://127.0.0.1:5000/api/student-marks?query=${encodeURIComponent(query)}&admin_id=${encodeURIComponent(admin_id)}`;
+    if (subject) url += `&subject=${encodeURIComponent(subject)}`;
 
-        try {
-          const res = await fetch(url);
-          console.log("🧪 Raw response:", res);
+    console.log("📡 Fetching from:", url);
 
-          const result = await res.json();
-          console.log("📦 Parsed result:", result);
+    try {
+      const res = await fetch(url);
+      const result = await res.json();
 
-          if (!result.success || result.marks.length === 0) {
-            if (result.student) {
-              container.innerHTML = `
-                <p class="student-header">👤 ${result.student.name} (ID: ${result.student.id})</p>
-                <p class="message">⚠️ ${result.message || "No marks found for this student."}</p>
-              `;
-            } else {
-              container.innerHTML = `<p class="message">❌ ${result.message || "Something went wrong."}</p>`;
-            }
-            return;
-          }
-
-          const studentInfo = document.createElement("p");
-          studentInfo.className = "student-header";
-          studentInfo.innerHTML = `👤 ${result.student.name} (ID: ${result.student.id})`;
-          container.appendChild(studentInfo);
-
-          const table = document.createElement("table");
-          table.innerHTML = `
-            <tr>
-              <th>Subject</th>
-              <th>Date</th>
-              <th>Marks</th>
-            </tr>
+      if (!result.success || result.marks.length === 0) {
+        if (result.student) {
+          container.innerHTML = `
+            <p class="student-header">👤 ${result.student.name} (ID: ${result.student.id})</p>
+            <p class="message">⚠️ ${result.message || "No marks found for this student."}</p>
           `;
-
-          result.marks.forEach(m => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${m.subject}</td>
-              <td>${m.date}</td>
-              <td>${m.marks}/${m.max_marks}</td>
-            `;
-            table.appendChild(row);
-          });
-
-          container.appendChild(table);
-        } catch (err) {
-          console.error("❌ Error fetching marks:", err);
-          container.innerHTML = `<p class="message">❌ Something went wrong while fetching marks.</p>`;
+        } else {
+          container.innerHTML = `<p class="message">❌ ${result.message || "Something went wrong."}</p>`;
         }
+        return;
       }
-    </script>
+
+      const studentInfo = document.createElement("p");
+      studentInfo.className = "student-header";
+      studentInfo.innerHTML = `👤 ${result.student.name} (ID: ${result.student.id})`;
+      container.appendChild(studentInfo);
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <tr>
+          <th>Subject</th>
+          <th>Date</th>
+          <th>Marks</th>
+        </tr>
+      `;
+
+      result.marks.forEach(m => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${m.subject}</td>
+          <td>${m.date}</td>
+          <td>${m.marks}/${m.max_marks}</td>
+        `;
+        table.appendChild(row);
+      });
+
+      container.appendChild(table);
+    } catch (err) {
+      console.error("❌ Error fetching marks:", err);
+      container.innerHTML = `<p class="message">❌ Something went wrong while fetching marks.</p>`;
+    }
+  }
+</script>
   </div>
 </body>
 </html>

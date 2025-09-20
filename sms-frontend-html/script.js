@@ -18,6 +18,11 @@ function login() {
   .then(response => response.json())
   .then(data => {
     if (data.success) {
+      localStorage.setItem("username", username);
+      if (role === 'admin' && data.admin_id) {
+        localStorage.setItem("admin_id", data.admin_id); // ✅ Store admin_id
+      }
+
       // Redirect based on role
       if (role === 'student') window.location.href = 'student.html';
       else if (role === 'teacher') window.location.href = 'teacher.html';
@@ -31,8 +36,11 @@ function login() {
     errorMsg.textContent = 'Server error. Please try again later.';
   });
 }
+
 function populateClassDropdown(dropdownId) {
-  fetch("http://localhost:5000/api/classes")
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
+
+  fetch(`http://localhost:5000/api/classes?admin_id=${encodeURIComponent(admin_id)}`)
     .then(res => res.json())
     .then(data => {
       const dropdown = document.getElementById(dropdownId);

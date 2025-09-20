@@ -24,11 +24,33 @@
       </div>
     </div>
   </div>
+<script>
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-  <script>
-    function goBack() {
-      window.location.href = 'admin.html';
+  function goBack() {
+    window.location.href = `admin.html?admin_id=${encodeURIComponent(admin_id)}`;
+  }
+
+  window.onload = () => {
+    const links = {
+      "add-student.html": "➕ Add Student",
+      "view-students.html": "📋 View Students",
+      "search-student.html": "🔍 Search Student",
+      "edit-delete-student.html": "✏️ Edit/Delete Student"
+    };
+
+    const menu = document.querySelector(".menu-options");
+    menu.innerHTML = "";
+
+    for (const [page, label] of Object.entries(links)) {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      btn.onclick = () => {
+        window.location.href = `${page}?admin_id=${encodeURIComponent(admin_id)}`; // ✅ Append admin_id
+      };
+      menu.appendChild(btn);
     }
-  </script>
+  };
+</script>
 </body>
 </html>

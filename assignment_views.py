@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 from utils import get_student_by_id
 
-def view_assignments(student):
+def view_assignments(student, admin_id):
     student_class = student["class"]
     student_id = student["id"]
     student_name = student["name"]
@@ -23,6 +23,8 @@ def view_assignments(student):
         print("❌ assignments.json not found.")
         return
 
+    assignments = [a for a in assignments if a.get("admin_id") == admin_id]
+
     try:
         with open("assignment_submissions.json", "r") as f:
             submissions = json.load(f)
@@ -32,7 +34,7 @@ def view_assignments(student):
     submitted_subjects = {
         s["subject"].lower()
         for s in submissions
-        if str(s["student_id"]) == str(student_id)
+        if str(s["student_id"]) == str(student_id) and s.get("admin_id") == admin_id
     }
 
     grouped = defaultdict(list)
@@ -54,7 +56,7 @@ def view_assignments(student):
             status = "✅ Submitted" if subject.lower() in submitted_subjects else "🕒 Pending"
             print(f"  - Deadline: {deadline} | {status}")
 
-def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
+def view_submissions_by_id(student_id, admin_id, subject_filter="", date_filter=""):
     try:
         with open("assignment_submissions.json", "r") as f:
             submissions = json.load(f)
@@ -62,7 +64,10 @@ def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
         print("📭 No submissions found.")
         return []
 
-    filtered = [s for s in submissions if str(s.get("student_id")) == str(student_id)]
+    filtered = [
+        s for s in submissions
+        if str(s.get("student_id")) == str(student_id) and s.get("admin_id") == admin_id
+    ]
 
     if subject_filter:
         filtered = [s for s in filtered if s.get("subject", "").strip().lower() == subject_filter.strip().lower()]
@@ -78,8 +83,8 @@ def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
         for s in filtered
     ]
 
-def show_pending_assignments(student_id):
-    student = get_student_by_id(student_id)
+def show_pending_assignments(student_id, admin_id):
+    student = get_student_by_id(student_id, admin_id)
     if not student:
         print("❌ Student not found.")
         return
@@ -94,7 +99,8 @@ def show_pending_assignments(student_id):
         return
 
     class_assignments = [
-        a for a in all_assignments if a.get("class", "").lower() == student_class.lower()
+        a for a in all_assignments
+        if a.get("class", "").lower() == student_class.lower() and a.get("admin_id") == admin_id
     ]
 
     try:
@@ -104,7 +110,8 @@ def show_pending_assignments(student_id):
         submissions = []
 
     submitted_subjects = {
-        s["subject"] for s in submissions if s["student_id"] == student_id
+        s["subject"] for s in submissions
+        if s["student_id"] == student_id and s.get("admin_id") == admin_id
     }
 
     pending = [

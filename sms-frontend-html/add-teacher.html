@@ -47,6 +47,8 @@
     document.getElementById("addTeacherForm").addEventListener("submit", async function(e) {
       e.preventDefault();
 
+      const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
+
       const teacher = {
         username: document.getElementById("username").value.trim(),
         password: document.getElementById("password").value,
@@ -55,7 +57,8 @@
         department: document.getElementById("department").value.trim(),
         post: document.getElementById("post").value.trim(),
         subject: document.getElementById("subject").value.trim(),
-        class_list: document.getElementById("classList").value.split(",").map(cls => cls.trim()).filter(cls => cls)
+        class_list: document.getElementById("classList").value.split(",").map(cls => cls.trim()).filter(cls => cls),
+        admin_id: admin_id // ✅ Include admin_id in payload
       };
 
       if (!teacher.email.includes("@") || !teacher.email.includes(".")) {

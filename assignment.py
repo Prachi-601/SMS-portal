@@ -2,9 +2,8 @@ import json
 from datetime import datetime
 from utils import get_student_by_id
 
-def add_assignment(class_name, subject, deadline):
+def add_assignment(class_name, subject, deadline, admin_id):
     try:
-        # ✅ Validate deadline format
         datetime.strptime(deadline.strip(), "%d-%m-%Y")
     except ValueError:
         print("❌ Invalid deadline format. Use dd-mm-yyyy.")
@@ -14,7 +13,8 @@ def add_assignment(class_name, subject, deadline):
         "class": class_name,
         "subject": subject,
         "deadline": deadline.strip(),
-        "created_on": datetime.now().strftime("%d-%m-%Y")
+        "created_on": datetime.now().strftime("%d-%m-%Y"),
+        "admin_id": admin_id
     }
 
     try:
@@ -30,13 +30,15 @@ def add_assignment(class_name, subject, deadline):
 
     print("✅ Assignment added successfully.")
 
-def view_assignments(student_id=None):
+def view_assignments(admin_id, student_id=None):
     try:
         with open("assignments.json", "r") as f:
             assignments = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         print("⚠️ No assignments found.")
         return
+
+    assignments = [a for a in assignments if a.get("admin_id") == admin_id]
 
     submitted_subjects = set()
     if student_id is not None:
@@ -46,7 +48,7 @@ def view_assignments(student_id=None):
             submitted_subjects = {
                 s["subject"].lower()
                 for s in submissions
-                if str(s["student_id"]) == str(student_id)
+                if str(s["student_id"]) == str(student_id) and s.get("admin_id") == admin_id
             }
         except (FileNotFoundError, json.JSONDecodeError):
             submitted_subjects = set()
@@ -57,8 +59,8 @@ def view_assignments(student_id=None):
             status = "✅ Submitted" if a["subject"].lower() in submitted_subjects else "🕒 Pending"
         print(f"Class: {a['class']}, Subject: {a['subject']}, Deadline: {a['deadline']} {status}")
 
-def submit_assignment(student_id, subject):
-    student = get_student_by_id(student_id)
+def submit_assignment(student_id, subject, admin_id):
+    student = get_student_by_id(student_id, admin_id)
     if not student:
         print(f"❌ Student ID {student_id} not found. Skipping.")
         return
@@ -70,7 +72,8 @@ def submit_assignment(student_id, subject):
         "class": student_class,
         "student_id": student_id,
         "subject": subject,
-        "submitted_on": today
+        "submitted_on": today,
+        "admin_id": admin_id
     }
 
     try:
@@ -80,7 +83,7 @@ def submit_assignment(student_id, subject):
         data = []
 
     for s in data:
-        if s["student_id"] == student_id and s["subject"].lower() == subject.lower():
+        if s["student_id"] == student_id and s["subject"].lower() == subject.lower() and s.get("admin_id") == admin_id:
             print(f"⚠️ Already submitted: Student {student_id}, Subject {subject}")
             return
 
@@ -91,7 +94,7 @@ def submit_assignment(student_id, subject):
 
     print(f"✅ Submission recorded for Student ID: {student_id}, Subject: {subject}")
 
-def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
+def view_submissions_by_id(student_id, admin_id, subject_filter="", date_filter=""):
     try:
         with open("assignment_submissions.json", "r") as f:
             submissions = json.load(f)
@@ -99,7 +102,7 @@ def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
         print("📭 No submissions found.")
         return []
 
-    filtered = [s for s in submissions if str(s.get("student_id")) == str(student_id)]
+    filtered = [s for s in submissions if str(s.get("student_id")) == str(student_id) and s.get("admin_id") == admin_id]
 
     if subject_filter:
         filtered = [s for s in filtered if s.get("subject", "").strip().lower() == subject_filter.strip().lower()]
@@ -115,31 +118,29 @@ def view_submissions_by_id(student_id, subject_filter="", date_filter=""):
         for s in filtered
     ]
 
-def get_total_assignments_by_class(class_name):
+def get_total_assignments_by_class(class_name, admin_id):
     try:
         with open("assignments.json", "r") as f:
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return 0
 
-    return sum(1 for a in data if a.get("class", "").lower() == class_name.lower())
+    return sum(1 for a in data if a.get("class", "").lower() == class_name.lower() and a.get("admin_id") == admin_id)
 
-def get_assignment_summary_by_name(name):
+def get_assignment_summary_by_name(name, admin_id):
     try:
         with open("assignments.json", "r") as f:
             assignments = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
-    summary = [
+    return [
         a for a in assignments
         if name.strip().lower() in a.get("subject", "").strip().lower()
+        and a.get("admin_id") == admin_id
     ]
-    return summary
 
-# ✅ NEW FUNCTIONS FOR EDIT/DELETE MODULES (ID-Free)
-
-def get_assignments_by_class(class_name):
+def get_assignments_by_class(class_name, admin_id):
     try:
         with open("assignments.json", "r") as f:
             assignments = json.load(f)
@@ -149,9 +150,10 @@ def get_assignments_by_class(class_name):
     return [
         a for a in assignments
         if a.get("class", "").strip().lower() == class_name.strip().lower()
+        and a.get("admin_id") == admin_id
     ]
 
-def edit_assignment_by_fields(class_name, subject, deadline, updated_fields):
+def edit_assignment_by_fields(class_name, subject, deadline, updated_fields, admin_id):
     try:
         with open("assignments.json", "r") as f:
             assignments = json.load(f)
@@ -162,7 +164,8 @@ def edit_assignment_by_fields(class_name, subject, deadline, updated_fields):
         if (
             a.get("class") == class_name and
             a.get("subject") == subject and
-            a.get("deadline") == deadline
+            a.get("deadline") == deadline and
+            a.get("admin_id") == admin_id
         ):
             for key in ["class", "subject", "deadline"]:
                 if key in updated_fields and updated_fields[key]:
@@ -175,7 +178,7 @@ def edit_assignment_by_fields(class_name, subject, deadline, updated_fields):
         json.dump(assignments, f, indent=4)
     return True
 
-def delete_assignment_by_fields(class_name, subject, deadline):
+def delete_assignment_by_fields(class_name, subject, deadline, admin_id):
     try:
         with open("assignments.json", "r") as f:
             assignments = json.load(f)
@@ -187,7 +190,8 @@ def delete_assignment_by_fields(class_name, subject, deadline):
         if not (
             a.get("class") == class_name and
             a.get("subject") == subject and
-            a.get("deadline") == deadline
+            a.get("deadline") == deadline and
+            a.get("admin_id") == admin_id
         )
     ]
 
@@ -198,7 +202,7 @@ def delete_assignment_by_fields(class_name, subject, deadline):
         json.dump(updated, f, indent=4)
     return True
 
-def get_submission_records(class_name, subject):
+def get_submission_records(class_name, subject, admin_id):
     try:
         with open("assignment_submissions.json", "r") as f:
             submissions = json.load(f)
@@ -209,10 +213,12 @@ def get_submission_records(class_name, subject):
         s for s in submissions
         if s.get("class", "").lower() == class_name.lower()
         and s.get("subject", "").lower() == subject.lower()
+        and s.get("admin_id") == admin_id
     ]
 
 # ✅ CLI block for testing
 if __name__ == "__main__":
+    admin_id = "admin001"  # Default for testing
     print("📘 Assignment Module Test")
     print("1. Add Assignment")
     print("2. View Assignments")
@@ -223,10 +229,10 @@ if __name__ == "__main__":
         class_name = input("Class: ")
         subject = input("Subject: ")
         deadline = input("Deadline (dd-mm-yyyy): ")
-        add_assignment(class_name, subject, deadline)
+        add_assignment(class_name, subject, deadline, admin_id)
 
     elif choice == "2":
-        view_assignments()
+        view_assignments(admin_id)
 
     elif choice == "3":
         try:
@@ -235,4 +241,4 @@ if __name__ == "__main__":
             print("❌ Invalid ID format.")
         else:
             subject = input("Subject: ")
-            submit_assignment(student_id, subject)
+            submit_assignment(student_id, subject, admin_id)

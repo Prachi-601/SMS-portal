@@ -88,176 +88,178 @@
     </select>
 
     <div id="testList" style="margin-top: 20px;"></div>
+<script>
+  const BASE_URL = "http://127.0.0.1:5000";
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-    <script>
-      const BASE_URL = "http://127.0.0.1:5000";
+  async function loadClasses() {
+    try {
+      const res = await fetch(`${BASE_URL}/api/classes?admin_id=${encodeURIComponent(admin_id)}`);
+      const result = await res.json();
 
-      async function loadClasses() {
-        try {
-          const res = await fetch(`${BASE_URL}/api/classes`);
-          const result = await res.json();
+      const select = document.getElementById("classSelect");
+      select.innerHTML = '<option value="">-- Choose Class --</option>';
 
-          const select = document.getElementById("classSelect");
-          select.innerHTML = '<option value="">-- Choose Class --</option>';
+      if (result.success && Array.isArray(result.classes)) {
+        result.classes.forEach(cls => {
+          const option = document.createElement("option");
+          option.value = cls;
+          option.textContent = cls;
+          select.appendChild(option);
+        });
+      } else {
+        alert("No classes found.");
+      }
+    } catch (err) {
+      console.error("Failed to load classes:", err);
+      alert("Could not fetch class list.");
+    }
+  }
 
-          if (result.success && Array.isArray(result.classes)) {
-            result.classes.forEach(cls => {
-              const option = document.createElement("option");
-              option.value = cls;
-              option.textContent = cls;
-              select.appendChild(option);
-            });
-          } else {
-            alert("No classes found.");
-          }
-        } catch (err) {
-          console.error("Failed to load classes:", err);
-          alert("Could not fetch class list.");
-        }
+  async function loadTests(className) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/scheduled-tests?class=${encodeURIComponent(className)}&admin_id=${encodeURIComponent(admin_id)}`);
+      const result = await res.json();
+
+      const container = document.getElementById("testList");
+      container.innerHTML = "";
+
+      if (!result.success || result.tests.length === 0) {
+        container.innerHTML = "<p>No tests found for this class.</p>";
+        return;
       }
 
-      async function loadTests(className) {
-        try {
-          const res = await fetch(`${BASE_URL}/api/scheduled-tests?class=${encodeURIComponent(className)}`);
-          const result = await res.json();
+      result.tests.forEach(test => {
+        const wrapper = document.createElement("div");
 
-          const container = document.getElementById("testList");
-          container.innerHTML = "";
+        const row = document.createElement("div");
+        row.classList.add("test-row");
+        row.innerHTML = `
+          <div class="test-info">${test.subject} — ${test.date} — Max Marks: <span class="marks-value">${test.max_marks}</span></div>
+          <div class="test-actions">
+            <button type="button" onclick="showEditForm(this)">Edit</button>
+            <button type="button" onclick="deleteTest('${test.subject}', '${test.date}', '${className}')">Delete</button>
+          </div>
+        `;
 
-          if (!result.success || result.tests.length === 0) {
-            container.innerHTML = "<p>No tests found for this class.</p>";
-            return;
-          }
+        const form = document.createElement("div");
+        form.classList.add("edit-form");
+        form.innerHTML = `
+          <label>Subject:</label>
+          <input type="text" value="${test.subject}" class="edit-subject" />
+          <label>Date:</label>
+          <input type="date" value="${convertToInputDate(test.date)}" class="edit-date" />
+          <label>Max Marks:</label>
+          <input type="number" value="${test.max_marks}" min="1" class="edit-marks" />
+          <label>Class:</label>
+          <input type="text" value="${className}" class="edit-class" />
+          <button type="button" onclick="saveTestChanges(event, this)">Save Changes</button>
+        `;
 
-          result.tests.forEach(test => {
-            const wrapper = document.createElement("div");
+        wrapper.appendChild(row);
+        wrapper.appendChild(form);
+        container.appendChild(wrapper);
+      });
+    } catch (err) {
+      console.error("Failed to load tests:", err);
+      alert("Could not load tests for this class.");
+    }
+  }
 
-            const row = document.createElement("div");
-            row.classList.add("test-row");
-            row.innerHTML = `
-              <div class="test-info">${test.subject} — ${test.date} — Max Marks: <span class="marks-value">${test.max_marks}</span></div>
-              <div class="test-actions">
-                <button type="button" onclick="showEditForm(this)">Edit</button>
-                <button type="button" onclick="deleteTest('${test.subject}', '${test.date}', '${className}')">Delete</button>
-              </div>
-            `;
+  function convertToInputDate(dateStr) {
+    const [day, month, year] = dateStr.split("-");
+    return `${year}-${month}-${day}`;
+  }
 
-            const form = document.createElement("div");
-            form.classList.add("edit-form");
-            form.innerHTML = `
-              <label>Subject:</label>
-              <input type="text" value="${test.subject}" class="edit-subject" />
-              <label>Date:</label>
-              <input type="date" value="${convertToInputDate(test.date)}" class="edit-date" />
-              <label>Max Marks:</label>
-              <input type="number" value="${test.max_marks}" min="1" class="edit-marks" />
-              <label>Class:</label>
-              <input type="text" value="${className}" class="edit-class" />
-              <button type="button" onclick="saveTestChanges(event, this)">Save Changes</button>
-            `;
+  function showEditForm(button) {
+    const form = button.closest(".test-row").nextElementSibling;
+    form.style.display = "block";
+    button.style.display = "none";
+  }
 
-            wrapper.appendChild(row);
-            wrapper.appendChild(form);
-            container.appendChild(wrapper);
-          });
-        } catch (err) {
-          console.error("Failed to load tests:", err);
-          alert("Could not load tests for this class.");
-        }
-      }
+  async function saveTestChanges(event, saveBtn) {
+    event.preventDefault();
 
-      function convertToInputDate(dateStr) {
-        const [day, month, year] = dateStr.split("-");
-        return `${year}-${month}-${day}`;
-      }
+    const form = saveBtn.parentElement;
+    const subject = form.querySelector(".edit-subject").value.trim();
+    const date = form.querySelector(".edit-date").value;
+    const maxMarks = form.querySelector(".edit-marks").value;
+    const className = form.querySelector(".edit-class").value.trim();
 
-      function showEditForm(button) {
-        const form = button.closest(".test-row").nextElementSibling;
-        form.style.display = "block";
-        button.style.display = "none";
-      }
+    if (!subject || !date || !maxMarks || !className) {
+      alert("All fields are required.");
+      return;
+    }
 
-      async function saveTestChanges(event, saveBtn) {
-        event.preventDefault();
+    const formattedDate = date.split("-").reverse().join("-");
 
-        const form = saveBtn.parentElement;
-        const subject = form.querySelector(".edit-subject").value.trim();
-        const date = form.querySelector(".edit-date").value;
-        const maxMarks = form.querySelector(".edit-marks").value;
-        const className = form.querySelector(".edit-class").value.trim();
+    const infoDiv = form.previousElementSibling.querySelector(".test-info").textContent;
+    const [originalSubject, originalDateRaw] = infoDiv.split(" — ");
+    const originalDate = originalDateRaw.trim();
+    const originalClass = className;
 
-        if (!subject || !date || !maxMarks || !className) {
-          alert("All fields are required.");
-          return;
-        }
-
-        const formattedDate = date.split("-").reverse().join("-");
-
-        const infoDiv = form.previousElementSibling.querySelector(".test-info").textContent;
-        const [originalSubject, originalDateRaw] = infoDiv.split(" — ");
-        const originalDate = originalDateRaw.trim();
-        const originalClass = className;
-
-        try {
-          const res = await fetch(`${BASE_URL}/api/edit-test`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              original_subject: originalSubject.trim(),
-              original_date: originalDate,
-              original_class: originalClass.trim(),
-              subject,
-              date: formattedDate,
-              new_max_marks: maxMarks,
-              class: className
-            })
-          });
-
-          const result = await res.json();
-          console.log("✅ Response from backend:", result);
-          alert(result.message);
-
-          const info = form.previousElementSibling.querySelector(".marks-value");
-          info.textContent = maxMarks;
-
-          form.style.display = "none";
-          form.previousElementSibling.querySelector(".test-actions button").style.display = "inline-block";
-
-          loadTests(className);
-        } catch (err) {
-          console.error("Update failed:", err);
-          alert("Failed to update test.");
-        }
-      }
-
-      async function deleteTest(subject, date, className) {
-        if (!confirm(`Are you sure you want to delete ${subject} on ${date}?`)) return;
-
-        try {
-          const res = await fetch(`${BASE_URL}/api/delete-test`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ subject, date, class: className })
-          });
-
-          const result = await res.json();
-          alert(result.message);
-          document.getElementById("classSelect").dispatchEvent(new Event("change"));
-        } catch (err) {
-          console.error("Delete failed:", err);
-          alert("Failed to delete test.");
-        }
-      }
-
-      document.getElementById("classSelect").addEventListener("change", (e) => {
-        const className = e.target.value;
-        if (className) loadTests(className);
+    try {
+      const res = await fetch(`${BASE_URL}/api/edit-test`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          original_subject: originalSubject.trim(),
+          original_date: originalDate,
+          original_class: originalClass.trim(),
+          subject,
+          date: formattedDate,
+          new_max_marks: maxMarks,
+          class: className,
+          admin_id // ✅ Include admin_id
+        })
       });
 
-      window.onload = () => {
-        loadClasses();
-      };
-    </script>
+      const result = await res.json();
+      console.log("✅ Response from backend:", result);
+      alert(result.message);
+
+      const info = form.previousElementSibling.querySelector(".marks-value");
+      info.textContent = maxMarks;
+
+      form.style.display = "none";
+      form.previousElementSibling.querySelector(".test-actions button").style.display = "inline-block";
+
+      loadTests(className);
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Failed to update test.");
+    }
+  }
+
+  async function deleteTest(subject, date, className) {
+    if (!confirm(`Are you sure you want to delete ${subject} on ${date}?`)) return;
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/delete-test`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, date, class: className, admin_id }) // ✅ Include admin_id
+      });
+
+      const result = await res.json();
+      alert(result.message);
+      document.getElementById("classSelect").dispatchEvent(new Event("change"));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete test.");
+    }
+  }
+
+  document.getElementById("classSelect").addEventListener("change", (e) => {
+    const className = e.target.value;
+    if (className) loadTests(className);
+  });
+
+  window.onload = () => {
+    loadClasses();
+  };
+</script>
+    
   </div>
 </body>
 </html>

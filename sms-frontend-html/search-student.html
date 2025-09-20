@@ -34,42 +34,42 @@
       <div id="result" class="student-result"></div>
     </div>
   </div>
+<script>
+  async function searchStudent() {
+    const query = document.getElementById("searchInput").value.trim();
+    const type = document.querySelector('input[name="searchType"]:checked').value;
+    const resultBox = document.getElementById("result");
+    const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-  <script>
-    async function searchStudent() {
-      const query = document.getElementById("searchInput").value.trim();
-      const type = document.querySelector('input[name="searchType"]:checked').value;
-      const resultBox = document.getElementById("result");
-
-      if (!query) {
-        resultBox.textContent = "❌ Please enter a search value.";
-        return;
-      }
-
-      const res = await fetch("http://localhost:5000/api/search-student", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, query })
-      });
-
-      const data = await res.json();
-      resultBox.innerHTML = "";
-
-      if (!data.success || !data.student) {
-        resultBox.textContent = "❌ Student not found.";
-        return;
-      }
-
-      const s = data.student;
-      resultBox.innerHTML = `
-        <strong>🎓 Student Found:</strong><br>
-        ID: ${s.id}<br>
-        Name: ${s.name}<br>
-        Class: ${s.class}<br>
-        Username: ${s.username}<br>
-        Email: ${s.email}
-      `;
+    if (!query) {
+      resultBox.textContent = "❌ Please enter a search value.";
+      return;
     }
-  </script>
+
+    const res = await fetch("http://localhost:5000/api/search-student", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, query, admin_id }) // ✅ Include admin_id
+    });
+
+    const data = await res.json();
+    resultBox.innerHTML = "";
+
+    if (!data.success || !data.student) {
+      resultBox.textContent = "❌ Student not found.";
+      return;
+    }
+
+    const s = data.student;
+    resultBox.innerHTML = `
+      <strong>🎓 Student Found:</strong><br>
+      ID: ${s.id}<br>
+      Name: ${s.name}<br>
+      Class: ${s.class}<br>
+      Username: ${s.username}<br>
+      Email: ${s.email}
+    `;
+  }
+</script> 
 </body>
 </html>

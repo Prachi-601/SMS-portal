@@ -2,8 +2,8 @@ import json
 from datetime import datetime, timedelta
 from subjects import load_subjects
 
-def enter_subjects_for_class():
-    class_name = input("Enter class name (e.g., TYCS, FYCS): ").strip()
+def enter_subjects_for_class(admin_id):
+    class_name = input("Enter class name (e.g., TY BSC CS): ").strip()
     subjects_input = input("Enter subjects for this class (comma-separated): ").strip()
     subjects = [s.strip() for s in subjects_input.split(",") if s.strip()]
 
@@ -13,25 +13,28 @@ def enter_subjects_for_class():
     except (FileNotFoundError, json.JSONDecodeError):
         data = {}
 
-    if class_name in data:
-        print(f"⚠️ Class '{class_name}' already has subjects: {data[class_name]}")
+    if admin_id not in data:
+        data[admin_id] = {}
+
+    if class_name in data[admin_id]:
+        print(f"⚠️ Class '{class_name}' already has subjects: {data[admin_id][class_name]}")
         confirm = input("Do you want to overwrite them? (y/n): ").strip().lower()
         if confirm != "y":
             print("❌ Cancelled.")
             return
 
-    data[class_name] = subjects
+    data[admin_id][class_name] = subjects
 
     with open("subjects.json", "w") as f:
         json.dump(data, f, indent=4)
 
     print(f"✅ Subjects saved for class {class_name}")
 
-def get_subjects_for_class(class_name):
+def get_subjects_for_class(class_name, admin_id):
     try:
         with open("subjects.json", "r") as f:
             data = json.load(f)
-        return data.get(class_name, [])
+        return data.get(admin_id, {}).get(class_name, [])
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
@@ -114,8 +117,8 @@ def get_custom_time_slots():
         slots.append(slot)
     return slots
 
-def build_new_slots(class_name):
-    subjects = load_subjects().get(class_name, [])
+def build_new_slots(class_name, admin_id):
+    subjects = get_subjects_for_class(class_name, admin_id)
     slots = []
     num_slots = int(input("Enter number of slots: "))
     for _ in range(num_slots):
@@ -127,7 +130,7 @@ def build_new_slots(class_name):
         slots.append({"time": time, class_name: subject})
     return slots
 
-def create_timetable_for_class(date, class_name):
+def create_timetable_for_class(date, class_name, admin_id):
     timetable = load_timetable()
     slots = []
 
@@ -143,10 +146,10 @@ def create_timetable_for_class(date, class_name):
                 subject = input(f"Enter subject for {class_name} at {time}: ").strip()
                 slots.append({"time": time, class_name: subject})
         else:
-            slots = build_new_slots(class_name)
+            slots = build_new_slots(class_name, admin_id)
     else:
         print("ℹ️ No previous slots found for this class.")
-        slots = build_new_slots(class_name)
+        slots = build_new_slots(class_name, admin_id)
 
     time_only = [{"time": slot["time"]} for slot in slots]
     save_default_slots(class_name, time_only)
@@ -155,7 +158,7 @@ def create_timetable_for_class(date, class_name):
     save_timetable(timetable)
     print(f"✅ Timetable created for {class_name} on {date}")
 
-def view_timetable_for_class(class_name, date=None):
+def view_timetable_for_class(class_name, admin_id, date=None):
     date_str = date if date else datetime.today().strftime('%d-%m-%Y')
     timetable = load_timetable()
     slots = timetable.get(date_str, [])
@@ -169,6 +172,7 @@ def view_timetable_for_class(class_name, date=None):
 
 # 🧪 CLI block
 if __name__ == "__main__":
+    admin_id = "admin001"  # Default for testing
     tomorrow = (datetime.today() + timedelta(days=1)).strftime('%d-%m-%Y')
     class_name = input("Enter class name: ")
-    create_timetable_for_class(tomorrow, class_name)
+    create_timetable_for_class(tomorrow, class_name, admin_id)

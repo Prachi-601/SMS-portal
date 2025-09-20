@@ -155,152 +155,154 @@
     <div id="marksList" style="margin-top: 20px;"></div>
   </div>
 
-  <script>
-    const BASE_URL = "http://localhost:5000";
+  <!-- inside <script> -->
+<script>
+  const BASE_URL = "http://localhost:5000";
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-    window.onload = () => {
-      fetch(`${BASE_URL}/api/classes`)
-        .then(res => res.json())
-        .then(data => {
-          const select = document.getElementById("classSelect");
-          if (data.success) {
-            data.classes.forEach(cls => {
-              const option = document.createElement("option");
-              option.value = cls;
-              option.textContent = cls;
-              select.appendChild(option);
-            });
-          }
-        });
-    };
+  window.onload = () => {
+    fetch(`${BASE_URL}/api/classes?admin_id=${encodeURIComponent(admin_id)}`)
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById("classSelect");
+        if (data.success) {
+          data.classes.forEach(cls => {
+            const option = document.createElement("option");
+            option.value = cls;
+            option.textContent = cls;
+            select.appendChild(option);
+          });
+        }
+      });
+  };
 
-    document.getElementById("classSelect").addEventListener("change", () => {
-      const className = document.getElementById("classSelect").value;
-      const testSelect = document.getElementById("testSelect");
-      testSelect.innerHTML = '<option value="">-- Choose Test --</option>';
+  document.getElementById("classSelect").addEventListener("change", () => {
+    const className = document.getElementById("classSelect").value;
+    const testSelect = document.getElementById("testSelect");
+    testSelect.innerHTML = '<option value="">-- Choose Test --</option>';
 
-      if (!className) return;
+    if (!className) return;
 
-      fetch(`${BASE_URL}/api/scheduled-tests?class=${className}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            data.tests.forEach(test => {
-              const option = document.createElement("option");
-              option.value = `${test.subject}|${test.date}`;
-              option.textContent = `${test.subject} — ${test.date}`;
-              testSelect.appendChild(option);
-            });
-          }
-        });
-    });
+    fetch(`${BASE_URL}/api/scheduled-tests?class=${encodeURIComponent(className)}&admin_id=${encodeURIComponent(admin_id)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          data.tests.forEach(test => {
+            const option = document.createElement("option");
+            option.value = `${test.subject}|${test.date}`;
+            option.textContent = `${test.subject} — ${test.date}`;
+            testSelect.appendChild(option);
+          });
+        }
+      });
+  });
 
-    function toISODate(ddmmyyyy) {
-      const [d, m, y] = ddmmyyyy.split("-");
-      return `${y}-${m}-${d}`;
+  function toISODate(ddmmyyyy) {
+    const [d, m, y] = ddmmyyyy.split("-");
+    return `${y}-${m}-${d}`;
+  }
+
+  async function loadMarks() {
+    const rawClass = document.getElementById("classSelect").value;
+    const className = rawClass.trim().toLowerCase();
+    const testValue = document.getElementById("testSelect").value;
+    const status = document.getElementById("status-message");
+    const container = document.getElementById("marksList");
+    const analyticsBox = document.getElementById("analytics");
+
+    if (!className || !testValue) {
+      alert("Please select both class and test.");
+      return;
     }
 
-    async function loadMarks() {
-      const rawClass = document.getElementById("classSelect").value;
-      const className = rawClass.trim().toLowerCase();
-      const testValue = document.getElementById("testSelect").value;
-      const status = document.getElementById("status-message");
-      const container = document.getElementById("marksList");
-      const analyticsBox = document.getElementById("analytics");
+    const [subject, date] = testValue.split("|");
 
-      if (!className || !testValue) {
-        alert("Please select both class and test.");
-        return;
-      }
+    status.textContent = "⏳ Loading marks...";
+    container.innerHTML = "";
+    analyticsBox.innerHTML = "";
 
-      const [subject, date] = testValue.split("|");
+    const res = await fetch(`${BASE_URL}/api/subject-marks?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subject)}&date=${encodeURIComponent(date)}&admin_id=${encodeURIComponent(admin_id)}`);
+    const result = await res.json();
 
-      status.textContent = "⏳ Loading marks...";
-      container.innerHTML = "";
-      analyticsBox.innerHTML = "";
+    if (!result.success || result.marks.length === 0) {
+      container.innerHTML = "<p>⚠️ No marks found for this test.</p>";
+      status.textContent = "";
+      return;
+    }
 
-      const res = await fetch(`${BASE_URL}/api/subject-marks?class=${className}&subject=${subject}&date=${date}`);
-      const result = await res.json();
+    const a = result.analytics;
+    analyticsBox.innerHTML = `
+      <strong>📊 Analytics:</strong><br>
+      Average: ${a.average} | Highest: ${a.highest} | Lowest: ${a.lowest}<br>
+      Top Scorer: ${a.top_scorer?.name ?? 'N/A'} (${a.top_scorer?.student_id ?? '—'})
+    `;
 
-      if (!result.success || result.marks.length === 0) {
-        container.innerHTML = "<p>⚠️ No marks found for this test.</p>";
-        status.textContent = "";
-        return;
-      }
+    status.textContent = `✅ Showing ${result.marks.length} students`;
 
-      const a = result.analytics;
-      analyticsBox.innerHTML = `
-        <strong>📊 Analytics:</strong><br>
-        Average: ${a.average} | Highest: ${a.highest} | Lowest: ${a.lowest}<br>
-        Top Scorer: ${a.top_scorer?.name ?? 'N/A'} (${a.top_scorer?.student_id ?? '—'})
+    result.marks.forEach(s => {
+      const row = document.createElement("div");
+      row.classList.add("test-row");
+      if (s.marks === null || s.marks === undefined) row.classList.add("highlight-empty");
+
+      row.innerHTML = `
+        <div class="test-info">${s.name} (${s.student_id})</div>
+        <div class="test-actions">
+          <input type="number" value="${s.marks ?? ''}" min="0" />
+          / ${s.max_marks ?? 'N/A'}
+          <button onclick="updateMarks('${s.student_id}', '${subject}', '${date}', this.previousElementSibling.value)">Update</button>
+          <button onclick="prepareDelete('${s.student_id}', '${subject}', '${date}')">Delete</button>
+        </div>
       `;
 
-      status.textContent = `✅ Showing ${result.marks.length} students`;
+      container.appendChild(row);
+    });
+  }
 
-      result.marks.forEach(s => {
-        const row = document.createElement("div");
-        row.classList.add("test-row");
-        if (s.marks === null || s.marks === undefined) row.classList.add("highlight-empty");
+  async function updateMarks(studentId, subject, date, newMarks) {
+    const status = document.getElementById("status-message");
+    const isoDate = toISODate(date);
 
-        row.innerHTML = `
-          <div class="test-info">${s.name} (${s.student_id})</div>
-          <div class="test-actions">
-            <input type="number" value="${s.marks ?? ''}" min="0" />
-            / ${s.max_marks ?? 'N/A'}
-            <button onclick="updateMarks('${s.student_id}', '${subject}', '${date}', this.previousElementSibling.value)">Update</button>
-            <button onclick="prepareDelete('${s.student_id}', '${subject}', '${date}')">Delete</button>
-          </div>
-        `;
+    const res = await fetch(`${BASE_URL}/api/edit-marks`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: studentId, subject, date: isoDate, new_marks: newMarks, admin_id })
+    });
 
-        container.appendChild(row);
-      });
-    }
+    const result = await res.json();
+    status.textContent = result.message;
+  }
 
-    async function updateMarks(studentId, subject, date, newMarks) {
-      const status = document.getElementById("status-message");
-      const isoDate = toISODate(date);
+  let pendingDelete = null;
 
-      const res = await fetch(`${BASE_URL}/api/edit-marks`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student_id: studentId, subject, date: isoDate, new_marks: newMarks })
-      });
+  function prepareDelete(studentId, subject, date) {
+    pendingDelete = { studentId, subject, date };
+    document.getElementById("confirmModal").style.display = "flex";
+  }
 
-      const result = await res.json();
-      status.textContent = result.message;
-    }
+  function closeModal() {
+    document.getElementById("confirmModal").style.display = "none";
+    pendingDelete = null;
+  }
 
-    let pendingDelete = null;
+  async function confirmDelete() {
+    if (!pendingDelete) return;
 
-    function prepareDelete(studentId, subject, date) {
-      pendingDelete = { studentId, subject, date };
-      document.getElementById("confirmModal").style.display = "flex";
-    }
+    const { studentId, subject, date } = pendingDelete;
+    const isoDate = toISODate(date);
+    const status = document.getElementById("status-message");
 
-    function closeModal() {
-      document.getElementById("confirmModal").style.display = "none";
-      pendingDelete = null;
-    }
+    const res = await fetch(`${BASE_URL}/api/delete-marks?_method=DELETE`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: studentId, subject, date: isoDate, admin_id })
+    });
 
-    async function confirmDelete() {
-      if (!pendingDelete) return;
-
-      const { studentId, subject, date } = pendingDelete;
-      const isoDate = toISODate(date);
-      const status = document.getElementById("status-message");
-
-      const res = await fetch(`${BASE_URL}/api/delete-marks?_method=DELETE`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student_id: studentId, subject, date: isoDate })
-      });
-
-      const result = await res.json();
-      status.textContent = result.message;
-      closeModal();
-      loadMarks();
-    }
-  </script>
+    const result = await res.json();
+    status.textContent = result.message;
+    closeModal();
+    loadMarks();
+  }
+</script>
 <!-- Modal -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal-box">

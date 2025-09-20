@@ -43,55 +43,55 @@
     <input type="text" id="searchInput" placeholder="🔍 Search by name or username...">
     <div id="teacherList"></div>
   </div>
-
   <script>
-    let teachers = [];
+  let teachers = [];
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-    async function fetchTeachers() {
-      try {
-        const res = await fetch("http://localhost:5000/api/teachers");
-        const data = await res.json();
-        teachers = data.teachers || [];
-        displayTeachers(teachers);
-      } catch (err) {
-        document.getElementById("teacherList").innerHTML = "<p>❌ Failed to load teachers.</p>";
-      }
+  async function fetchTeachers() {
+    try {
+      const res = await fetch(`http://localhost:5000/api/teachers?admin_id=${encodeURIComponent(admin_id)}`);
+      const data = await res.json();
+      teachers = data.teachers || [];
+      displayTeachers(teachers);
+    } catch (err) {
+      document.getElementById("teacherList").innerHTML = "<p>❌ Failed to load teachers.</p>";
+    }
+  }
+
+  function displayTeachers(list) {
+    const container = document.getElementById("teacherList");
+    container.innerHTML = "";
+
+    if (list.length === 0) {
+      container.innerHTML = "<p>ℹ️ No teachers found.</p>";
+      return;
     }
 
-    function displayTeachers(list) {
-      const container = document.getElementById("teacherList");
-      container.innerHTML = "";
-
-      if (list.length === 0) {
-        container.innerHTML = "<p>ℹ️ No teachers found.</p>";
-        return;
-      }
-
-      list.forEach(t => {
-        const card = document.createElement("div");
-        card.className = "teacher-card";
-        card.innerHTML = `
-          <h3>${t.name}</h3>
-          <p><strong>Username:</strong> ${t.username}</p>
-          <p><strong>Email:</strong> ${t.email}</p>
-          <p><strong>Department:</strong> ${t.department}</p>
-          <p><strong>Post:</strong> ${t.post}</p>
-          <p><strong>Subject:</strong> ${t.subject}</p>
-          <p><strong>Classes:</strong> ${t.class_list.join(", ")}</p>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    document.getElementById("searchInput").addEventListener("input", function() {
-      const query = this.value.trim().toLowerCase();
-      const filtered = teachers.filter(t =>
-        t.name.toLowerCase().includes(query) || t.username.toLowerCase().includes(query)
-      );
-      displayTeachers(filtered);
+    list.forEach(t => {
+      const card = document.createElement("div");
+      card.className = "teacher-card";
+      card.innerHTML = `
+        <h3>${t.name}</h3>
+        <p><strong>Username:</strong> ${t.username}</p>
+        <p><strong>Email:</strong> ${t.email}</p>
+        <p><strong>Department:</strong> ${t.department}</p>
+        <p><strong>Post:</strong> ${t.post}</p>
+        <p><strong>Subject:</strong> ${t.subject}</p>
+        <p><strong>Classes:</strong> ${t.class_list.join(", ")}</p>
+      `;
+      container.appendChild(card);
     });
+  }
 
-    fetchTeachers();
-  </script>
+  document.getElementById("searchInput").addEventListener("input", function() {
+    const query = this.value.trim().toLowerCase();
+    const filtered = teachers.filter(t =>
+      t.name.toLowerCase().includes(query) || t.username.toLowerCase().includes(query)
+    );
+    displayTeachers(filtered);
+  });
+
+  fetchTeachers();
+</script>
 </body>
 </html>

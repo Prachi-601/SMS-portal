@@ -2,6 +2,7 @@ import json
 
 # 🔐 Admin Login
 def admin_login(username, password):
+    print(f"🔐 Checking admin credentials for {username}")
     try:
         with open("admins.json", "r") as file:
             admins = json.load(file)
@@ -10,9 +11,11 @@ def admin_login(username, password):
 
     for admin in admins.get("admins", []):
         if admin["username"] == username and admin["password"] == password:
-            return admin
+            return admin  # ✅ Includes admin_id
     return None
-def update_student_password(username, old_pass, new_pass):
+
+# 🔄 Student Password Update (Scoped by admin)
+def update_student_password(username, old_pass, new_pass, admin_id):
     try:
         with open("students.json", "r") as f:
             data = json.load(f)
@@ -20,14 +23,19 @@ def update_student_password(username, old_pass, new_pass):
         return False
 
     for student in data.get("students", []):
-        if student["username"] == username and student["password"] == old_pass:
+        if (
+            student["username"] == username and
+            student["password"] == old_pass and
+            student.get("admin_id") == admin_id
+        ):
             student["password"] = new_pass
             with open("students.json", "w") as f:
                 json.dump(data, f, indent=4)
             return True
     return False
-# 👨‍🏫 Teacher Login
-def teacher_login(username, password):
+
+# 👨‍🏫 Teacher Login (Scoped by admin)
+def teacher_login(username, password, admin_id):
     try:
         with open("teachers.json", "r") as file:
             raw = json.load(file)
@@ -36,12 +44,16 @@ def teacher_login(username, password):
         return None
 
     for teacher in teachers.get("teachers", []):
-        if teacher["username"] == username and teacher["password"] == password:
+        if (
+            teacher["username"] == username and
+            teacher["password"] == password and
+            teacher.get("admin_id") == admin_id
+        ):
             return teacher
     return None
 
-# 🎓 Student Login
-def student_login(username, password):
+# 🎓 Student Login (Scoped by admin)
+def student_login(username, password, admin_id):
     try:
         with open("students.json", "r") as file:
             students = json.load(file)
@@ -49,24 +61,28 @@ def student_login(username, password):
         return None
 
     for student in students.get("students", []):
-        if student["username"] == username and student["password"] == password:
+        if (
+            student["username"] == username and
+            student["password"] == password and
+            student.get("admin_id") == admin_id
+        ):
             return student
     return None
 
-# 🔍 Get teacher by username
-def get_teacher_by_username(username):
+# 🔍 Get teacher by username (Scoped by admin)
+def get_teacher_by_username(username, admin_id):
     try:
         with open("teachers.json", "r") as f:
             data = json.load(f)
             for teacher in data.get("teachers", []):
-                if teacher["username"] == username:
+                if teacher["username"] == username and teacher.get("admin_id") == admin_id:
                     return teacher
     except (FileNotFoundError, json.JSONDecodeError):
         return None
     return None
 
-# 🆕 Teacher Signup (HOD only)
-def teacher_signup(hod_verified=True, username=None, password=None, name=None, subjects=None):
+# 🆕 Teacher Signup (HOD only, tagged with admin_id)
+def teacher_signup(admin_id, hod_verified=True, username=None, password=None, name=None, subjects=None):
     if not hod_verified or not username or not password or not name or not subjects:
         return {"success": False, "message": "Missing or unauthorized signup data."}
 
@@ -77,7 +93,8 @@ def teacher_signup(hod_verified=True, username=None, password=None, name=None, s
         "username": username,
         "password": password,
         "name": name,
-        "subjects": [s.strip() for s in subjects.split(",")]
+        "subjects": [s.strip() for s in subjects.split(",")],
+        "admin_id": admin_id  # ✅ Tag teacher with admin_id
     }
 
     try:
@@ -87,7 +104,7 @@ def teacher_signup(hod_verified=True, username=None, password=None, name=None, s
         data = {"teachers": []}
 
     for teacher in data["teachers"]:
-        if teacher["username"] == username:
+        if teacher["username"] == username and teacher.get("admin_id") == admin_id:
             return {"success": False, "message": "Username already exists."}
 
     data["teachers"].append(new_teacher)
@@ -97,13 +114,32 @@ def teacher_signup(hod_verified=True, username=None, password=None, name=None, s
 
     return {"success": True, "message": f"Teacher account for {name} created successfully."}
 
-# 🔄 Unified Login Dispatcher
-def login(role, username, password):
+def login(role, username, password, admin_id=None):
+    print(f"🔍 Login attempt → role: {role}, username: {username}, password: {password}, admin_id: {admin_id}")
+
     if role == "admin":
         return admin_login(username, password)
+
     elif role == "teacher":
-        return teacher_login(username, password)
-    elif role == "student":
-        return student_login(username, password)
-    else:
+        try:
+            with open("teachers.json", "r") as file:
+                data = json.load(file)
+                for teacher in data.get("teachers", []):
+                    if teacher["username"] == username and teacher["password"] == password:
+                        return teacher  # ✅ Found teacher, admin_id included
+        except (FileNotFoundError, json.JSONDecodeError):
+            return None
         return None
+
+    elif role == "student":
+        try:
+            with open("students.json", "r") as file:
+                data = json.load(file)
+                for student in data.get("students", []):
+                    if student["username"] == username and student["password"] == password:
+                        return student  # ✅ Found student, admin_id included
+        except (FileNotFoundError, json.JSONDecodeError):
+            return None
+        return None
+
+    return None

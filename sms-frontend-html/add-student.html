@@ -38,46 +38,48 @@
   </div>
 
   <script>
-  document.getElementById("addStudentForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+    document.getElementById("addStudentForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
 
-    const student = {
-      id: parseInt(document.getElementById("id").value),
-      name: document.getElementById("name").value.trim(),
-      class: document.getElementById("class").value.trim(),
-      username: document.getElementById("username").value.trim(),
-      password: document.getElementById("password").value,
-      email: document.getElementById("email").value.trim().toLowerCase()
-    };
+      const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-    if (!student.email.includes("@") || !student.email.includes(".")) {
-      document.getElementById("message").textContent = "❌ Invalid email format.";
-      return;
-    }
+      const student = {
+        id: parseInt(document.getElementById("id").value),
+        name: document.getElementById("name").value.trim(),
+        class: document.getElementById("class").value.trim(),
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value,
+        email: document.getElementById("email").value.trim().toLowerCase(),
+        admin_id: admin_id // ✅ Include admin_id in payload
+      };
 
-    try {
-      const res = await fetch("http://localhost:5000/api/add-student", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(student)
-      });
-
-      const result = await res.json();
-      document.getElementById("message").textContent = result.message;
-
-      if (result.success) {
-        // Stay on page and reset form
-        document.getElementById("addStudentForm").reset();
+      if (!student.email.includes("@") || !student.email.includes(".")) {
+        document.getElementById("message").textContent = "❌ Invalid email format.";
+        return;
       }
-    } catch (err) {
-      document.getElementById("message").textContent = "❌ Server error.";
-    }
-  });
 
-  function resetForm() {
-    document.getElementById("addStudentForm").reset();
-    document.getElementById("message").textContent = "";
-  }
-</script>
+      try {
+        const res = await fetch("http://localhost:5000/api/add-student", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(student)
+        });
+
+        const result = await res.json();
+        document.getElementById("message").textContent = result.message;
+
+        if (result.success) {
+          document.getElementById("addStudentForm").reset();
+        }
+      } catch (err) {
+        document.getElementById("message").textContent = "❌ Server error.";
+      }
+    });
+
+    function resetForm() {
+      document.getElementById("addStudentForm").reset();
+      document.getElementById("message").textContent = "";
+    }
+  </script>
 </body>
 </html>

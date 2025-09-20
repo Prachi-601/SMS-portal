@@ -31,9 +31,11 @@
     <div id="marksForm" style="margin-top: 20px;"></div>
 
     <script>
+      const admin_id = localStorage.getItem("admin_id");
+
       async function loadClasses() {
         try {
-          const res = await fetch("http://127.0.0.1:5000/api/classes");
+          const res = await fetch(`http://127.0.0.1:5000/api/classes?admin_id=${encodeURIComponent(admin_id)}`);
           const result = await res.json();
 
           const select = document.getElementById("classSelect");
@@ -55,7 +57,7 @@
         const className = e.target.value;
         if (!className) return;
 
-        const res = await fetch(`http://127.0.0.1:5000/api/scheduled-tests?class=${encodeURIComponent(className)}`);
+        const res = await fetch(`http://127.0.0.1:5000/api/scheduled-tests?class=${encodeURIComponent(className)}&admin_id=${encodeURIComponent(admin_id)}`);
         const result = await res.json();
 
         const testSelect = document.getElementById("testSelect");
@@ -76,8 +78,9 @@
 
         testSelect.onchange = () => loadStudents(className);
       });
+
       async function loadStudents(classNameRaw) {
-        const className = classNameRaw.trim().toLowerCase(); // ✅ Normalize class name
+        const className = classNameRaw.trim().toLowerCase();
         const testValue = document.getElementById("testSelect").value;
         if (!testValue) return;
 
@@ -87,13 +90,12 @@
         const max_marks = parseInt(rawMax.trim());
 
         try {
-          const res = await fetch(`http://127.0.0.1:5000/api/class-students?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subject)}&date=${encodeURIComponent(date)}`);
+          const res = await fetch(`http://127.0.0.1:5000/api/class-students?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subject)}&date=${encodeURIComponent(date)}&admin_id=${encodeURIComponent(admin_id)}`);
           const result = await res.json();
 
           const container = document.getElementById("marksForm");
           container.innerHTML = `<h3>Enter marks for ${subject} (${date})</h3>`;
 
-          // ✅ Proper check for student array
           if (!Array.isArray(result.students) || result.students.length === 0) {
             container.innerHTML += `<p style="color: red;">⚠️ No students found for ${classNameRaw}. Please check your student records.</p>`;
             return;
@@ -126,7 +128,7 @@
 
           const submitBtn = document.createElement("button");
           submitBtn.textContent = "✅ Submit Marks";
-          submitBtn.type = "submit";
+          submitBtn.type = "submit"; // ✅ Prevents accidental reload
           form.appendChild(submitBtn);
 
           const statusDiv = document.createElement("div");
@@ -135,7 +137,7 @@
           form.appendChild(statusDiv);
 
           form.onsubmit = async (e) => {
-            e.preventDefault();
+            e.preventDefault(); // ✅ Prevent page reload
             const formData = new FormData(form);
             const marks_data = [];
 
@@ -149,7 +151,7 @@
                 student_id: id,
                 name: name,
                 marks: parseInt(value),
-                class: classNameRaw.trim(), // preserve original casing
+                class: classNameRaw.trim(),
                 subject: subject,
                 date: date,
                 submitted: true
@@ -165,7 +167,7 @@
             const res = await fetch("http://127.0.0.1:5000/api/save-marks", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ subject, date, marks_data })
+              body: JSON.stringify({ subject, date, marks_data, admin_id })
             });
 
             const result = await res.json();
@@ -173,7 +175,7 @@
               statusDiv.innerHTML = `✅ Marks saved!<br>Added: ${result.added}<br>Skipped: ${result.skipped}`;
               statusDiv.style.color = "green";
               form.reset();
-              await loadStudents(classNameRaw); // 🔄 Refresh with original casing
+              await loadStudents(classNameRaw);
             } else {
               statusDiv.textContent = result.message;
               statusDiv.style.color = "red";
@@ -186,7 +188,6 @@
           alert("Could not load student data.");
         }
       }
-      
 
       window.onload = loadClasses;
     </script>

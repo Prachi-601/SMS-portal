@@ -2,7 +2,7 @@ import json
 from datetime import date, datetime
 from schedule import get_current_subject_for_teacher
 
-def get_attendance_summary_by_id(student_id):
+def get_attendance_summary_by_id(student_id, admin_id):
     try:
         with open("attendance.json", "r") as f:
             records = json.load(f)
@@ -12,6 +12,8 @@ def get_attendance_summary_by_id(student_id):
     present = 0
     absent = 0
     for entry in records:
+        if entry.get("admin_id") != admin_id:
+            continue
         for r in entry.get("records", []):
             if str(r.get("id")) == str(student_id):
                 if r["status"] == "P":
@@ -20,8 +22,7 @@ def get_attendance_summary_by_id(student_id):
                     absent += 1
     return present, absent
 
-
-def mark_attendance(teacher):
+def mark_attendance(teacher, admin_id):
     try:
         with open("students.json", "r") as f:
             data = json.load(f)
@@ -34,7 +35,6 @@ def mark_attendance(teacher):
         print("ℹ️ No students to mark attendance for.")
         return
 
-    # ✅ Step 1: Select class
     print(f"\n📚 Classes assigned to you: {', '.join(teacher.get('class_list', []))}")
     selected_class = input("Enter class to mark attendance for: ").strip()
 
@@ -42,12 +42,11 @@ def mark_attendance(teacher):
         print("❌ You are not assigned to this class.")
         return
 
-    students = [s for s in all_students if s.get("class") == selected_class]
+    students = [s for s in all_students if s.get("class") == selected_class and s.get("admin_id") == admin_id]
     if not students:
         print("⚠️ No students found in this class.")
         return
 
-    # ✅ Step 2: Get subject from timetable
     scheduled_subject = get_current_subject_for_teacher(teacher)
 
     if scheduled_subject:
@@ -64,7 +63,6 @@ def mark_attendance(teacher):
 
     today = str(date.today())
 
-    # ✅ Step 3: Prevent duplicate attendance
     try:
         with open("attendance.json", "r") as f:
             all_attendance = json.load(f)
@@ -72,16 +70,21 @@ def mark_attendance(teacher):
         all_attendance = []
 
     for record in all_attendance:
-        if record["date"] == today and record["class"] == selected_class and record["subject"].lower() == subject.lower():
+        if (
+            record.get("admin_id") == admin_id and
+            record["date"] == today and
+            record["class"] == selected_class and
+            record["subject"].lower() == subject.lower()
+        ):
             print("⚠️ Attendance already marked for this class and subject today.")
             return
 
-    # ✅ Step 4: Mark attendance
     attendance_record = {
         "date": today,
         "subject": subject,
         "teacher": teacher["username"],
         "class": selected_class,
+        "admin_id": admin_id,
         "records": []
     }
 
@@ -105,7 +108,7 @@ def mark_attendance(teacher):
 
     print("✅ Attendance marked and saved successfully!")
 
-def get_monthly_attendance(student_id, month, year):
+def get_monthly_attendance(student_id, month, year, admin_id):
     try:
         with open("attendance.json", "r") as f:
             records = json.load(f)
@@ -116,6 +119,8 @@ def get_monthly_attendance(student_id, month, year):
     total_days = 0
 
     for entry in records:
+        if entry.get("admin_id") != admin_id:
+            continue
         try:
             entry_date = datetime.strptime(entry["date"], "%Y-%m-%d")
         except ValueError:
@@ -131,13 +136,13 @@ def get_monthly_attendance(student_id, month, year):
     return present, total_days
 
 if __name__ == "__main__":
+    admin_id = "admin001"  # Default for testing
     try:
         student_id = int(input("Enter student ID to check attendance summary: ").strip())
     except ValueError:
         print("❌ Invalid ID format.")
     else:
-        present, absent = get_attendance_summary_by_id(student_id)
+        present, absent = get_attendance_summary_by_id(student_id, admin_id)
         print(f"\n📋 Attendance Summary for Student ID {student_id}")
         print(f"✅ Present: {present}")
         print(f"❌ Absent: {absent}")
-

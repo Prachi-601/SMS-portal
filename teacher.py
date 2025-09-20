@@ -9,8 +9,7 @@ from student import (
     delete_specific_student_by_name,
     get_student_by_id
 )
-
-from attendance import mark_attendance
+from attendance import mark_attendance, get_monthly_attendance
 from assignment import add_assignment, submit_assignment, view_submissions_by_id
 from test import schedule_test, add_marks, view_marks_by_student, view_marks_by_subject
 from schedule import (
@@ -19,9 +18,8 @@ from schedule import (
     enter_subjects_for_class
 )
 from dashboard import student_dashboard
-from attendance import get_monthly_attendance
 
-def teacher_login():
+def teacher_login(admin_id):
     username = input("Enter username: ").strip()
     password = input("Enter password: ").strip()
 
@@ -34,11 +32,11 @@ def teacher_login():
         return None
 
     for teacher in teachers:
-        if teacher["username"] == username and teacher["password"] == password:
+        if teacher["username"] == username and teacher["password"] == password and teacher.get("admin_id") == admin_id:
             print(f"✅ Welcome, {teacher['name']}!")
             return teacher
 
-    print("❌ Invalid credentials.")
+    print("❌ Invalid credentials or admin ID mismatch.")
     return None
 
 def add_teacher():
@@ -48,6 +46,7 @@ def add_teacher():
     except (FileNotFoundError, json.JSONDecodeError):
         data = {"teachers": []}
 
+    admin_id = input("Enter your admin ID: ").strip()
     username = input("Enter username for login: ").strip()
     password = input("Enter password for login: ").strip()
     name = input("Enter teacher name: ").strip()
@@ -63,8 +62,8 @@ def add_teacher():
         return
 
     for teacher in data["teachers"]:
-        if teacher.get("username", "").lower() == username.lower():
-            print("⚠️ Username already exists.")
+        if teacher.get("username", "").lower() == username.lower() and teacher.get("admin_id") == admin_id:
+            print("⚠️ Username already exists for this admin.")
             return
 
     new_teacher = {
@@ -75,7 +74,8 @@ def add_teacher():
         "department": department,
         "post": post,
         "subject": subject,
-        "class_list": class_list
+        "class_list": class_list,
+        "admin_id": admin_id
     }
 
     data["teachers"].append(new_teacher)
@@ -85,7 +85,7 @@ def add_teacher():
 
     print("✅ Teacher added successfully!")
 
-def view_teachers():
+def view_teachers(admin_id):
     try:
         with open("teachers.json", "r") as f:
             data = json.load(f)
@@ -93,7 +93,7 @@ def view_teachers():
         print("⚠️ No teacher data found.")
         return
 
-    teachers = data.get("teachers", [])
+    teachers = [t for t in data.get("teachers", []) if t.get("admin_id") == admin_id]
     if not teachers:
         print("ℹ️ No teacher records available.")
         return
@@ -109,7 +109,8 @@ def view_teachers():
         print(f"Classes Assigned: {', '.join(teacher.get('class_list', []))}")
         print("-" * 40)
     print(f"Total teachers: {len(teachers)}\n")
-def teacher_menu(teacher):
+
+def teacher_menu(teacher, admin_id):
     while True:
         print(f"\n📚 Teacher Menu ({teacher['name']}):")
         print("1. View Students")
@@ -119,77 +120,70 @@ def teacher_menu(teacher):
         print("5. Edit Student by ID")
         print("6. Edit Student by Name")
         print("7. Delete Student by Name")
-
         print("8. Mark Attendance")
         print("9. View Teachers")
-
         print("10. Add Assignment")
         print("11. Submit Assignment")
         print("12. View Submissions")
-
         print("13. Schedule Test")
         print("14. Add Marks")
         print("15. View Marks by Student")
         print("16. View Marks by Subject")
-
         print("17. Create Timetable for Class")
         print("18. View Timetable for Class")
         print("19. Enter Subjects for Class")
-
         print("20. Logout")
 
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
-            view_students()
+            view_students(admin_id)
         elif choice == "2":
-            add_student()
+            add_student(admin_id)
         elif choice == "3":
-            search_student()
+            search_student(admin_id)
         elif choice == "4":
-            search_student_by_name()
+            search_student_by_name(admin_id)
         elif choice == "5":
-            edit_student()
+            edit_student(admin_id)
         elif choice == "6":
-            edit_student_by_name()
+            edit_student_by_name(admin_id)
         elif choice == "7":
-            delete_specific_student_by_name()
+            delete_specific_student_by_name(admin_id)
         elif choice == "8":
-            mark_attendance(teacher)
+            mark_attendance(teacher, admin_id)
         elif choice == "9":
-            view_teachers()
+            view_teachers(admin_id)
         elif choice == "10":
             subject = input("Enter subject: ")
             deadline = input("Enter deadline (YYYY-MM-DD): ")
             confirm = input("Confirm assignment creation? (y/n): ").lower()
             if confirm == "y":
-                add_assignment(teacher["class_list"][0], subject, deadline)
+                add_assignment(teacher["class_list"][0], subject, deadline, admin_id)
             else:
                 print("❌ Cancelled.")
-
         elif choice == "11":
             try:
                 student_id = int(input("Enter student ID: ").strip())
+                student = get_student_by_id(student_id, admin_id)
+                if not student:
+                    print("❌ Student ID not found.")
+                    continue
+                subject = input("Enter subject: ")
+                confirm = input("Confirm submission? (y/n): ").lower()
+                if confirm == "y":
+                    submit_assignment(student_id, subject, admin_id)
+                else:
+                    print("❌ Cancelled.")
             except ValueError:
                 print("❌ Invalid ID format.")
-                return
-            student = get_student_by_id(student_id)
-            if not student:
-                print("❌ Student ID not found.")
-                return
-            subject = input("Enter subject: ")
-            confirm = input("Confirm submission? (y/n): ").lower()
-            if confirm == "y":
-                submit_assignment(student_id, subject)
-            else:
-                print("❌ Cancelled.")
         elif choice == "12":
             try:
                 student_id = int(input("Enter student ID to view submissions: ").strip())
-                student = get_student_by_id(student_id)
+                student = get_student_by_id(student_id, admin_id)
                 subject_filter = input("Filter by subject (press Enter to skip): ").strip()
                 date_filter = input("Filter by date (YYYY-MM-DD, press Enter to skip): ").strip()
-                submissions = view_submissions_by_id(student_id, subject_filter, date_filter)
+                submissions = view_submissions_by_id(student_id, subject_filter, date_filter, admin_id)
                 name = student["name"] if student else f"ID {student_id}"
                 print(f"\n📤 Submissions for {name}:")
                 if submissions:
@@ -201,38 +195,40 @@ def teacher_menu(teacher):
             except ValueError:
                 print("❌ Invalid student ID format.")
         elif choice == "13":
-            schedule_test()
+            schedule_test(admin_id)
         elif choice == "14":
-            add_marks()
+            add_marks(admin_id)
         elif choice == "15":
-            view_marks_by_student()
+            view_marks_by_student(admin_id)
         elif choice == "16":
-            view_marks_by_subject()
+            view_marks_by_subject(admin_id)
         elif choice == "17":
             print(f"\n📚 Classes assigned: {', '.join(teacher['class_list'])}")
             class_name = input("Enter class to manage: ").strip()
             if class_name not in teacher["class_list"]:
                 print("❌ You are not assigned to this class.")
-                return
+                continue
             date = input("Enter date (DD-MM-YYYY): ")
-            create_timetable_for_class(date, class_name)
+            create_timetable_for_class(date, class_name, admin_id)
         elif choice == "18":
             print(f"\n📚 Classes assigned: {', '.join(teacher['class_list'])}")
             class_name = input("Enter class to view: ").strip()
             if class_name not in teacher["class_list"]:
                 print("❌ You are not assigned to this class.")
-                return
+                continue
             date = input("Enter date (DD-MM-YYYY) or press Enter for today: ").strip()
-            view_timetable_for_class(class_name, date if date else None)
+            view_timetable_for_class(class_name, admin_id, date if date else None)
         elif choice == "19":
-            enter_subjects_for_class()
+            enter_subjects_for_class(admin_id)
         elif choice == "20":
             print("👋 Logging out...")
             break
         else:
             print("❌ Invalid choice.")
 
+# 🧪 CLI block
 if __name__ == "__main__":
-    teacher = teacher_login()
+    admin_id = input("Enter your admin ID: ").strip()
+    teacher = teacher_login(admin_id)
     if teacher:
-        teacher_menu(teacher)
+        teacher_menu(teacher, admin_id)

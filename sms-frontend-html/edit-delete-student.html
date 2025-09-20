@@ -41,90 +41,92 @@
       <div id="editForm" class="edit-form" style="display:none;"></div>
     </div>
   </div>
+<script>
+  let currentStudent = null;
+  const admin_id = localStorage.getItem("admin_id"); // ✅ Inject admin_id
 
-  <script>
-    let currentStudent = null;
+  async function searchStudent() {
+    const query = document.getElementById("searchInput").value.trim();
+    const type = document.querySelector('input[name="searchType"]:checked').value;
+    const resultBox = document.getElementById("result");
+    const editBox = document.getElementById("editForm");
 
-    async function searchStudent() {
-      const query = document.getElementById("searchInput").value.trim();
-      const type = document.querySelector('input[name="searchType"]:checked').value;
-      const resultBox = document.getElementById("result");
-      const editBox = document.getElementById("editForm");
+    resultBox.innerHTML = "";
+    editBox.style.display = "none";
+    currentStudent = null;
 
-      resultBox.innerHTML = "";
-      editBox.style.display = "none";
-      currentStudent = null;
+    const res = await fetch("http://localhost:5000/api/search-student", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, query, admin_id }) // ✅ Include admin_id
+    });
 
-      const res = await fetch("http://localhost:5000/api/search-student", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, query })
-      });
-
-      const data = await res.json();
-      if (!data.success || !data.student) {
-        resultBox.textContent = "❌ Student not found.";
-        return;
-      }
-
-      currentStudent = data.student;
-      const s = currentStudent;
-      resultBox.innerHTML = `
-        <strong>🎓 Student Found:</strong><br>
-        ID: ${s.id}<br>
-        Name: ${s.name}<br>
-        Class: ${s.class}<br>
-        Email: ${s.email}<br><br>
-        <button onclick="showEditForm()">✏️ Edit</button>
-        <button onclick="confirmDelete()">🗑️ Delete</button>
-      `;
+    const data = await res.json();
+    if (!data.success || !data.student) {
+      resultBox.textContent = "❌ Student not found.";
+      return;
     }
 
-    function showEditForm() {
-      const s = currentStudent;
-      const editBox = document.getElementById("editForm");
-      editBox.style.display = "block";
-      editBox.innerHTML = `
-        <h3>Edit Student</h3>
-        <input type="text" id="editName" value="${s.name}" placeholder="Name"><br>
-        <input type="text" id="editClass" value="${s.class}" placeholder="Class"><br>
-        <input type="email" id="editEmail" value="${s.email}" placeholder="Email"><br>
-        <button onclick="submitEdit()">✅ Confirm Edit</button>
-      `;
-    }
+    currentStudent = data.student;
+    const s = currentStudent;
+    resultBox.innerHTML = `
+      <strong>🎓 Student Found:</strong><br>
+      ID: ${s.id}<br>
+      Name: ${s.name}<br>
+      Class: ${s.class}<br>
+      Email: ${s.email}<br><br>
+      <button onclick="showEditForm()">✏️ Edit</button>
+      <button onclick="confirmDelete()">🗑️ Delete</button>
+    `;
+  }
 
-    async function submitEdit() {
-      const updated = {
-        id: currentStudent.id,
-        name: document.getElementById("editName").value.trim(),
-        class: document.getElementById("editClass").value.trim(),
-        email: document.getElementById("editEmail").value.trim().toLowerCase()
-      };
+  function showEditForm() {
+    const s = currentStudent;
+    const editBox = document.getElementById("editForm");
+    editBox.style.display = "block";
+    editBox.innerHTML = `
+      <h3>Edit Student</h3>
+      <input type="text" id="editName" value="${s.name}" placeholder="Name"><br>
+      <input type="text" id="editClass" value="${s.class}" placeholder="Class"><br>
+      <input type="email" id="editEmail" value="${s.email}" placeholder="Email"><br>
+      <button onclick="submitEdit()">✅ Confirm Edit</button>
+    `;
+  }
 
-      const res = await fetch("http://localhost:5000/api/edit-student", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated)
-      });
+  async function submitEdit() {
+    const updated = {
+      id: currentStudent.id,
+      name: document.getElementById("editName").value.trim(),
+      class: document.getElementById("editClass").value.trim(),
+      email: document.getElementById("editEmail").value.trim().toLowerCase(),
+      admin_id: admin_id // ✅ Include admin_id
+    };
 
-      const data = await res.json();
-      document.getElementById("result").textContent = data.message;
-      document.getElementById("editForm").style.display = "none";
-    }
+    const res = await fetch("http://localhost:5000/api/edit-student", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated)
+    });
 
-    async function confirmDelete() {
-      if (!confirm("⚠️ Are you sure you want to delete this student?")) return;
+    const data = await res.json();
+    document.getElementById("result").textContent = data.message;
+    document.getElementById("editForm").style.display = "none";
+  }
 
-      const res = await fetch("http://localhost:5000/api/delete-student", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: currentStudent.id })
-      });
+  async function confirmDelete() {
+    if (!confirm("⚠️ Are you sure you want to delete this student?")) return;
 
-      const data = await res.json();
-      document.getElementById("result").textContent = data.message;
-      document.getElementById("editForm").style.display = "none";
-    }
-  </script>
+    const res = await fetch("http://localhost:5000/api/delete-student", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: currentStudent.id, admin_id }) // ✅ Include admin_id
+    });
+
+    const data = await res.json();
+    document.getElementById("result").textContent = data.message;
+    document.getElementById("editForm").style.display = "none";
+  }
+</script>
+  
 </body>
 </html>
